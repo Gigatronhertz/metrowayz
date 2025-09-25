@@ -44,10 +44,10 @@ const OnboardingPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl font-bold text-white">UE</span>
+            <span className="text-2xl font-bold text-white">MW</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome to UrbanEase
+            Welcome to MetroWayz
           </h1>
           <p className="text-gray-600">
             Your lifestyle services in one place
