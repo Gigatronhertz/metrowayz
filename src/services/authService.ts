@@ -60,7 +60,13 @@ export const authService = {
 
     const responseData = await response.json()
     console.log('✅ Response data:', responseData)
-    return responseData
+
+    // Transform response to match expected AuthResponse format
+    return {
+      success: true,
+      user: responseData.user,
+      message: 'User profile fetched successfully'
+    }
   },
 
   // Logout user
