@@ -44,7 +44,9 @@ export const authService = {
         tokenManager.removeToken()
         throw new Error('Authentication expired')
       }
-      throw new Error('Failed to fetch user profile')
+      const errorText = await response.text()
+      console.error(`Profile fetch failed: ${response.status} ${response.statusText}`, errorText)
+      throw new Error(`Failed to fetch user profile: ${response.status} ${response.statusText}`)
     }
 
     return response.json()
@@ -94,11 +96,19 @@ export const authService = {
 
           if (event.data && event.data.token) {
             const token = event.data.token
-            popup.close()
+            try {
+              popup.close()
+            } catch (error) {
+              console.warn('Could not close popup due to CORS policy:', error)
+            }
             window.removeEventListener('message', handleMessage)
             resolve(token)
           } else if (event.data && event.data.error) {
-            popup.close()
+            try {
+              popup.close()
+            } catch (error) {
+              console.warn('Could not close popup due to CORS policy:', error)
+            }
             window.removeEventListener('message', handleMessage)
             reject(new Error(event.data.error))
           }
