@@ -1,5 +1,5 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
 import { 
   User, 
   CreditCard, 
@@ -12,13 +12,30 @@ import {
   Edit,
   Gift
 } from 'lucide-react'
-import { currentUser } from '../data/mockData'
+import { useAuth } from '../context/AuthContext'
 import Header from '../components/layout/Header'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
+import Button from '../components/ui/Button'
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate()
+  const { user, logout, isLoading } = useAuth()
+
+  if (!user && !isLoading) {
+    return <Navigate to="/" replace />
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner w-8 h-8 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    )
+  }
 
   const menuItems = [
     { icon: Edit, label: 'Edit Profile', action: () => {} },
@@ -30,9 +47,15 @@ const ProfilePage: React.FC = () => {
     { icon: FileText, label: 'Terms of Service', action: () => {} },
   ]
 
-  const handleSignOut = () => {
-    // In a real app, you'd clear auth tokens, etc.
-    navigate('/')
+  const handleSignOut = async () => {
+    try {
+      await logout()
+      navigate('/', { replace: true })
+    } catch (error) {
+      console.error('Logout failed:', error)
+      // Force navigation even if logout fails
+      navigate('/', { replace: true })
+    }
   }
 
   return (
@@ -43,10 +66,10 @@ const ProfilePage: React.FC = () => {
         {/* Profile Header */}
         <Card className="p-6 text-center">
           <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            {currentUser.avatar ? (
+            {user?.profilePicture ? (
               <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
+                src={user.profilePicture}
+                alt={user.name}
                 className="w-24 h-24 rounded-full object-cover"
               />
             ) : (
@@ -54,12 +77,12 @@ const ProfilePage: React.FC = () => {
             )}
           </div>
           
-          <h2 className="text-xl font-bold text-gray-900 mb-1">{currentUser.name}</h2>
-          <p className="text-gray-600 mb-3">{currentUser.email}</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">{user?.name}</h2>
+          <p className="text-gray-600 mb-3">{user?.email}</p>
           
           <div className="flex items-center justify-center">
             <Star className="w-4 h-4 text-accent-500 mr-1" />
-            <span className="text-sm font-semibold">{currentUser.rating} User Rating</span>
+            <span className="text-sm font-semibold">4.8 User Rating</span>
           </div>
         </Card>
 
@@ -67,28 +90,28 @@ const ProfilePage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-primary-500 mb-1">
-              {currentUser.loyaltyPoints.toLocaleString()}
+              1,250
             </div>
             <div className="text-sm text-gray-600">Loyalty Points</div>
           </Card>
           
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-primary-500 mb-1">
-              {currentUser.totalBookings}
+              12
             </div>
             <div className="text-sm text-gray-600">Total Bookings</div>
           </Card>
           
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-accent-500 mb-1">
-              {currentUser.membershipTier}
+              Gold
             </div>
             <div className="text-sm text-gray-600">Member Status</div>
           </Card>
           
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-primary-500 mb-1">
-              {currentUser.referrals}
+              3
             </div>
             <div className="text-sm text-gray-600">Referrals</div>
           </Card>
@@ -116,13 +139,14 @@ const ProfilePage: React.FC = () => {
 
         {/* Sign Out */}
         <Card>
-          <button
+          <Button
+            variant="ghost"
             onClick={handleSignOut}
-            className="w-full flex items-center space-x-4 p-4 hover:bg-red-50 transition-colors text-red-600"
+            className="w-full flex items-center justify-start space-x-4 p-4 hover:bg-red-50 transition-colors text-red-600"
           >
             <LogOut className="w-5 h-5" />
             <span className="flex-1 text-left font-medium">Sign Out</span>
-          </button>
+          </Button>
         </Card>
       </div>
 
