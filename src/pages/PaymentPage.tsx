@@ -22,7 +22,7 @@ const PaymentPage: React.FC = () => {
   const paymentMethods = [
     {
       id: 'wallet',
-      name: 'UrbanEase Wallet',
+      name: 'MetroWayz Wallet',
       description: 'Balance: ₦75,000',
       icon: Wallet,
     },
