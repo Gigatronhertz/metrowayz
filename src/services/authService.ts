@@ -31,13 +31,22 @@ export const authService = {
       throw new Error('No authentication token found')
     }
 
-    const response = await fetch(`${API_BASE_URL}/user-details`, {
+    const url = `${API_BASE_URL}/user-details`
+    const requestOptions = {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
-    })
+    }
+
+    console.log('🔄 Making request to:', url)
+    console.log('📤 Request options:', requestOptions)
+
+    const response = await fetch(url, requestOptions)
+
+    console.log('📥 Response status:', response.status, response.statusText)
+    console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()))
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -45,11 +54,13 @@ export const authService = {
         throw new Error('Authentication expired')
       }
       const errorText = await response.text()
-      console.error(`Profile fetch failed: ${response.status} ${response.statusText}`, errorText)
+      console.error('❌ Error response body:', errorText)
       throw new Error(`Failed to fetch user profile: ${response.status} ${response.statusText}`)
     }
 
-    return response.json()
+    const responseData = await response.json()
+    console.log('✅ Response data:', responseData)
+    return responseData
   },
 
   // Logout user
@@ -57,15 +68,32 @@ export const authService = {
     const token = tokenManager.getToken()
     if (token) {
       try {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
+        const url = `${API_BASE_URL}/auth/logout`
+        const requestOptions = {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
-        })
+        }
+
+        console.log('🔄 Making logout request to:', url)
+        console.log('📤 Request options:', requestOptions)
+
+        const response = await fetch(url, requestOptions)
+
+        console.log('📥 Logout response status:', response.status, response.statusText)
+        console.log('📥 Logout response headers:', Object.fromEntries(response.headers.entries()))
+
+        if (response.ok) {
+          const responseData = await response.text()
+          console.log('✅ Logout response:', responseData)
+        } else {
+          const errorText = await response.text()
+          console.error('❌ Logout error response:', errorText)
+        }
       } catch (error) {
-        console.error('Logout request failed:', error)
+        console.error('❌ Logout request failed:', error)
       }
     }
     tokenManager.removeToken()
