@@ -1,0 +1,84 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#ffebec',
+          100: '#ffccce',
+          200: '#ff999c',
+          300: '#ff666a',
+          400: '#ff5a5f',
+          500: '#ff5a5f',
+          600: '#e64e53',
+          700: '#cc4247',
+          800: '#b3363b',
+          900: '#99292f',
+        },
+        secondary: {
+          50: '#e6f7f6',
+          100: '#b3e9e6',
+          200: '#80dbd5',
+          300: '#4dcdc4',
+          400: '#1abfb3',
+          500: '#00a699',
+          600: '#008a7f',
+          700: '#006e65',
+          800: '#00524b',
+          900: '#003631',
+        },
+        accent: {
+          50: '#fff8e6',
+          100: '#ffecb3',
+          200: '#ffe080',
+          300: '#ffd44d',
+          400: '#ffc81a',
+          500: '#ffb400',
+          600: '#e6a200',
+          700: '#cc9000',
+          800: '#b37e00',
+          900: '#996c00',
+        },
+        gray: {
+          50: '#f8f8f8',
+          100: '#f0f0f0',
+          200: '#dddddd',
+          300: '#cccccc',
+          400: '#999999',
+          500: '#717171',
+          600: '#555555',
+          700: '#333333',
+          800: '#222222',
+          900: '#111111',
+        }
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'scale-in': 'scaleIn 0.2s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+      },
+    },
+  },
+  plugins: [],
+}
