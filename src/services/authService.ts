@@ -31,7 +31,7 @@ export const authService = {
       throw new Error('No authentication token found')
     }
 
-    const response = await fetch(`${API_BASE_URL}/dashboard`, {
+    const response = await fetch(`${API_BASE_URL}/user-details`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
