@@ -1,17 +1,6 @@
 import React from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
-import { 
-  User, 
-  CreditCard, 
-  Star, 
-  Users, 
-  HelpCircle, 
-  Shield, 
-  FileText, 
-  LogOut,
-  Edit,
-  Gift
-} from 'lucide-react'
+import { User, CreditCard, Star, Users, HelpCircle, Shield, FileText, LogOut, FileEdit as Edit, Gift } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Header from '../components/layout/Header'
 import BottomNavigation from '../components/layout/BottomNavigation'
