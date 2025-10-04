@@ -42,17 +42,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
               <MapPin className="w-3 h-3 mr-1" />
               <span className="truncate">{service.location}</span>
             </div>
-            <div className="flex items-center mt-2">
-              <Rating value={service.rating} size="sm" />
-              <span className="ml-1 text-sm text-gray-500">({service.reviewCount})</span>
-            </div>
           </div>
-          
+
           <div className="text-right">
             <div className="font-bold text-primary-500">
               {formatCurrency(service.price)}
             </div>
-            <div className="text-xs text-gray-500">per {service.priceUnit}</div>
           </div>
         </div>
       </Card>
@@ -83,26 +78,16 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
           {service.title}
         </h3>
         
-        <div className="flex items-center mb-2 text-sm text-gray-500">
+        <div className="flex items-center mb-3 text-sm text-gray-500">
           <MapPin className="w-4 h-4 mr-1" />
           <span>{service.location}</span>
         </div>
-        
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center">
-            <Rating value={service.rating} size="sm" />
-            <span className="ml-2 text-sm text-gray-500">
-              {service.rating} ({service.reviewCount} reviews)
-            </span>
-          </div>
-        </div>
-        
+
         <div className="flex items-center justify-between">
           <div>
             <span className="text-xl font-bold text-primary-500">
               {formatCurrency(service.price)}
             </span>
-            <span className="text-sm text-gray-500 ml-1">per {service.priceUnit}</span>
           </div>
         </div>
       </div>
