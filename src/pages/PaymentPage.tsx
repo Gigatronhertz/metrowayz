@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CreditCard, Wallet, Building2, Check } from 'lucide-react'
+import { bookingAPI } from '../services/api'
 import { formatCurrency } from '../utils/format'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
@@ -8,46 +9,56 @@ import Card from '../components/ui/Card'
 
 const PaymentPage: React.FC = () => {
   const navigate = useNavigate()
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('wallet')
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('free')
   const [isProcessing, setIsProcessing] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [bookingData, setBookingData] = useState<any>(null)
 
-  // Mock booking data - in real app this would come from context/state
-  const bookingData = {
-    serviceName: 'Luxury Apartment',
-    duration: '2 nights',
-    totalAmount: 52500
-  }
+  // Load booking data from localStorage
+  useEffect(() => {
+    const pendingBooking = localStorage.getItem('pendingBooking')
+    if (pendingBooking) {
+      setBookingData(JSON.parse(pendingBooking))
+    } else {
+      // No booking data, redirect back
+      navigate('/search')
+    }
+  }, [navigate])
 
   const paymentMethods = [
     {
-      id: 'wallet',
-      name: 'MetroWayz Wallet',
-      description: 'Balance: ₦75,000',
-      icon: Wallet,
-    },
-    {
-      id: 'card',
-      name: 'Visa Card •••• 1234',
-      description: 'Expires 12/26',
-      icon: CreditCard,
-    },
-    {
-      id: 'bank',
-      name: 'Bank Transfer',
-      description: 'Paystack, Flutterwave',
-      icon: Building2,
+      id: 'free',
+      name: 'Free Booking (No Payment Required)',
+      description: 'Book now, pay later',
+      icon: Check,
     },
   ]
 
   const handlePayment = async () => {
+    if (!bookingData) return
+
     setIsProcessing(true)
-    
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 3000))
-    
-    setIsProcessing(false)
-    setShowSuccess(true)
+
+    try {
+      // Create booking via API (payment-free)
+      await bookingAPI.createBooking({
+        serviceId: bookingData.serviceId,
+        checkInDate: bookingData.checkInDate,
+        checkOutDate: bookingData.checkOutDate,
+        guests: bookingData.guests,
+        specialRequests: bookingData.specialRequests || ''
+      })
+
+      // Clear pending booking data
+      localStorage.removeItem('pendingBooking')
+
+      setShowSuccess(true)
+    } catch (error) {
+      console.error('Error creating booking:', error)
+      alert('Failed to create booking. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const handleSuccessClose = () => {
@@ -76,15 +87,28 @@ const PaymentPage: React.FC = () => {
     )
   }
 
+  if (!bookingData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    )
+  }
+
+  const duration = Math.ceil(
+    (new Date(bookingData.checkOutDate).getTime() - new Date(bookingData.checkInDate).getTime()) /
+    (1000 * 60 * 60 * 24)
+  )
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Payment" showBack />
+      <Header title="Confirm Booking" showBack />
 
       <div className="container-padding py-6 space-y-6">
         {/* Payment Summary */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Summary</h2>
-          
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h2>
+
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">Service:</span>
@@ -92,7 +116,11 @@ const PaymentPage: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Duration:</span>
-              <span className="font-semibold">{bookingData.duration}</span>
+              <span className="font-semibold">{duration} {bookingData.servicePriceUnit}(s)</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Guests:</span>
+              <span className="font-semibold">{bookingData.guests}</span>
             </div>
             <div className="border-t pt-3 flex justify-between">
               <span className="text-lg font-bold">Total Amount:</span>
@@ -142,37 +170,29 @@ const PaymentPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Cancellation Policy */}
-        <Card className="p-6 bg-amber-50 border-amber-200">
+        {/* Info Card */}
+        <Card className="p-6 bg-green-50 border-green-200">
           <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-white text-sm font-bold">!</span>
+            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Check className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-amber-800 mb-2">Cancellation Policy</h3>
-              <p className="text-amber-700 text-sm leading-relaxed">
-                Free cancellation up to 24 hours before check-in. After that, you may be charged 50% of the booking amount.
+              <h3 className="font-semibold text-green-800 mb-2">Free Booking</h3>
+              <p className="text-green-700 text-sm leading-relaxed">
+                This is a free booking! No payment required. You can cancel anytime before check-in.
               </p>
             </div>
           </div>
         </Card>
 
-        {/* Payment Button */}
+        {/* Confirm Button */}
         <div className="pb-6">
           <Button
             onClick={handlePayment}
             isLoading={isProcessing}
             className="w-full"
           >
-            {isProcessing ? 'Processing Payment...' : `Pay ${formatCurrency(bookingData.totalAmount)}`}
-          </Button>
-          
-          <Button
-            variant="outline"
-            className="w-full mt-3"
-            onClick={() => {/* Add payment method logic */}}
-          >
-            Add Payment Method
+            {isProcessing ? 'Confirming Booking...' : 'Confirm Booking (Free)'}
           </Button>
         </div>
       </div>

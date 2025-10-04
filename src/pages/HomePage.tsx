@@ -1,16 +1,34 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Star } from 'lucide-react'
-import { categories, services, banners } from '../data/mockData'
+import { categories, banners } from '../data/mockData'
+import { serviceAPI } from '../services/api'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import CategoryCard from '../components/common/CategoryCard'
 import ServiceCard from '../components/common/ServiceCard'
 import SearchBar from '../components/common/SearchBar'
 
+interface Service {
+  _id: string
+  title: string
+  category: string
+  description: string
+  location: string
+  price: number
+  priceUnit: string
+  rating: number
+  reviewCount: number
+  images: Array<{ url: string } | string>
+  amenities: string[]
+  isAvailable: boolean
+}
+
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] = useState('cars')
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(true)
 
   // Auto-scroll banners
   useEffect(() => {
@@ -18,6 +36,28 @@ const HomePage: React.FC = () => {
       setCurrentBannerIndex((prev) => (prev + 1) % banners.length)
     }, 4000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Fetch services from API
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true)
+        const response = await serviceAPI.getPublicServices({
+          limit: 20,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        })
+        setServices(response.data || [])
+      } catch (error) {
+        console.error('Error fetching services:', error)
+        setServices([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchServices()
   }, [])
 
   const filteredServices = services.filter(service => {
@@ -177,43 +217,55 @@ const HomePage: React.FC = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">More for you</h2>
-            <button 
+            <button
               onClick={() => navigate('/search')}
               className="text-primary-500 font-semibold"
             >
               See all
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {filteredServices.slice(0, 4).map((service) => (
-              <div
-                key={service.id}
-                onClick={() => navigate(`/service/${service.id}`)}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-              >
-                <img
-                  src={service.images[0]}
-                  alt={service.title}
-                  className="w-full h-24 object-cover"
-                />
-                <div className="p-3">
-                  <h3 className="font-semibold text-sm text-gray-900 truncate">
-                    {service.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 truncate">{service.location}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center">
-                      <Star className="w-3 h-3 text-accent-500 fill-current" />
-                      <span className="text-xs text-gray-600 ml-1">{service.rating}</span>
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Loading services...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {filteredServices.slice(0, 4).map((service) => {
+                const imageUrl = typeof service.images[0] === 'string'
+                  ? service.images[0]
+                  : service.images[0]?.url || '/placeholder.jpg';
+
+                return (
+                  <div
+                    key={service._id}
+                    onClick={() => navigate(`/service/${service._id}`)}
+                    className="bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={service.title}
+                      className="w-full h-24 object-cover"
+                    />
+                    <div className="p-3">
+                      <h3 className="font-semibold text-sm text-gray-900 truncate">
+                        {service.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 truncate">{service.location}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center">
+                          <Star className="w-3 h-3 text-accent-500 fill-current" />
+                          <span className="text-xs text-gray-600 ml-1">{service.rating || 0}</span>
+                        </div>
+                        <span className="text-xs font-semibold text-primary-500">
+                          ₦{service.price.toLocaleString()}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-xs font-semibold text-primary-500">
-                      ₦{service.price.toLocaleString()}
-                    </span>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       </div>
 

@@ -1,12 +1,28 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Grid, List } from 'lucide-react'
-import { services, categories } from '../data/mockData'
+import { categories } from '../data/mockData'
+import { serviceAPI } from '../services/api'
 import { SearchFilters } from '../types'
 import Header from '../components/layout/Header'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import SearchBar from '../components/common/SearchBar'
 import ServiceCard from '../components/common/ServiceCard'
+
+interface Service {
+  _id: string
+  title: string
+  category: string
+  description: string
+  location: string
+  price: number
+  priceUnit: string
+  rating: number
+  reviewCount: number
+  images: Array<{ url: string } | string>
+  amenities: string[]
+  isAvailable: boolean
+}
 
 const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -15,70 +31,45 @@ const SearchPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState<SearchFilters>({})
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch services from API
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true)
+        const response = await serviceAPI.getPublicServices({
+          search: searchQuery || undefined,
+          category: selectedCategory !== 'all' ? selectedCategory : undefined,
+          minPrice: filters.priceRange?.[0],
+          maxPrice: filters.priceRange?.[1],
+          sortBy: filters.sortBy || 'createdAt',
+          sortOrder: filters.sortBy === 'price' ? 'asc' : 'desc',
+          limit: 50
+        })
+        setServices(response.data || [])
+      } catch (error) {
+        console.error('Error fetching services:', error)
+        setServices([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchServices()
+  }, [searchQuery, selectedCategory, filters])
 
   const filteredServices = useMemo(() => {
     let filtered = services
 
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(service => {
-        switch (selectedCategory) {
-          case 'cars':
-            return service.category.toLowerCase().includes('car')
-          case 'rentals':
-            return service.category.toLowerCase().includes('short-let')
-          case 'apartments':
-            return service.category.toLowerCase().includes('serviced')
-          case 'food':
-            return service.category.toLowerCase().includes('food')
-          case 'chefs':
-            return service.category.toLowerCase().includes('chef')
-          case 'entertainment':
-            return service.category.toLowerCase().includes('entertainment')
-          default:
-            return true
-        }
-      })
-    }
-
-    // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(service =>
-        service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    // Apply additional filters
-    if (filters.priceRange) {
-      filtered = filtered.filter(service =>
-        service.price >= filters.priceRange![0] && service.price <= filters.priceRange![1]
-      )
-    }
-
+    // Additional client-side filtering for rating
     if (filters.rating) {
-      filtered = filtered.filter(service => service.rating >= filters.rating!)
-    }
-
-    // Sort results
-    if (filters.sortBy) {
-      filtered = [...filtered].sort((a, b) => {
-        switch (filters.sortBy) {
-          case 'price':
-            return a.price - b.price
-          case 'rating':
-            return b.rating - a.rating
-          case 'newest':
-            return 0 // Would sort by creation date in real app
-          default:
-            return 0
-        }
-      })
+      filtered = filtered.filter(service => (service.rating || 0) >= filters.rating!)
     }
 
     return filtered
-  }, [selectedCategory, searchQuery, filters])
+  }, [services, filters.rating])
 
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId)
@@ -155,7 +146,11 @@ const SearchPage: React.FC = () => {
         </div>
 
         {/* Results */}
-        {filteredServices.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading services...</p>
+          </div>
+        ) : filteredServices.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No services found</h3>
@@ -165,8 +160,12 @@ const SearchPage: React.FC = () => {
           <div className={viewMode === 'grid' ? 'grid grid-cols-2 gap-4' : 'space-y-4'}>
             {filteredServices.map((service) => (
               <ServiceCard
-                key={service.id}
-                service={service}
+                key={service._id}
+                service={{
+                  ...service,
+                  id: service._id,
+                  images: service.images.map(img => typeof img === 'string' ? img : img.url)
+                } as any}
                 variant={viewMode === 'grid' ? 'compact' : 'default'}
               />
             ))}

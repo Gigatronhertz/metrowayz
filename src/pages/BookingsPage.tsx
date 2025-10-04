@@ -1,14 +1,46 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Calendar } from 'lucide-react'
-import { bookings } from '../data/mockData'
+import { bookingAPI } from '../services/api'
 import { BookingStatus } from '../types'
 import { formatCurrency, formatDateRange } from '../utils/format'
 import Header from '../components/layout/Header'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
 
+interface Booking {
+  _id: string
+  serviceName: string
+  serviceLocation: string
+  serviceImages: string[]
+  checkInDate: Date
+  checkOutDate: Date
+  guests: number
+  totalAmount: number
+  status: string
+}
+
 const BookingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming')
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch user bookings
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoading(true)
+        const response = await bookingAPI.getUserBookings({ limit: 50 })
+        setBookings(response.data || [])
+      } catch (error) {
+        console.error('Error fetching bookings:', error)
+        setBookings([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBookings()
+  }, [])
 
   const getStatusText = (status: BookingStatus) => {
     switch (status) {
@@ -96,45 +128,61 @@ const BookingsPage: React.FC = () => {
       </div>
 
       <div className="container-padding py-6">
-        {filteredBookings.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading bookings...</p>
+          </div>
+        ) : filteredBookings.length === 0 ? (
           <EmptyState type={activeTab} />
         ) : (
           <div className="space-y-4">
             {filteredBookings.map((booking) => (
-              <Card key={booking.id} className="p-4">
+              <Card key={booking._id} className="p-4">
                 <div className="flex space-x-4">
                   <img
-                    src={booking.serviceImages[0]}
+                    src={booking.serviceImages[0] || '/placeholder.jpg'}
                     alt={booking.serviceName}
                     className="w-20 h-20 rounded-lg object-cover"
                   />
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-gray-900 truncate">
                         {booking.serviceName}
                       </h3>
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                        {getStatusText(booking.status)}
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status as any)}`}>
+                        {getStatusText(booking.status as any)}
                       </div>
                     </div>
-                    
+
                     <p className="text-gray-600 text-sm mb-1">{booking.serviceLocation}</p>
                     <p className="text-gray-600 text-sm mb-2">
-                      {formatDateRange(booking.checkIn, booking.checkOut)}
+                      {formatDateRange(new Date(booking.checkInDate), new Date(booking.checkOutDate))}
                     </p>
                     <p className="text-gray-600 text-sm mb-3">
                       {booking.guests} guest{booking.guests > 1 ? 's' : ''}
                     </p>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-lg text-primary-500">
                         {formatCurrency(booking.totalAmount)}
                       </span>
-                      
+
                       <div className="flex space-x-2">
-                        {booking.status === BookingStatus.PENDING && (
-                          <button className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors">
+                        {booking.status === 'pending' && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                await bookingAPI.cancelBooking(booking._id, 'Cancelled by user')
+                                // Refresh bookings
+                                const response = await bookingAPI.getUserBookings({ limit: 50 })
+                                setBookings(response.data || [])
+                              } catch (error) {
+                                console.error('Error cancelling booking:', error)
+                              }
+                            }}
+                            className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+                          >
                             Cancel
                           </button>
                         )}

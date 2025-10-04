@@ -1,23 +1,59 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Calendar, Users, MessageSquare } from 'lucide-react'
-import { services } from '../data/mockData'
+import { serviceAPI } from '../services/api'
 import { formatCurrency } from '../utils/format'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
 
+interface Service {
+  _id: string
+  title: string
+  location: string
+  price: number
+  priceUnit: string
+  images: Array<{ url: string } | string>
+}
+
 const BookingPage: React.FC = () => {
   const { serviceId } = useParams<{ serviceId: string }>()
   const navigate = useNavigate()
-  
+
   const [checkInDate, setCheckInDate] = useState('')
   const [checkOutDate, setCheckOutDate] = useState('')
   const [guests, setGuests] = useState(1)
   const [specialRequests, setSpecialRequests] = useState('')
+  const [service, setService] = useState<Service | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const service = services.find(s => s.id === serviceId)
+  // Fetch service details
+  useEffect(() => {
+    const fetchService = async () => {
+      if (!serviceId) return
+
+      try {
+        setLoading(true)
+        const response = await serviceAPI.getServiceById(serviceId)
+        setService(response.data)
+      } catch (error) {
+        console.error('Error fetching service:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchService()
+  }, [serviceId])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    )
+  }
 
   if (!service) {
     return (
@@ -34,11 +70,11 @@ const BookingPage: React.FC = () => {
 
   const calculateTotal = () => {
     if (!checkInDate || !checkOutDate) return 0
-    
+
     const startDate = new Date(checkInDate)
     const endDate = new Date(checkOutDate)
     const nights = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
-    
+
     const subtotal = service.price * Math.max(nights, 1)
     const serviceFee = subtotal * 0.05 // 5% service fee
     return subtotal + serviceFee
@@ -48,10 +84,27 @@ const BookingPage: React.FC = () => {
 
   const handleContinue = () => {
     if (canProceed) {
-      // In a real app, you'd save booking details to state/context
+      // Store booking data in localStorage to pass to payment page
+      const bookingData = {
+        serviceId: service._id,
+        serviceName: service.title,
+        serviceLocation: service.location,
+        servicePrice: service.price,
+        servicePriceUnit: service.priceUnit,
+        checkInDate,
+        checkOutDate,
+        guests,
+        specialRequests,
+        totalAmount: calculateTotal()
+      }
+      localStorage.setItem('pendingBooking', JSON.stringify(bookingData))
       navigate('/payment')
     }
   }
+
+  const imageUrl = typeof service.images[0] === 'string'
+    ? service.images[0]
+    : service.images[0]?.url || '/placeholder.jpg'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -62,7 +115,7 @@ const BookingPage: React.FC = () => {
         <Card className="p-4">
           <div className="flex space-x-4">
             <img
-              src={service.images[0]}
+              src={imageUrl}
               alt={service.title}
               className="w-20 h-20 rounded-lg object-cover"
             />
