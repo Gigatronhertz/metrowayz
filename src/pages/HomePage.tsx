@@ -176,14 +176,14 @@ const HomePage: React.FC = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Explore nearby</h2>
-            <button 
+            <button
               onClick={() => navigate('/search')}
               className="text-primary-500 font-semibold"
             >
               See all
             </button>
           </div>
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             {nearbyServices.map((service) => (
               <ServiceCard
                 key={service._id}
@@ -211,7 +211,7 @@ const HomePage: React.FC = () => {
               See all
             </button>
           </div>
-          <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             {featuredServices.map((service) => (
               <ServiceCard
                 key={service._id}
