@@ -243,7 +243,7 @@ const HomePage: React.FC = () => {
               <p className="text-gray-500">Loading services...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {filteredServices.slice(0, 4).map((service) => {
                 const imageUrl = typeof service.images[0] === 'string'
                   ? service.images[0]
@@ -253,27 +253,21 @@ const HomePage: React.FC = () => {
                   <div
                     key={service._id}
                     onClick={() => navigate(`/service/${service._id}`)}
-                    className="bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                    className="bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                   >
                     <img
                       src={imageUrl}
                       alt={service.title}
-                      className="w-full h-24 object-cover"
+                      className="w-full h-32 object-cover"
                     />
-                    <div className="p-3">
-                      <h3 className="font-semibold text-sm text-gray-900 truncate">
+                    <div className="p-2.5">
+                      <h3 className="font-semibold text-sm text-gray-900 truncate mb-1">
                         {service.title}
                       </h3>
-                      <p className="text-xs text-gray-500 truncate">{service.location}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center">
-                          <Star className="w-3 h-3 text-accent-500 fill-current" />
-                          <span className="text-xs text-gray-600 ml-1">{service.rating || 0}</span>
-                        </div>
-                        <span className="text-xs font-semibold text-primary-500">
-                          ₦{service.price.toLocaleString()}
-                        </span>
-                      </div>
+                      <p className="text-xs text-gray-500 truncate mb-2">{service.location}</p>
+                      <span className="text-sm font-bold text-primary-500">
+                        ₦{service.price.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 );

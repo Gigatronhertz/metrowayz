@@ -154,33 +154,6 @@ const BookingPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Guest Selection */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Users className="w-5 h-5 mr-2" />
-            Guests
-          </h3>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-gray-700">Number of guests</span>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setGuests(Math.max(1, guests - 1))}
-                className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-              >
-                -
-              </button>
-              <span className="text-lg font-semibold w-8 text-center">{guests}</span>
-              <button
-                onClick={() => setGuests(guests + 1)}
-                className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        </Card>
-
         {/* Special Requests */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">

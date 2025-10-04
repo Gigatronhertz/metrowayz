@@ -183,24 +183,6 @@ const ServiceDetailsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex space-x-3">
-          <Button
-            variant="outline"
-            className="flex-1 flex items-center justify-center"
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Check Availability
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 flex items-center justify-center"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Contact Host
-          </Button>
-        </div>
-
         {/* Description */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
