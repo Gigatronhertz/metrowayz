@@ -4,7 +4,6 @@ import { MapPin, Heart } from 'lucide-react'
 import { Service } from '../../types'
 import { formatCurrency } from '../../utils/format'
 import Card from '../ui/Card'
-import Rating from '../ui/Rating'
 
 interface ServiceCardProps {
   service: Service
