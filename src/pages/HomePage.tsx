@@ -184,19 +184,35 @@ const HomePage: React.FC = () => {
             </button>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {nearbyServices.map((service) => (
-              <ServiceCard
-                key={service._id}
-                service={{
-                  ...service,
-                  id: service._id,
-                  images: service.images.map(img => typeof img === 'string' ? img : img.url),
-                  latitude: service.latitude || 0,
-                  longitude: service.longitude || 0
-                } as any}
-                variant="compact"
-              />
-            ))}
+            {nearbyServices.map((service) => {
+              const imageUrl = typeof service.images[0] === 'string'
+                ? service.images[0]
+                : service.images[0]?.url || '/placeholder.jpg';
+
+              return (
+                <div
+                  key={service._id}
+                  onClick={() => navigate(`/service/${service._id}`)}
+                  className="relative h-40 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <img
+                    src={imageUrl}
+                    alt={service.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                    <h3 className="font-semibold text-sm truncate mb-1">
+                      {service.title}
+                    </h3>
+                    <p className="text-xs opacity-90 truncate mb-2">{service.location}</p>
+                    <span className="text-sm font-bold">
+                      ₦{service.price.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -244,7 +260,7 @@ const HomePage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {filteredServices.slice(0, 6).map((service) => {
+              {filteredServices.slice(2).map((service) => {
                 const imageUrl = typeof service.images[0] === 'string'
                   ? service.images[0]
                   : service.images[0]?.url || '/placeholder.jpg';
