@@ -220,16 +220,47 @@ app.get(
             { expiresIn: "7d" }
         );
 
+        // Support multiple frontend URLs
+        const allowedOrigins = [
+            'https://metrowayz.vercel.app',
+            'https://admindash-olive.vercel.app',
+            'http://localhost:5173',
+            'http://localhost:3000'
+        ];
+
         res.send(`
         <html>
           <head></head>
           <body>
             <script>
-              window.opener.postMessage(
-                { token: "${token}" },
-                "https://admindash-olive.vercel.app"
-              );
-              window.close();
+              try {
+                if (window.opener) {
+                  console.log('Sending token to opener');
+                  // Send to all allowed origins
+                  const allowedOrigins = ${JSON.stringify(allowedOrigins)};
+                  allowedOrigins.forEach(origin => {
+                    try {
+                      window.opener.postMessage(
+                        { token: "${token}" },
+                        origin
+                      );
+                      console.log('Sent message to:', origin);
+                    } catch (e) {
+                      console.error('Failed to send to', origin, e);
+                    }
+                  });
+
+                  setTimeout(() => {
+                    window.close();
+                  }, 1000);
+                } else {
+                  console.error('No opener window found');
+                  document.body.innerHTML = '<p>Authentication successful! You can close this window.</p>';
+                }
+              } catch (error) {
+                console.error('Error in callback:', error);
+                document.body.innerHTML = '<p>Authentication successful! Please close this window and refresh the original page.</p>';
+              }
             </script>
           </body>
         </html>

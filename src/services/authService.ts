@@ -123,25 +123,33 @@ export const authService = {
 
         // Listen for token from popup
         const handleMessage = (event: MessageEvent) => {
-          // Verify origin for security
-          if (event.origin !== new URL(API_BASE_URL).origin) {
+          console.log('Received message from:', event.origin)
+          console.log('Message data:', event.data)
+
+          // Accept messages from the popup (which comes from the backend domain)
+          // The popup is opened from API_BASE_URL, so messages will come from there
+          const backendOrigin = new URL(API_BASE_URL).origin
+          if (event.origin !== backendOrigin && event.origin !== window.location.origin) {
+            console.warn('Ignoring message from unexpected origin:', event.origin)
             return
           }
 
           if (event.data && event.data.token) {
             const token = event.data.token
+            console.log('Received token, closing popup')
             try {
               popup.close()
             } catch (error) {
-              console.warn('Could not close popup due to CORS policy:', error)
+              console.warn('Could not close popup:', error)
             }
             window.removeEventListener('message', handleMessage)
             resolve(token)
           } else if (event.data && event.data.error) {
+            console.log('Received error from popup:', event.data.error)
             try {
               popup.close()
             } catch (error) {
-              console.warn('Could not close popup due to CORS policy:', error)
+              console.warn('Could not close popup:', error)
             }
             window.removeEventListener('message', handleMessage)
             reject(new Error(event.data.error))
