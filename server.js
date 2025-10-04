@@ -307,8 +307,18 @@ app.get('/user-details', authenticateJWT, async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        // Return user data in format expected by frontend
         return res.status(200).json({
             success: true,
+            user: {
+                _id: user._id,
+                email: user.email,
+                name: user.name,
+                profilePicture: user.profilePic || '',
+                role: user.isAdmin ? 'admin' : (user.userType === 'provider' || user.userType === 'both' ? 'seller' : 'user'),
+                onboarded: !!(user.businessName || user.businessDescription)
+            },
+            // Also include business data for backward compatibility
             data: {
                 businessData: {
                     businessName: user.businessName || '',
