@@ -10,9 +10,8 @@ const getAuthToken = () => {
 const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   const token = getAuthToken();
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers || {}),
   };
 
   if (token) {
@@ -21,7 +20,10 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 
   const response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
-    headers,
+    headers: {
+      ...headers,
+      ...(options.headers || {}),
+    },
   });
 
   if (!response.ok) {

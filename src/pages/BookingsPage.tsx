@@ -70,15 +70,15 @@ const BookingsPage: React.FC = () => {
 
   const filteredBookings = bookings.filter(booking => {
     const now = new Date()
-    const checkIn = new Date(booking.checkIn)
-    
+    const checkIn = new Date(booking.checkInDate)
+
     switch (activeTab) {
       case 'upcoming':
-        return booking.status === BookingStatus.CONFIRMED || booking.status === BookingStatus.PENDING
+        return booking.status === 'confirmed' || booking.status === 'pending'
       case 'past':
-        return booking.status === BookingStatus.COMPLETED || (checkIn < now && booking.status === BookingStatus.CONFIRMED)
+        return booking.status === 'completed' || (checkIn < now && booking.status === 'confirmed')
       case 'cancelled':
-        return booking.status === BookingStatus.CANCELLED
+        return booking.status === 'cancelled'
       default:
         return true
     }

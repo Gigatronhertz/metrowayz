@@ -20,6 +20,8 @@ interface Service {
   reviewCount: number
   images: Array<{ url: string } | string>
   amenities: string[]
+  latitude?: number
+  longitude?: number
   isAvailable: boolean
 }
 
@@ -184,8 +186,14 @@ const HomePage: React.FC = () => {
           <div className="space-y-3">
             {nearbyServices.map((service) => (
               <ServiceCard
-                key={service.id}
-                service={service}
+                key={service._id}
+                service={{
+                  ...service,
+                  id: service._id,
+                  images: service.images.map(img => typeof img === 'string' ? img : img.url),
+                  latitude: service.latitude || 0,
+                  longitude: service.longitude || 0
+                } as any}
                 variant="compact"
               />
             ))}
@@ -196,7 +204,7 @@ const HomePage: React.FC = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Featured Services</h2>
-            <button 
+            <button
               onClick={() => navigate('/search')}
               className="text-primary-500 font-semibold"
             >
@@ -206,8 +214,14 @@ const HomePage: React.FC = () => {
           <div className="space-y-4">
             {featuredServices.map((service) => (
               <ServiceCard
-                key={service.id}
-                service={service}
+                key={service._id}
+                service={{
+                  ...service,
+                  id: service._id,
+                  images: service.images.map(img => typeof img === 'string' ? img : img.url),
+                  latitude: service.latitude || 0,
+                  longitude: service.longitude || 0
+                } as any}
               />
             ))}
           </div>
