@@ -28,7 +28,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
             <img
               src={service.images[0]}
               alt={service.title}
-              className="w-20 h-20 rounded-lg object-cover"
+              className="w-28 h-28 rounded-lg object-cover"
             />
             <button className="absolute top-1 right-1 p-1 bg-white/80 rounded-full">
               <Heart className="w-3 h-3 text-gray-600" />

@@ -82,7 +82,7 @@ const HomePage: React.FC = () => {
   })
 
   const nearbyServices = services.slice(0, 4)
-  const featuredServices = services.slice(0, 3)
+  const featuredServices = services.slice(0, 2)
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -244,7 +244,7 @@ const HomePage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {filteredServices.slice(0, 4).map((service) => {
+              {filteredServices.slice(0, 6).map((service) => {
                 const imageUrl = typeof service.images[0] === 'string'
                   ? service.images[0]
                   : service.images[0]?.url || '/placeholder.jpg';
