@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Star } from 'lucide-react'
+import { Bell } from 'lucide-react'
 import { categories, banners } from '../data/mockData'
 import { serviceAPI } from '../services/api'
 import BottomNavigation from '../components/layout/BottomNavigation'

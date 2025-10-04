@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Calendar, Users, MessageSquare } from 'lucide-react'
+import { Calendar, MessageSquare } from 'lucide-react'
 import { serviceAPI } from '../services/api'
 import { formatCurrency } from '../utils/format'
 import Header from '../components/layout/Header'
@@ -23,7 +23,6 @@ const BookingPage: React.FC = () => {
 
   const [checkInDate, setCheckInDate] = useState('')
   const [checkOutDate, setCheckOutDate] = useState('')
-  const [guests, setGuests] = useState(1)
   const [specialRequests, setSpecialRequests] = useState('')
   const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
@@ -80,7 +79,7 @@ const BookingPage: React.FC = () => {
     return subtotal + serviceFee
   }
 
-  const canProceed = checkInDate && checkOutDate && guests > 0
+  const canProceed = checkInDate && checkOutDate
 
   const handleContinue = () => {
     if (canProceed) {
@@ -93,7 +92,6 @@ const BookingPage: React.FC = () => {
         servicePriceUnit: service.priceUnit,
         checkInDate,
         checkOutDate,
-        guests,
         specialRequests,
         totalAmount: calculateTotal()
       }

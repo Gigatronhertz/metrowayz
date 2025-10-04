@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, Heart, Share2, Calendar, Users } from 'lucide-react'
+import { MapPin, Heart, Share2 } from 'lucide-react'
 import { serviceAPI, favoriteAPI, reviewAPI } from '../services/api'
 import { formatCurrency } from '../utils/format'
 import Header from '../components/layout/Header'
