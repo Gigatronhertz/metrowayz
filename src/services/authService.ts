@@ -61,10 +61,27 @@ export const authService = {
     const responseData = await response.json()
     console.log('✅ Response data:', responseData)
 
+    // Handle both old and new response formats
+    let user = responseData.user
+
+    // Fallback: if no user field, construct it from businessData
+    if (!user && responseData.data?.businessData) {
+      const businessData = responseData.data.businessData
+      user = {
+        _id: responseData._id || 'temp-id',
+        email: businessData.email || '',
+        name: businessData.businessName || 'User',
+        profilePicture: '',
+        role: businessData.businessName ? 'seller' : 'user',
+        onboarded: !!businessData.businessName
+      }
+      console.log('⚠️ Constructed user from businessData:', user)
+    }
+
     // Transform response to match expected AuthResponse format
     return {
       success: true,
-      user: responseData.user,
+      user: user,
       message: 'User profile fetched successfully'
     }
   },
