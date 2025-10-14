@@ -5,7 +5,6 @@ import { serviceAPI, bookingAPI } from '../services/api'
 import { formatCurrency } from '../utils/format'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
-import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
 import BookingCalendar from '../components/Calendar/BookingCalendar'
 

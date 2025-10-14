@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import './BookingCalendar.css'
 
@@ -13,12 +13,10 @@ interface BookingCalendarProps {
 }
 
 const BookingCalendar: React.FC<BookingCalendarProps> = ({
-  serviceId,
   bookedDates,
   onDateSelect,
   selectedCheckIn,
   selectedCheckOut,
-  minNights = 1,
   price
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date())
