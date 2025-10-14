@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Calendar, MessageSquare } from 'lucide-react'
-import { serviceAPI } from '../services/api'
+import { serviceAPI, bookingAPI } from '../services/api'
 import { formatCurrency } from '../utils/format'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
+import BookingCalendar from '../components/Calendar/BookingCalendar'
 
 interface Service {
   _id: string
@@ -26,25 +27,56 @@ const BookingPage: React.FC = () => {
   const [specialRequests, setSpecialRequests] = useState('')
   const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
+  const [bookedDates, setBookedDates] = useState<string[]>([])
+  const [checkingAvailability, setCheckingAvailability] = useState(false)
 
-  // Fetch service details
+  // Fetch service details and booked dates
   useEffect(() => {
-    const fetchService = async () => {
+    const fetchData = async () => {
       if (!serviceId) return
 
       try {
         setLoading(true)
-        const response = await serviceAPI.getServiceById(serviceId)
-        setService(response.data)
+        const [serviceResponse, bookedDatesResponse] = await Promise.all([
+          serviceAPI.getServiceById(serviceId),
+          bookingAPI.getBookedDates(serviceId)
+        ])
+
+        setService(serviceResponse.data)
+        setBookedDates(bookedDatesResponse.data || [])
       } catch (error) {
-        console.error('Error fetching service:', error)
+        console.error('Error fetching data:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchService()
+    fetchData()
   }, [serviceId])
+
+  // Handle date selection from calendar
+  const handleDateSelect = async (checkIn: string, checkOut: string) => {
+    setCheckInDate(checkIn)
+    setCheckOutDate(checkOut)
+
+    // Check availability
+    if (serviceId) {
+      try {
+        setCheckingAvailability(true)
+        const response = await bookingAPI.checkAvailability(serviceId, checkIn, checkOut)
+
+        if (!response.data.available) {
+          alert('These dates are no longer available. Please select different dates.')
+          setCheckInDate('')
+          setCheckOutDate('')
+        }
+      } catch (error) {
+        console.error('Error checking availability:', error)
+      } finally {
+        setCheckingAvailability(false)
+      }
+    }
+  }
 
   if (loading) {
     return (
@@ -127,29 +159,27 @@ const BookingPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Date Selection */}
+        {/* Date Selection with Calendar */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <Calendar className="w-5 h-5 mr-2" />
             Select Dates
           </h3>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Check-in"
-              type="date"
-              value={checkInDate}
-              onChange={(e) => setCheckInDate(e.target.value)}
-              min={new Date().toISOString().split('T')[0]}
-            />
-            <Input
-              label="Check-out"
-              type="date"
-              value={checkOutDate}
-              onChange={(e) => setCheckOutDate(e.target.value)}
-              min={checkInDate || new Date().toISOString().split('T')[0]}
-            />
-          </div>
+
+          {checkingAvailability && (
+            <div className="text-center text-sm text-gray-600 mb-4">
+              Checking availability...
+            </div>
+          )}
+
+          <BookingCalendar
+            serviceId={serviceId || ''}
+            bookedDates={bookedDates}
+            onDateSelect={handleDateSelect}
+            selectedCheckIn={checkInDate}
+            selectedCheckOut={checkOutDate}
+            price={service?.price}
+          />
         </Card>
 
         {/* Special Requests */}

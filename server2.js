@@ -1098,171 +1098,6 @@ const createBookingNotification = async (userId, type, title, message, bookingId
     }
 };
 
-// ============= CALENDAR API ENDPOINTS =============
-
-// Get all booked dates for a service (for customer calendar view)
-app.get("/api/services/:serviceId/booked-dates", async (req, res) => {
-    try {
-        const { serviceId } = req.params;
-
-        // Validate service exists
-        const service = await Service.findById(serviceId);
-        if (!service) {
-            return res.status(404).json({
-                success: false,
-                message: "Service not found"
-            });
-        }
-
-        // Get booked dates using the Booking model method
-        const bookedDates = await Booking.getBookedDates(serviceId);
-
-        res.status(200).json({
-            success: true,
-            data: bookedDates
-        });
-    } catch (error) {
-        console.error("Error fetching booked dates:", error);
-        res.status(500).json({
-            success: false,
-            message: "Error fetching booked dates",
-            error: error.message
-        });
-    }
-});
-
-// Check availability for a date range
-app.post("/api/services/:serviceId/check-availability", async (req, res) => {
-    try {
-        const { serviceId } = req.params;
-        const { checkInDate, checkOutDate } = req.body;
-
-        if (!checkInDate || !checkOutDate) {
-            return res.status(400).json({
-                success: false,
-                message: "Check-in and check-out dates are required"
-            });
-        }
-
-        // Validate service exists
-        const service = await Service.findById(serviceId);
-        if (!service) {
-            return res.status(404).json({
-                success: false,
-                message: "Service not found"
-            });
-        }
-
-        // Check availability using the Booking model method
-        const availabilityResult = await Booking.checkAvailability(
-            serviceId,
-            checkInDate,
-            checkOutDate
-        );
-
-        res.status(200).json({
-            success: true,
-            data: availabilityResult
-        });
-    } catch (error) {
-        console.error("Error checking availability:", error);
-        res.status(500).json({
-            success: false,
-            message: "Error checking availability",
-            error: error.message
-        });
-    }
-});
-
-// Get calendar data for a specific month (optional - for advanced calendar views)
-app.get("/api/services/:serviceId/calendar/:year/:month", async (req, res) => {
-    try {
-        const { serviceId, year, month } = req.params;
-
-        // Validate service exists
-        const service = await Service.findById(serviceId);
-        if (!service) {
-            return res.status(404).json({
-                success: false,
-                message: "Service not found"
-            });
-        }
-
-        // Get calendar data using the Booking model method
-        const calendarData = await Booking.getCalendarData(
-            serviceId,
-            parseInt(year),
-            parseInt(month)
-        );
-
-        res.status(200).json({
-            success: true,
-            data: calendarData
-        });
-    } catch (error) {
-        console.error("Error fetching calendar data:", error);
-        res.status(500).json({
-            success: false,
-            message: "Error fetching calendar data",
-            error: error.message
-        });
-    }
-});
-
-// Get calendar view of bookings for provider
-app.get("/api/provider/calendar", authenticateJWT, async (req, res) => {
-    try {
-        const userId = req.user.userId;
-        const user = await User.findOne({ googleId: userId });
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        const { startDate, endDate } = req.query;
-
-        // Default to current month if no dates provided
-        const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const end = endDate ? new Date(endDate) : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-
-        const bookings = await Booking.find({
-            providerId: user._id,
-            status: { $in: ['pending', 'confirmed', 'in_progress'] },
-            $or: [
-                {
-                    checkInDate: { $gte: start, $lte: end }
-                },
-                {
-                    checkOutDate: { $gte: start, $lte: end }
-                },
-                {
-                    checkInDate: { $lte: start },
-                    checkOutDate: { $gte: end }
-                }
-            ]
-        })
-        .populate('userId', 'name email phoneNumber')
-        .populate('serviceId', 'title category')
-        .sort({ checkInDate: 1 })
-        .lean();
-
-        res.status(200).json({
-            success: true,
-            data: bookings
-        });
-    } catch (error) {
-        console.error("Error fetching calendar bookings:", error);
-        res.status(500).json({
-            success: false,
-            message: "Error fetching calendar bookings",
-            error: error.message
-        });
-    }
-});
-
 // Create a new booking
 app.post("/api/bookings", authenticateJWT, async (req, res) => {
     try {
@@ -1634,6 +1469,156 @@ app.delete("/api/bookings/:id", authenticateJWT, async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error cancelling booking",
+            error: error.message
+        });
+    }
+});
+
+// ============= CALENDAR & AVAILABILITY ROUTES =============
+
+// Check availability for a service
+app.get("/api/services/:serviceId/availability", async (req, res) => {
+    try {
+        const { serviceId } = req.params;
+        const { checkInDate, checkOutDate } = req.query;
+
+        if (!checkInDate || !checkOutDate) {
+            return res.status(400).json({
+                success: false,
+                message: "Check-in and check-out dates are required"
+            });
+        }
+
+        const service = await Service.findById(serviceId);
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                message: "Service not found"
+            });
+        }
+
+        const isAvailable = await Booking.checkAvailability(
+            serviceId,
+            new Date(checkInDate),
+            new Date(checkOutDate)
+        );
+
+        res.status(200).json({
+            success: true,
+            available: isAvailable,
+            message: isAvailable ? "Service is available for selected dates" : "Service is not available for selected dates"
+        });
+    } catch (error) {
+        console.error("Error checking availability:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error checking availability",
+            error: error.message
+        });
+    }
+});
+
+// Get booked dates for a service (for calendar display)
+app.get("/api/services/:serviceId/booked-dates", async (req, res) => {
+    try {
+        const { serviceId } = req.params;
+        const { startDate, endDate } = req.query;
+
+        // Default to current month if no dates provided
+        const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const end = endDate ? new Date(endDate) : new Date(new Date().getFullYear(), new Date().getMonth() + 3, 0);
+
+        const service = await Service.findById(serviceId);
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                message: "Service not found"
+            });
+        }
+
+        const bookedDates = await Booking.getBookedDates(serviceId, start, end);
+
+        // Format dates for easy client-side consumption
+        const formattedDates = bookedDates.flatMap(booking => {
+            const dates = [];
+            const current = new Date(booking.checkInDate);
+            const endDate = new Date(booking.checkOutDate);
+
+            while (current <= endDate) {
+                dates.push(new Date(current).toISOString().split('T')[0]);
+                current.setDate(current.getDate() + 1);
+            }
+
+            return dates;
+        });
+
+        // Remove duplicates
+        const uniqueDates = [...new Set(formattedDates)];
+
+        res.status(200).json({
+            success: true,
+            data: uniqueDates,
+            bookings: bookedDates
+        });
+    } catch (error) {
+        console.error("Error fetching booked dates:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching booked dates",
+            error: error.message
+        });
+    }
+});
+
+// Get calendar view of bookings for provider
+app.get("/api/provider/calendar", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const { startDate, endDate } = req.query;
+
+        // Default to current month if no dates provided
+        const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const end = endDate ? new Date(endDate) : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+        const bookings = await Booking.find({
+            providerId: user._id,
+            status: { $in: ['pending', 'confirmed', 'in_progress'] },
+            $or: [
+                {
+                    checkInDate: { $gte: start, $lte: end }
+                },
+                {
+                    checkOutDate: { $gte: start, $lte: end }
+                },
+                {
+                    checkInDate: { $lte: start },
+                    checkOutDate: { $gte: end }
+                }
+            ]
+        })
+        .populate('userId', 'name email phoneNumber')
+        .populate('serviceId', 'title category')
+        .sort({ checkInDate: 1 })
+        .lean();
+
+        res.status(200).json({
+            success: true,
+            data: bookings
+        });
+    } catch (error) {
+        console.error("Error fetching calendar bookings:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching calendar bookings",
             error: error.message
         });
     }

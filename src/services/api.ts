@@ -74,6 +74,24 @@ export const serviceAPI = {
 // ============= BOOKING APIs =============
 
 export const bookingAPI = {
+  // Get booked dates for a service (for calendar)
+  getBookedDates: async (serviceId: string) => {
+    return fetchWithAuth(`/api/services/${serviceId}/booked-dates`);
+  },
+
+  // Check availability for a date range
+  checkAvailability: async (serviceId: string, checkInDate: string, checkOutDate: string) => {
+    return fetchWithAuth(`/api/services/${serviceId}/check-availability`, {
+      method: 'POST',
+      body: JSON.stringify({ checkInDate, checkOutDate }),
+    });
+  },
+
+  // Get calendar data for a specific month
+  getCalendarData: async (serviceId: string, year: number, month: number) => {
+    return fetchWithAuth(`/api/services/${serviceId}/calendar/${year}/${month}`);
+  },
+
   // Create a new booking
   createBooking: async (data: {
     serviceId: string;

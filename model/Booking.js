@@ -120,4 +120,80 @@ bookingSchema.methods.complete = function() {
     return this.save();
 };
 
+// Static method: Get all booked dates for a service
+bookingSchema.statics.getBookedDates = async function(serviceId) {
+    const bookings = await this.find({
+        serviceId,
+        status: { $in: ['pending', 'confirmed'] } // Only active bookings
+    }).select('checkInDate checkOutDate');
+
+    // Create array of all booked dates
+    const bookedDates = [];
+    bookings.forEach(booking => {
+        const start = new Date(booking.checkInDate);
+        const end = new Date(booking.checkOutDate);
+
+        // Add all dates in the range
+        let currentDate = new Date(start);
+        while (currentDate <= end) {
+            bookedDates.push(new Date(currentDate).toISOString().split('T')[0]);
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    });
+
+    return [...new Set(bookedDates)]; // Remove duplicates
+};
+
+// Static method: Check availability for a date range
+bookingSchema.statics.checkAvailability = async function(serviceId, checkIn, checkOut) {
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    // Find overlapping bookings
+    const overlappingBookings = await this.find({
+        serviceId,
+        status: { $in: ['pending', 'confirmed'] },
+        $or: [
+            // New booking starts during existing booking
+            { checkInDate: { $lte: checkInDate }, checkOutDate: { $gte: checkInDate } },
+            // New booking ends during existing booking
+            { checkInDate: { $lte: checkOutDate }, checkOutDate: { $gte: checkOutDate } },
+            // New booking completely contains existing booking
+            { checkInDate: { $gte: checkInDate }, checkOutDate: { $lte: checkOutDate } }
+        ]
+    });
+
+    return {
+        available: overlappingBookings.length === 0,
+        conflictingBookings: overlappingBookings.length
+    };
+};
+
+// Static method: Get calendar view data for a month
+bookingSchema.statics.getCalendarData = async function(serviceId, year, month) {
+    const startOfMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0);
+
+    const bookings = await this.find({
+        serviceId,
+        status: { $in: ['pending', 'confirmed'] },
+        $or: [
+            { checkInDate: { $gte: startOfMonth, $lte: endOfMonth } },
+            { checkOutDate: { $gte: startOfMonth, $lte: endOfMonth } },
+            { checkInDate: { $lte: startOfMonth }, checkOutDate: { $gte: endOfMonth } }
+        ]
+    }).populate('userId', 'fullName email');
+
+    return bookings.map(booking => ({
+        id: booking._id,
+        checkIn: booking.checkInDate,
+        checkOut: booking.checkOutDate,
+        customerName: booking.userId?.fullName || 'Unknown',
+        customerEmail: booking.userId?.email || '',
+        guests: booking.guests,
+        status: booking.status,
+        totalAmount: booking.totalAmount
+    }));
+};
+
 module.exports = mongoose.model('Booking', bookingSchema);
