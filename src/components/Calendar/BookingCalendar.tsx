@@ -89,8 +89,9 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const handleDateClick = (year: number, month: number, day: number) => {
     const dateStr = formatDate(year, month, day)
 
-    // Don't allow selecting past dates or booked dates
-    if (isDatePast(year, month, day) || isDateBooked(dateStr)) {
+    // Only block past dates - allow selecting dates that show as "booked"
+    // The backend will verify actual availability when booking is confirmed
+    if (isDatePast(year, month, day)) {
       return
     }
 
@@ -112,28 +113,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
         return
       }
 
-      // Check if any dates in range are booked
-      let hasBookedInRange = false
-      let currentDate = new Date(checkInDate)
-      currentDate.setDate(currentDate.getDate() + 1)
-
-      while (currentDate <= checkOutDate) {
-        const dateStr = currentDate.toISOString().split('T')[0]
-        if (isDateBooked(dateStr)) {
-          hasBookedInRange = true
-          break
-        }
-        currentDate.setDate(currentDate.getDate() + 1)
-      }
-
-      if (hasBookedInRange) {
-        alert('Some dates in this range are already booked. Please select different dates.')
-        setTempCheckIn(null)
-        setTempCheckOut(null)
-        setSelectingCheckIn(true)
-        return
-      }
-
+      // Don't check availability here - let the backend handle it when booking is confirmed
+      // This allows users to select dates and proceed to payment
       setTempCheckOut(dateStr)
       onDateSelect(tempCheckIn, dateStr)
       setSelectingCheckIn(true)
@@ -218,7 +199,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
           const isSelected = isDateSelected(dateStr)
           const isCheckIn = tempCheckIn === dateStr
           const isCheckOut = tempCheckOut === dateStr
-          const isDisabled = isPast || isBooked
+          const isDisabled = isPast // Only disable past dates, allow clicking "booked" dates
 
           return (
             <button
