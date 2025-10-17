@@ -1119,16 +1119,8 @@ app.get("/api/services/:serviceId/booked-dates", async (req, res) => {
     try {
         const { serviceId } = req.params;
 
-        // Validate service exists
-        const service = await Service.findById(serviceId);
-        if (!service) {
-            return res.status(404).json({
-                success: false,
-                message: "Service not found"
-            });
-        }
-
         // Get booked dates using the Booking model method
+        // No need to validate service exists - if it doesn't exist, there won't be any bookings
         const bookedDates = await Booking.getBookedDates(serviceId);
 
         res.status(200).json({
@@ -1158,14 +1150,21 @@ app.post("/api/services/:serviceId/check-availability", async (req, res) => {
             });
         }
 
-        // Validate service exists
-        const service = await Service.findById(serviceId);
-        if (!service) {
-            return res.status(404).json({
-                success: false,
-                message: "Service not found"
-            });
-        }
+        console.log('=== AVAILABILITY CHECK ===');
+        console.log('Service ID:', serviceId);
+        console.log('Check-in Date:', checkInDate);
+        console.log('Check-out Date:', checkOutDate);
+
+        // Find all existing bookings for this service to debug
+        const allBookings = await Booking.find({
+            serviceId,
+            status: { $in: ['pending', 'confirmed'] }
+        }).select('checkInDate checkOutDate status');
+
+        console.log('Existing bookings for this service:', allBookings.length);
+        allBookings.forEach(booking => {
+            console.log(`  - Booking: ${booking._id}, Check-in: ${booking.checkInDate}, Check-out: ${booking.checkOutDate}, Status: ${booking.status}`);
+        });
 
         // Check availability using the Booking model method
         const availabilityResult = await Booking.checkAvailability(
@@ -1173,6 +1172,9 @@ app.post("/api/services/:serviceId/check-availability", async (req, res) => {
             checkInDate,
             checkOutDate
         );
+
+        console.log('Availability Result:', availabilityResult);
+        console.log('=========================');
 
         res.status(200).json({
             success: true,
@@ -1193,16 +1195,8 @@ app.get("/api/services/:serviceId/calendar/:year/:month", async (req, res) => {
     try {
         const { serviceId, year, month } = req.params;
 
-        // Validate service exists
-        const service = await Service.findById(serviceId);
-        if (!service) {
-            return res.status(404).json({
-                success: false,
-                message: "Service not found"
-            });
-        }
-
         // Get calendar data using the Booking model method
+        // No need to validate service exists - if it doesn't exist, there won't be any bookings
         const calendarData = await Booking.getCalendarData(
             serviceId,
             parseInt(year),
@@ -1218,6 +1212,31 @@ app.get("/api/services/:serviceId/calendar/:year/:month", async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error fetching calendar data",
+            error: error.message
+        });
+    }
+});
+
+// TEMPORARY: Delete all bookings for a service (for testing/development)
+// Remove this endpoint in production!
+app.delete("/api/services/:serviceId/clear-bookings", async (req, res) => {
+    try {
+        const { serviceId } = req.params;
+
+        const result = await Booking.deleteMany({
+            serviceId,
+            status: { $in: ['pending', 'confirmed'] }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `Deleted ${result.deletedCount} booking(s) for service ${serviceId}`
+        });
+    } catch (error) {
+        console.error("Error clearing bookings:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error clearing bookings",
             error: error.message
         });
     }

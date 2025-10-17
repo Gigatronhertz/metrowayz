@@ -40,12 +40,25 @@ const PaymentPage: React.FC = () => {
     setIsProcessing(true)
 
     try {
-      // Create booking via API (payment-free)
+      // First, check if dates are still available
+      const availabilityCheck = await bookingAPI.checkAvailability(
+        bookingData.serviceId,
+        bookingData.checkInDate,
+        bookingData.checkOutDate
+      )
+
+      if (!availabilityCheck.data.available) {
+        alert('Sorry, these dates are no longer available. Please go back and select different dates.')
+        setIsProcessing(false)
+        return
+      }
+
+      // Dates are available, proceed with creating booking
       await bookingAPI.createBooking({
         serviceId: bookingData.serviceId,
         checkInDate: bookingData.checkInDate,
         checkOutDate: bookingData.checkOutDate,
-        guests: bookingData.guests,
+        guests: bookingData.guests || 1,
         specialRequests: bookingData.specialRequests || ''
       })
 

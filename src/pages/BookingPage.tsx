@@ -27,7 +27,6 @@ const BookingPage: React.FC = () => {
   const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
   const [bookedDates, setBookedDates] = useState<string[]>([])
-  const [checkingAvailability, setCheckingAvailability] = useState(false)
 
   // Fetch service details and booked dates
   useEffect(() => {
@@ -54,27 +53,11 @@ const BookingPage: React.FC = () => {
   }, [serviceId])
 
   // Handle date selection from calendar
-  const handleDateSelect = async (checkIn: string, checkOut: string) => {
+  const handleDateSelect = (checkIn: string, checkOut: string) => {
+    // Just set the dates - don't check availability yet
+    // We'll check availability when the user confirms the booking
     setCheckInDate(checkIn)
     setCheckOutDate(checkOut)
-
-    // Check availability
-    if (serviceId) {
-      try {
-        setCheckingAvailability(true)
-        const response = await bookingAPI.checkAvailability(serviceId, checkIn, checkOut)
-
-        if (!response.data.available) {
-          alert('These dates are no longer available. Please select different dates.')
-          setCheckInDate('')
-          setCheckOutDate('')
-        }
-      } catch (error) {
-        console.error('Error checking availability:', error)
-      } finally {
-        setCheckingAvailability(false)
-      }
-    }
   }
 
   if (loading) {
@@ -164,12 +147,6 @@ const BookingPage: React.FC = () => {
             <Calendar className="w-5 h-5 mr-2" />
             Select Dates
           </h3>
-
-          {checkingAvailability && (
-            <div className="text-center text-sm text-gray-600 mb-4">
-              Checking availability...
-            </div>
-          )}
 
           <BookingCalendar
             serviceId={serviceId || ''}
