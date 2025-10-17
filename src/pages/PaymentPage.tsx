@@ -47,11 +47,21 @@ const PaymentPage: React.FC = () => {
         bookingData.checkOutDate
       )
 
+      console.log('=== FRONTEND AVAILABILITY CHECK ===')
+      console.log('Full response:', availabilityCheck)
+      console.log('availabilityCheck.data:', availabilityCheck.data)
+      console.log('availabilityCheck.data.available:', availabilityCheck.data.available)
+      console.log('availabilityCheck.success:', availabilityCheck.success)
+      console.log('===================================')
+
       if (!availabilityCheck.data.available) {
+        console.error('BLOCKING: availabilityCheck.data.available is falsy!')
         alert('Sorry, these dates are no longer available. Please go back and select different dates.')
         setIsProcessing(false)
         return
       }
+
+      console.log('✅ Availability check passed! Proceeding with booking...')
 
       // Dates are available, proceed with creating booking
       await bookingAPI.createBooking({
