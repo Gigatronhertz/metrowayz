@@ -50,12 +50,11 @@ const PaymentPage: React.FC = () => {
       console.log('=== FRONTEND AVAILABILITY CHECK ===')
       console.log('Full response:', availabilityCheck)
       console.log('availabilityCheck.data:', availabilityCheck.data)
-      console.log('availabilityCheck.data.available:', availabilityCheck.data.available)
       console.log('availabilityCheck.success:', availabilityCheck.success)
       console.log('===================================')
 
-      if (!availabilityCheck.data.available) {
-        console.error('BLOCKING: availabilityCheck.data.available is falsy!')
+      if (!availabilityCheck.data) {
+        console.error('BLOCKING: Dates are not available!')
         alert('Sorry, these dates are no longer available. Please go back and select different dates.')
         setIsProcessing(false)
         return
