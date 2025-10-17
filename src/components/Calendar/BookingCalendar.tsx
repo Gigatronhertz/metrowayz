@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { bookingAPI } from '../../services/api'
 import './BookingCalendar.css'
 
 interface BookingCalendarProps {
@@ -13,6 +14,7 @@ interface BookingCalendarProps {
 }
 
 const BookingCalendar: React.FC<BookingCalendarProps> = ({
+  serviceId,
   bookedDates,
   onDateSelect,
   selectedCheckIn,
@@ -23,9 +25,53 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const [selectingCheckIn, setSelectingCheckIn] = useState(true)
   const [tempCheckIn, setTempCheckIn] = useState<string | null>(selectedCheckIn || null)
   const [tempCheckOut, setTempCheckOut] = useState<string | null>(selectedCheckOut || null)
+  const [availableDates, setAvailableDates] = useState<string[]>([])
+  const [isLoadingDates, setIsLoadingDates] = useState(false)
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  // Fetch available dates when month changes
+  useEffect(() => {
+    const fetchAvailableDates = async () => {
+      if (!serviceId) return
+
+      setIsLoadingDates(true)
+      try {
+        const year = currentMonth.getFullYear()
+        const month = currentMonth.getMonth() + 1 // API expects 1-12
+
+        const response = await bookingAPI.getCalendarData(serviceId, year, month)
+
+        // Extract available dates from response
+        if (response.success && response.data) {
+          const available: string[] = []
+
+          // If response has availableDates array
+          if (response.data.availableDates) {
+            available.push(...response.data.availableDates)
+          }
+          // If response has days array with availability info
+          else if (response.data.days) {
+            response.data.days.forEach((day: any) => {
+              if (day.available) {
+                available.push(day.date)
+              }
+            })
+          }
+
+          setAvailableDates(available)
+        }
+      } catch (error) {
+        console.error('Error fetching calendar data:', error)
+        setAvailableDates([])
+      } finally {
+        setIsLoadingDates(false)
+      }
+    }
+
+    fetchAvailableDates()
+  }, [serviceId, currentMonth])
 
   // Get days in month
   const getDaysInMonth = (date: Date) => {
@@ -61,6 +107,11 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
     return bookedDates.includes(dateStr)
   }
 
+  // Check if date is available
+  const isDateAvailable = (dateStr: string) => {
+    return availableDates.includes(dateStr)
+  }
+
   // Check if date is in the past
   const isDatePast = (year: number, month: number, day: number) => {
     const date = new Date(year, month, day)
@@ -89,9 +140,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const handleDateClick = (year: number, month: number, day: number) => {
     const dateStr = formatDate(year, month, day)
 
-    // Only block past dates - allow selecting dates that show as "booked"
-    // The backend will verify actual availability when booking is confirmed
-    if (isDatePast(year, month, day)) {
+    // Block past dates and booked dates
+    if (isDatePast(year, month, day) || isDateBooked(dateStr)) {
       return
     }
 
@@ -113,8 +163,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
         return
       }
 
-      // Don't check availability here - let the backend handle it when booking is confirmed
-      // This allows users to select dates and proceed to payment
+      // Set check-out date and notify parent component
       setTempCheckOut(dateStr)
       onDateSelect(tempCheckIn, dateStr)
       setSelectingCheckIn(true)
@@ -195,11 +244,12 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
           const dateStr = formatDate(year, month, day)
           const isBooked = isDateBooked(dateStr)
+          const isAvailable = isDateAvailable(dateStr)
           const isPast = isDatePast(year, month, day)
           const isSelected = isDateSelected(dateStr)
           const isCheckIn = tempCheckIn === dateStr
           const isCheckOut = tempCheckOut === dateStr
-          const isDisabled = isPast // Only disable past dates, allow clicking "booked" dates
+          const isDisabled = isPast || isBooked // Disable past dates and booked dates
 
           return (
             <button
@@ -213,6 +263,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
                 ${isCheckIn ? 'check-in' : ''}
                 ${isCheckOut ? 'check-out' : ''}
                 ${isBooked ? 'booked' : ''}
+                ${isAvailable && !isBooked && !isPast ? 'available' : ''}
               `}
             >
               <span className="day-number">{day}</span>
@@ -249,6 +300,10 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
       {/* Legend */}
       <div className="calendar-legend">
+        <div className="legend-item">
+          <div className="legend-color available" />
+          <span>Available</span>
+        </div>
         <div className="legend-item">
           <div className="legend-color selected" />
           <span>Selected</span>

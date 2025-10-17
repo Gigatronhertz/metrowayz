@@ -1363,9 +1363,11 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
         service.bookings += 1;
         await service.save();
 
-        // Update user total bookings
-        user.totalBookings += 1;
-        await user.save();
+        // Update user total bookings using direct database update (bypass validation)
+        await User.collection.updateOne(
+            { _id: user._id },
+            { $inc: { totalBookings: 1 } }
+        );
 
         // Create notification for customer
         await createBookingNotification(
