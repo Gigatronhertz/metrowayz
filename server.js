@@ -688,14 +688,27 @@ app.get("/api/public/services", async (req, res) => {
             sortOrder = 'desc'
         } = req.query;
 
-        let query = { status: 'active' }; // Only show active services
+        // Build base query - exclude only 'inactive' services, allow everything else
+        let query = {};
+
+        // Exclude inactive services while including undefined/null status (backward compatibility)
+        query.$or = [
+            { status: { $ne: 'inactive' } },
+            { status: { $exists: false } }
+        ];
 
         // Search functionality
         if (search && search.trim()) {
-            query.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } }
+            query.$and = [
+                { $or: query.$or }, // Preserve status filter
+                {
+                    $or: [
+                        { title: { $regex: search, $options: 'i' } },
+                        { description: { $regex: search, $options: 'i' } }
+                    ]
+                }
             ];
+            delete query.$or; // Remove the top-level $or since we moved it into $and
         }
 
         // Filter by category
@@ -763,8 +776,9 @@ app.get("/api/public/services/:id", async (req, res) => {
             });
         }
 
-        // Only return if service is active
-        if (service.status !== 'active') {
+        // Only return if service is active or status is undefined (for backward compatibility)
+        // Explicitly block only 'inactive' services
+        if (service.status === 'inactive') {
             return res.status(404).json({
                 success: false,
                 message: "Service not available"
