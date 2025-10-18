@@ -173,7 +173,9 @@ bookingSchema.statics.checkAvailability = async function(serviceId, checkIn, che
 bookingSchema.statics.getCalendarData = async function(serviceId, year, month) {
     const startOfMonth = new Date(year, month - 1, 1);
     const endOfMonth = new Date(year, month, 0);
+    const daysInMonth = endOfMonth.getDate();
 
+    // Get all bookings for this month
     const bookings = await this.find({
         serviceId,
         status: { $in: ['pending', 'confirmed'] },
@@ -184,16 +186,47 @@ bookingSchema.statics.getCalendarData = async function(serviceId, year, month) {
         ]
     }).populate('userId', 'fullName email');
 
-    return bookings.map(booking => ({
-        id: booking._id,
-        checkIn: booking.checkInDate,
-        checkOut: booking.checkOutDate,
-        customerName: booking.userId?.fullName || 'Unknown',
-        customerEmail: booking.userId?.email || '',
-        guests: booking.guests,
-        status: booking.status,
-        totalAmount: booking.totalAmount
-    }));
+    // Create a set of booked dates
+    const bookedDatesSet = new Set();
+    bookings.forEach(booking => {
+        const start = new Date(booking.checkInDate);
+        const end = new Date(booking.checkOutDate);
+
+        let currentDate = new Date(start);
+        while (currentDate <= end) {
+            bookedDatesSet.add(currentDate.toISOString().split('T')[0]);
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    });
+
+    // Calculate available dates (all dates in month that are not booked and not in the past)
+    const availableDates = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const currentDate = new Date(year, month - 1, day);
+        const dateStr = currentDate.toISOString().split('T')[0];
+
+        // Date is available if it's not booked and not in the past
+        if (!bookedDatesSet.has(dateStr) && currentDate >= today) {
+            availableDates.push(dateStr);
+        }
+    }
+
+    return {
+        bookings: bookings.map(booking => ({
+            id: booking._id,
+            checkIn: booking.checkInDate,
+            checkOut: booking.checkOutDate,
+            customerName: booking.userId?.fullName || 'Unknown',
+            customerEmail: booking.userId?.email || '',
+            guests: booking.guests,
+            status: booking.status,
+            totalAmount: booking.totalAmount
+        })),
+        availableDates
+    };
 };
 
 module.exports = mongoose.model('Booking', bookingSchema);

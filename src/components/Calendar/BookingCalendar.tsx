@@ -26,7 +26,6 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const [tempCheckIn, setTempCheckIn] = useState<string | null>(selectedCheckIn || null)
   const [tempCheckOut, setTempCheckOut] = useState<string | null>(selectedCheckOut || null)
   const [availableDates, setAvailableDates] = useState<string[]>([])
-  const [isLoadingDates, setIsLoadingDates] = useState(false)
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -36,7 +35,6 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
     const fetchAvailableDates = async () => {
       if (!serviceId) return
 
-      setIsLoadingDates(true)
       try {
         const year = currentMonth.getFullYear()
         const month = currentMonth.getMonth() + 1 // API expects 1-12
@@ -65,8 +63,6 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
       } catch (error) {
         console.error('Error fetching calendar data:', error)
         setAvailableDates([])
-      } finally {
-        setIsLoadingDates(false)
       }
     }
 
@@ -222,8 +218,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
       {/* Instructions */}
       <div className="calendar-instructions">
         {selectingCheckIn || !tempCheckIn
-          ? 'Select your check-in date'
-          : 'Now select your check-out date'}
+          ? 'Select your start service date'
+          : 'Now select your end service date'}
       </div>
 
       {/* Day Names */}
@@ -277,16 +273,16 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
         <div className="calendar-summary">
           <div className="summary-dates">
             <div className="summary-item">
-              <span className="summary-label">Check-in</span>
+              <span className="summary-label">Start Service</span>
               <span className="summary-value">{new Date(tempCheckIn).toLocaleDateString()}</span>
             </div>
             <div className="summary-item">
-              <span className="summary-label">Check-out</span>
+              <span className="summary-label">End Service</span>
               <span className="summary-value">{new Date(tempCheckOut).toLocaleDateString()}</span>
             </div>
             <div className="summary-item">
-              <span className="summary-label">Nights</span>
-              <span className="summary-value">{nights}</span>
+              <span className="summary-label">Duration</span>
+              <span className="summary-value">{nights} day(s)</span>
             </div>
           </div>
           {price && (
