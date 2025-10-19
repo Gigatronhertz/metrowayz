@@ -27,7 +27,7 @@ interface Service {
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
-  const [selectedCategory, setSelectedCategory] = useState('cars')
+  const [selectedCategory, setSelectedCategory] = useState('accommodation')
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
@@ -63,19 +63,24 @@ const HomePage: React.FC = () => {
   }, [])
 
   const filteredServices = services.filter(service => {
+    const categoryLower = service.category.toLowerCase()
     switch (selectedCategory) {
-      case 'cars':
-        return service.category.toLowerCase().includes('car')
-      case 'rentals':
-        return service.category.toLowerCase().includes('short-let')
-      case 'apartments':
-        return service.category.toLowerCase().includes('serviced')
-      case 'food':
-        return service.category.toLowerCase().includes('food')
-      case 'chefs':
-        return service.category.toLowerCase().includes('chef')
+      case 'accommodation':
+        return categoryLower.includes('accommodation')
+      case 'food-beverage':
+        return categoryLower.includes('food') || categoryLower.includes('beverage')
+      case 'transportation':
+        return categoryLower.includes('transportation')
+      case 'event-services':
+        return categoryLower.includes('event')
+      case 'cleaning':
+        return categoryLower.includes('cleaning')
       case 'entertainment':
-        return service.category.toLowerCase().includes('entertainment')
+        return categoryLower.includes('entertainment')
+      case 'health-wellness':
+        return categoryLower.includes('health') || categoryLower.includes('wellness')
+      case 'professional':
+        return categoryLower.includes('professional')
       default:
         return true
     }
