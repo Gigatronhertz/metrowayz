@@ -81,8 +81,8 @@ const HomePage: React.FC = () => {
     }
   })
 
-  const nearbyServices = services.slice(0, 4)
-  const featuredServices = services.slice(0, 2)
+  const nearbyServices = filteredServices.slice(0, 4)
+  const featuredServices = filteredServices.slice(0, 2)
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
