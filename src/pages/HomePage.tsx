@@ -188,7 +188,7 @@ const HomePage: React.FC = () => {
               See all
             </button>
           </div>
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {nearbyServices.map((service) => {
               const imageUrl = typeof service.images[0] === 'string'
                 ? service.images[0]
@@ -232,7 +232,7 @@ const HomePage: React.FC = () => {
               See all
             </button>
           </div>
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {featuredServices.map((service) => (
               <ServiceCard
                 key={service._id}
@@ -264,7 +264,7 @@ const HomePage: React.FC = () => {
               <p className="text-gray-500">Loading services...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {filteredServices.slice(2).map((service) => {
                 const imageUrl = typeof service.images[0] === 'string'
                   ? service.images[0]
