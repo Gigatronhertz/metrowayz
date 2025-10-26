@@ -8,6 +8,7 @@ interface HeaderProps {
   showBack?: boolean
   showNotifications?: boolean
   showMenu?: boolean
+  showLogo?: boolean
   onMenuClick?: () => void
 }
 
@@ -16,6 +17,7 @@ const Header: React.FC<HeaderProps> = ({
   showBack = false,
   showNotifications = false,
   showMenu = false,
+  showLogo = false,
   onMenuClick
 }) => {
   const navigate = useNavigate()
@@ -43,6 +45,14 @@ const Header: React.FC<HeaderProps> = ({
             >
               <Menu className="w-5 h-5" />
             </Button>
+          )}
+          {showLogo && (
+            <img
+              src="/logo.svg"
+              alt="MetroWayz"
+              className="w-8 h-8 cursor-pointer"
+              onClick={() => navigate('/')}
+            />
           )}
           {title && (
             <h1 className="text-lg font-semibold text-gray-900">{title}</h1>

@@ -95,11 +95,18 @@ const HomePage: React.FC = () => {
       <div className="bg-white shadow-sm">
         <div className="container-padding py-4">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Welcome! 👋</h1>
-              <p className="text-gray-600">Your lifestyle services in one place</p>
+            <div className="flex items-center space-x-3">
+              <img
+                src="/logo.svg"
+                alt="MetroWayz Logo"
+                className="w-10 h-10"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Welcome! 👋</h1>
+                <p className="text-gray-600">Your lifestyle services in one place</p>
+              </div>
             </div>
-            <button 
+            <button
               onClick={() => {/* Navigate to notifications */}}
               className="p-2 bg-gray-100 rounded-full relative"
             >
