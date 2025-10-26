@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Calendar, Info, AlertCircle, Check } from 'lucide-react'
+import { X, Info, AlertCircle, Check } from 'lucide-react'
 import { bookingAPI } from '../../services/api'
 import Button from '../ui/Button'
 import BookingCalendar from '../Calendar/BookingCalendar'
@@ -26,34 +26,30 @@ const RescheduleBookingModal: React.FC<RescheduleBookingModalProps> = ({
   bookingDetails,
   onSuccess
 }) => {
-  const [checkInDate, setCheckInDate] = useState<Date | null>(null)
-  const [checkOutDate, setCheckOutDate] = useState<Date | null>(null)
+  const [checkInDate, setCheckInDate] = useState<string>('')
+  const [checkOutDate, setCheckOutDate] = useState<string>('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [quote, setQuote] = useState<any>(null)
   const [loadingQuote, setLoadingQuote] = useState(false)
 
-  const handleDateSelect = async (start: Date, end: Date | null) => {
-    setCheckInDate(start)
-    setCheckOutDate(end)
+  const handleDateSelect = async (checkIn: string, checkOut: string) => {
+    setCheckInDate(checkIn)
+    setCheckOutDate(checkOut)
 
-    // If both dates are selected, get quote
-    if (end) {
-      try {
-        setLoadingQuote(true)
-        const response = await bookingAPI.getRescheduleQuote(
-          bookingId,
-          start.toISOString(),
-          end.toISOString()
-        )
-        setQuote(response.data)
-      } catch (error) {
-        console.error('Error getting quote:', error)
-      } finally {
-        setLoadingQuote(false)
-      }
-    } else {
-      setQuote(null)
+    // Get quote for new dates
+    try {
+      setLoadingQuote(true)
+      const response = await bookingAPI.getRescheduleQuote(
+        bookingId,
+        checkIn,
+        checkOut
+      )
+      setQuote(response.data)
+    } catch (error) {
+      console.error('Error getting quote:', error)
+    } finally {
+      setLoadingQuote(false)
     }
   }
 
@@ -66,8 +62,8 @@ const RescheduleBookingModal: React.FC<RescheduleBookingModalProps> = ({
     try {
       setLoading(true)
       await bookingAPI.rescheduleBooking(bookingId, {
-        newCheckInDate: checkInDate.toISOString(),
-        newCheckOutDate: checkOutDate.toISOString(),
+        newCheckInDate: checkInDate,
+        newCheckOutDate: checkOutDate,
         message
       })
       onSuccess()
@@ -152,8 +148,9 @@ const RescheduleBookingModal: React.FC<RescheduleBookingModalProps> = ({
             <div className="border border-gray-200 rounded-xl overflow-hidden">
               <BookingCalendar
                 serviceId={serviceId}
-                selectedCheckIn={checkInDate}
-                selectedCheckOut={checkOutDate}
+                bookedDates={[]}
+                selectedCheckIn={checkInDate || undefined}
+                selectedCheckOut={checkOutDate || undefined}
                 onDateSelect={handleDateSelect}
               />
             </div>
@@ -170,7 +167,7 @@ const RescheduleBookingModal: React.FC<RescheduleBookingModalProps> = ({
                 <div>
                   <p className="text-green-700 mb-1">New Check-in</p>
                   <p className="font-medium text-green-900">
-                    {checkInDate.toLocaleDateString('en-US', {
+                    {new Date(checkInDate).toLocaleDateString('en-US', {
                       weekday: 'short',
                       month: 'short',
                       day: 'numeric'
@@ -180,7 +177,7 @@ const RescheduleBookingModal: React.FC<RescheduleBookingModalProps> = ({
                 <div>
                   <p className="text-green-700 mb-1">New Check-out</p>
                   <p className="font-medium text-green-900">
-                    {checkOutDate.toLocaleDateString('en-US', {
+                    {new Date(checkOutDate).toLocaleDateString('en-US', {
                       weekday: 'short',
                       month: 'short',
                       day: 'numeric'
