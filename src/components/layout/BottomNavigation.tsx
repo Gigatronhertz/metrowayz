@@ -27,7 +27,7 @@ const BottomNavigation: React.FC = () => {
               className={cn(
                 'flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-colors',
                 isActive
-                  ? 'text-primary-500'
+                  ? 'text-secondary-500'
                   : 'text-gray-500 hover:text-gray-700'
               )}
             >

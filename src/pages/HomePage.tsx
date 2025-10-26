@@ -111,7 +111,7 @@ const HomePage: React.FC = () => {
               className="p-2 bg-gray-100 rounded-full relative"
             >
               <Bell className="w-6 h-6 text-gray-600" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary-500 rounded-full"></span>
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-secondary-500 rounded-full"></span>
             </button>
           </div>
 
@@ -127,9 +127,9 @@ const HomePage: React.FC = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Services</h2>
-            <button 
+            <button
               onClick={() => navigate('/search')}
-              className="text-primary-500 font-semibold"
+              className="text-secondary-500 font-semibold hover:text-secondary-600"
             >
               See all
             </button>
@@ -190,7 +190,7 @@ const HomePage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900">Explore nearby</h2>
             <button
               onClick={() => navigate('/search')}
-              className="text-primary-500 font-semibold"
+              className="text-secondary-500 font-semibold hover:text-secondary-600"
             >
               See all
             </button>
@@ -234,7 +234,7 @@ const HomePage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900">Featured Services</h2>
             <button
               onClick={() => navigate('/search')}
-              className="text-primary-500 font-semibold"
+              className="text-secondary-500 font-semibold hover:text-secondary-600"
             >
               See all
             </button>
@@ -261,7 +261,7 @@ const HomePage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900">More for you</h2>
             <button
               onClick={() => navigate('/search')}
-              className="text-primary-500 font-semibold"
+              className="text-secondary-500 font-semibold hover:text-secondary-600"
             >
               See all
             </button>

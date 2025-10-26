@@ -67,7 +67,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
         <button className="absolute top-3 right-3 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
           <Heart className="w-4 h-4 text-gray-600" />
         </button>
-        <div className="absolute top-3 left-3 px-2 py-1 bg-white/90 rounded-lg text-xs font-medium text-primary-500">
+        <div className="absolute top-3 left-3 px-2 py-1 bg-secondary-500 rounded-lg text-xs font-medium text-white">
           {service.category}
         </div>
       </div>

@@ -19,7 +19,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       className={cn(
         'flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200 min-w-[100px] h-24',
         isSelected
-          ? 'border-primary-500 bg-primary-50 text-primary-700'
+          ? 'border-secondary-500 bg-secondary-50 text-secondary-700'
           : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm text-gray-700'
       )}
     >
