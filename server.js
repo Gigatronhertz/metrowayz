@@ -1674,6 +1674,947 @@ app.delete("/api/bookings/:id", authenticateJWT, async (req, res) => {
     }
 });
 
+// ============= CANCELLATION & RESCHEDULING ROUTES =============
+
+// Load cancellation policy and enhanced booking models
+const CancellationPolicy = require('./model/CancellationPolicy');
+const { seedDefaultPolicies } = require('./model/seeds/defaultCancellationPolicies');
+
+// ============= CANCELLATION POLICY ENDPOINTS =============
+
+// Get all cancellation policies (default + custom)
+app.get("/api/provider/cancellation-policies", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Get default policies + user's custom policies
+        const policies = await CancellationPolicy.find({
+            $or: [
+                { isDefault: true, isActive: true },
+                { createdBy: user._id, isActive: true }
+            ]
+        }).sort({ isDefault: -1, createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            data: policies
+        });
+    } catch (error) {
+        console.error("Error fetching policies:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching cancellation policies",
+            error: error.message
+        });
+    }
+});
+
+// Create custom cancellation policy
+app.post("/api/provider/cancellation-policies", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const policyData = {
+            ...req.body,
+            createdBy: user._id,
+            isDefault: false
+        };
+
+        const policy = await CancellationPolicy.create(policyData);
+
+        res.status(201).json({
+            success: true,
+            message: "Cancellation policy created successfully",
+            data: policy
+        });
+    } catch (error) {
+        console.error("Error creating policy:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error creating cancellation policy",
+            error: error.message
+        });
+    }
+});
+
+// Update cancellation policy
+app.put("/api/provider/cancellation-policies/:id", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+        const { id } = req.params;
+
+        const policy = await CancellationPolicy.findById(id);
+
+        if (!policy) {
+            return res.status(404).json({
+                success: false,
+                message: "Policy not found"
+            });
+        }
+
+        // Can't edit default policies
+        if (policy.isDefault) {
+            return res.status(403).json({
+                success: false,
+                message: "Cannot modify default policies"
+            });
+        }
+
+        // Check ownership
+        if (policy.createdBy.toString() !== user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to modify this policy"
+            });
+        }
+
+        Object.assign(policy, req.body);
+        await policy.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Policy updated successfully",
+            data: policy
+        });
+    } catch (error) {
+        console.error("Error updating policy:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error updating policy",
+            error: error.message
+        });
+    }
+});
+
+// Delete (deactivate) cancellation policy
+app.delete("/api/provider/cancellation-policies/:id", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+        const { id } = req.params;
+
+        const policy = await CancellationPolicy.findById(id);
+
+        if (!policy) {
+            return res.status(404).json({
+                success: false,
+                message: "Policy not found"
+            });
+        }
+
+        // Can't delete default policies
+        if (policy.isDefault) {
+            return res.status(403).json({
+                success: false,
+                message: "Cannot delete default policies"
+            });
+        }
+
+        // Check ownership
+        if (policy.createdBy.toString() !== user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to delete this policy"
+            });
+        }
+
+        // Soft delete
+        policy.isActive = false;
+        await policy.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Policy deleted successfully"
+        });
+    } catch (error) {
+        console.error("Error deleting policy:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error deleting policy",
+            error: error.message
+        });
+    }
+});
+
+// Get cancellation policy for a service
+app.get("/api/services/:id/cancellation-policy", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const service = await Service.findById(id).populate('cancellationPolicy');
+
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                message: "Service not found"
+            });
+        }
+
+        // If no policy assigned, return default moderate policy
+        let policy = service.cancellationPolicy;
+
+        if (!policy) {
+            policy = await CancellationPolicy.findOne({
+                name: 'moderate',
+                isDefault: true
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: policy
+        });
+    } catch (error) {
+        console.error("Error fetching service policy:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching service policy",
+            error: error.message
+        });
+    }
+});
+
+// Set cancellation policy for a service
+app.put("/api/provider/services/:id/cancellation-policy", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+        const { id } = req.params;
+        const { policyId } = req.body;
+
+        const service = await Service.findById(id);
+
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                message: "Service not found"
+            });
+        }
+
+        // Check ownership
+        if (service.createdBy.toString() !== user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to modify this service"
+            });
+        }
+
+        // Verify policy exists
+        const policy = await CancellationPolicy.findById(policyId);
+        if (!policy) {
+            return res.status(404).json({
+                success: false,
+                message: "Policy not found"
+            });
+        }
+
+        service.cancellationPolicy = policyId;
+        await service.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Cancellation policy updated for service",
+            data: service
+        });
+    } catch (error) {
+        console.error("Error setting service policy:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error setting service policy",
+            error: error.message
+        });
+    }
+});
+
+// ============= ENHANCED CANCELLATION ENDPOINTS =============
+
+// Get cancellation preview with refund calculation
+app.get("/api/bookings/:id/cancellation-preview", authenticateJWT, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const booking = await Booking.findById(id).populate('serviceId');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        // Get cancellation policy
+        let policy;
+        if (booking.serviceId.cancellationPolicy) {
+            policy = await CancellationPolicy.findById(booking.serviceId.cancellationPolicy);
+        }
+
+        if (!policy) {
+            policy = await CancellationPolicy.findOne({
+                name: 'moderate',
+                isDefault: true
+            });
+        }
+
+        // Calculate refund
+        const refundCalculation = policy.calculateRefund(booking);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                policy: {
+                    name: policy.displayName,
+                    description: policy.description
+                },
+                refund: refundCalculation,
+                policyText: policy.getDisplayText()
+            }
+        });
+    } catch (error) {
+        console.error("Error getting cancellation preview:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error calculating refund",
+            error: error.message
+        });
+    }
+});
+
+// Enhanced cancel booking with policy enforcement
+app.post("/api/bookings/:id/cancel", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+        const { id } = req.params;
+        const { reason, reasonCategory } = req.body;
+
+        // Find booking
+        const booking = await Booking.findById(id)
+            .populate('userId')
+            .populate('providerId')
+            .populate('serviceId');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        // Check authorization
+        const isCustomer = booking.userId._id.toString() === user._id.toString();
+        const isProvider = booking.providerId._id.toString() === user._id.toString();
+
+        if (!isCustomer && !isProvider && !user.isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to cancel this booking"
+            });
+        }
+
+        // Check if already cancelled
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({
+                success: false,
+                message: "Booking is already cancelled"
+            });
+        }
+
+        // Get cancellation policy
+        let policy;
+        if (booking.serviceId.cancellationPolicy) {
+            policy = await CancellationPolicy.findById(booking.serviceId.cancellationPolicy);
+        }
+
+        // Default to moderate policy if none set
+        if (!policy) {
+            policy = await CancellationPolicy.findOne({
+                name: 'moderate',
+                isDefault: true
+            });
+        }
+
+        // Calculate refund
+        const refundCalculation = policy.calculateRefund(booking);
+
+        // Provider cancellations = full refund
+        let finalRefund = refundCalculation;
+        if (isProvider) {
+            finalRefund = {
+                ...refundCalculation,
+                refundPercentage: 100,
+                totalRefund: booking.totalAmount,
+                refundAmount: booking.totalAmount,
+                serviceFeeRefund: 0,
+                cleaningFeeRefund: 0,
+                rule: 'provider_cancellation',
+                description: 'Full refund due to provider cancellation'
+            };
+        }
+
+        // Update booking
+        booking.status = 'cancelled';
+        booking.cancelledBy = isCustomer ? 'customer' : isProvider ? 'provider' : 'admin';
+        booking.cancelledAt = new Date();
+        booking.cancellationReason = reason || 'No reason provided';
+
+        await booking.save();
+
+        // Send notifications
+        const notifyUserId = isCustomer ? booking.providerId._id : booking.userId._id;
+        await createBookingNotification(
+            notifyUserId,
+            'cancellation',
+            'Booking Cancelled',
+            `Booking for ${booking.serviceName} has been cancelled by ${isCustomer ? 'customer' : 'provider'}`,
+            booking._id
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Booking cancelled successfully",
+            data: {
+                booking,
+                refund: finalRefund
+            }
+        });
+    } catch (error) {
+        console.error("Error cancelling booking:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error cancelling booking",
+            error: error.message
+        });
+    }
+});
+
+// Get all cancellation requests for provider
+app.get("/api/provider/cancellation-requests", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const { page = 1, limit = 20 } = req.query;
+
+        let query = {
+            providerId: user._id,
+            status: 'cancelled'
+        };
+
+        const cancellations = await Booking.find(query)
+            .populate('userId', 'name email profilePic')
+            .populate('serviceId', 'title images')
+            .sort({ cancelledAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .lean();
+
+        const total = await Booking.countDocuments(query);
+
+        // Calculate statistics
+        const stats = {
+            totalCancellations: total,
+            customerCancelled: await Booking.countDocuments({
+                ...query,
+                cancelledBy: 'customer'
+            }),
+            providerCancelled: await Booking.countDocuments({
+                ...query,
+                cancelledBy: 'provider'
+            })
+        };
+
+        res.status(200).json({
+            success: true,
+            data: cancellations,
+            stats,
+            pagination: {
+                total,
+                page: parseInt(page),
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching cancellations:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching cancellations",
+            error: error.message
+        });
+    }
+});
+
+// ============= RESCHEDULING ENDPOINTS =============
+
+// Request to reschedule booking
+app.post("/api/bookings/:id/reschedule", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+        const { id } = req.params;
+        const { newCheckInDate, newCheckOutDate, message } = req.body;
+
+        if (!newCheckInDate || !newCheckOutDate) {
+            return res.status(400).json({
+                success: false,
+                message: "New check-in and check-out dates are required"
+            });
+        }
+
+        const booking = await Booking.findById(id)
+            .populate('userId')
+            .populate('providerId')
+            .populate('serviceId');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        // Check authorization
+        const isCustomer = booking.userId._id.toString() === user._id.toString();
+        const isProvider = booking.providerId._id.toString() === user._id.toString();
+
+        if (!isCustomer && !isProvider) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to reschedule this booking"
+            });
+        }
+
+        // Check if booking can be rescheduled
+        if (!['pending', 'confirmed'].includes(booking.status)) {
+            return res.status(400).json({
+                success: false,
+                message: "This booking cannot be rescheduled"
+            });
+        }
+
+        // Check availability for new dates
+        const isAvailable = await Booking.checkAvailability(
+            booking.serviceId._id,
+            newCheckInDate,
+            newCheckOutDate,
+            booking._id
+        );
+
+        // Calculate new pricing
+        const newCheckIn = new Date(newCheckInDate);
+        const newCheckOut = new Date(newCheckOutDate);
+        const numberOfNights = Math.ceil((newCheckOut - newCheckIn) / (1000 * 60 * 60 * 24));
+
+        const nightlyRate = booking.serviceId.price;
+        const newBaseAmount = nightlyRate * numberOfNights;
+        const newTotal = newBaseAmount;
+
+        const priceDifference = newTotal - booking.totalAmount;
+
+        // Create reschedule request
+        const crypto = require('crypto');
+        const requestId = crypto.randomBytes(8).toString('hex');
+
+        const rescheduleRequest = {
+            requestId,
+            requestedBy: isCustomer ? 'customer' : 'provider',
+            requestedAt: new Date(),
+            originalDates: {
+                checkIn: booking.checkInDate,
+                checkOut: booking.checkOutDate
+            },
+            newDates: {
+                checkIn: new Date(newCheckInDate),
+                checkOut: new Date(newCheckOutDate)
+            },
+            isAvailable,
+            pricing: {
+                originalTotal: booking.totalAmount,
+                newTotal,
+                difference: priceDifference,
+                newBreakdown: {
+                    baseAmount: newBaseAmount,
+                    numberOfNights,
+                    nightlyRate
+                }
+            },
+            message,
+            status: 'pending',
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+        };
+
+        // Initialize reschedule if not exists
+        if (!booking.reschedule) {
+            booking.reschedule = {
+                hasActiveRequest: false,
+                requests: [],
+                rescheduledCount: 0,
+                maxReschedules: 3
+            };
+        }
+
+        booking.reschedule.requests.push(rescheduleRequest);
+        booking.reschedule.hasActiveRequest = true;
+        booking.markModified('reschedule');
+
+        await booking.save();
+
+        // Notify other party
+        const notifyUserId = isCustomer ? booking.providerId._id : booking.userId._id;
+        await createBookingNotification(
+            notifyUserId,
+            'booking',
+            'Reschedule Request',
+            `${isCustomer ? 'Customer' : 'Provider'} has requested to reschedule booking for ${booking.serviceName}`,
+            booking._id
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Reschedule request submitted successfully",
+            data: {
+                booking,
+                request: rescheduleRequest
+            }
+        });
+    } catch (error) {
+        console.error("Error requesting reschedule:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error requesting reschedule",
+            error: error.message
+        });
+    }
+});
+
+// Get pricing quote for new dates
+app.get("/api/bookings/:id/reschedule-quote", authenticateJWT, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { newCheckInDate, newCheckOutDate } = req.query;
+
+        if (!newCheckInDate || !newCheckOutDate) {
+            return res.status(400).json({
+                success: false,
+                message: "New dates are required"
+            });
+        }
+
+        const booking = await Booking.findById(id).populate('serviceId');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        // Check availability
+        const isAvailable = await Booking.checkAvailability(
+            booking.serviceId._id,
+            newCheckInDate,
+            newCheckOutDate,
+            booking._id
+        );
+
+        // Calculate pricing
+        const newCheckIn = new Date(newCheckInDate);
+        const newCheckOut = new Date(newCheckOutDate);
+        const numberOfNights = Math.ceil((newCheckOut - newCheckIn) / (1000 * 60 * 60 * 24));
+
+        const nightlyRate = booking.serviceId.price;
+        const newBaseAmount = nightlyRate * numberOfNights;
+        const newTotal = newBaseAmount;
+
+        const priceDifference = newTotal - booking.totalAmount;
+
+        res.status(200).json({
+            success: true,
+            data: {
+                isAvailable,
+                originalTotal: booking.totalAmount,
+                newTotal,
+                priceDifference,
+                numberOfNights,
+                nightlyRate,
+                message: priceDifference > 0
+                    ? `You will need to pay an additional $${priceDifference.toFixed(2)}`
+                    : priceDifference < 0
+                    ? `You will receive a refund of $${Math.abs(priceDifference).toFixed(2)}`
+                    : 'No price change'
+            }
+        });
+    } catch (error) {
+        console.error("Error getting reschedule quote:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error calculating quote",
+            error: error.message
+        });
+    }
+});
+
+// Approve reschedule request
+app.put("/api/provider/reschedule-requests/:bookingId/approve", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+        const { bookingId } = req.params;
+        const { requestId, message } = req.body;
+
+        const booking = await Booking.findById(bookingId)
+            .populate('userId')
+            .populate('providerId');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        // Check if user is provider
+        if (booking.providerId._id.toString() !== user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Only the provider can approve reschedule requests"
+            });
+        }
+
+        // Find request
+        const request = booking.reschedule?.requests?.find(r => r.requestId === requestId);
+
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message: "Reschedule request not found"
+            });
+        }
+
+        if (request.status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: "Request has already been processed"
+            });
+        }
+
+        // Check if expired
+        if (new Date() > new Date(request.expiresAt)) {
+            request.status = 'expired';
+            booking.markModified('reschedule');
+            await booking.save();
+            return res.status(400).json({
+                success: false,
+                message: "Request has expired"
+            });
+        }
+
+        // Update booking dates
+        booking.checkInDate = request.newDates.checkIn;
+        booking.checkOutDate = request.newDates.checkOut;
+        booking.totalAmount = request.pricing.newTotal;
+
+        // Update request status
+        request.status = 'approved';
+        request.appliedAt = new Date();
+        request.response = {
+            respondedAt: new Date(),
+            message
+        };
+
+        booking.reschedule.hasActiveRequest = false;
+        booking.reschedule.rescheduledCount = (booking.reschedule.rescheduledCount || 0) + 1;
+        booking.reschedule.lastRescheduledAt = new Date();
+
+        booking.markModified('reschedule');
+        await booking.save();
+
+        // Notify customer
+        await createBookingNotification(
+            booking.userId._id,
+            'booking',
+            'Reschedule Approved',
+            `Your reschedule request for ${booking.serviceName} has been approved`,
+            booking._id
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Reschedule request approved successfully",
+            data: booking
+        });
+    } catch (error) {
+        console.error("Error approving reschedule:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error approving reschedule",
+            error: error.message
+        });
+    }
+});
+
+// Reject reschedule request
+app.put("/api/provider/reschedule-requests/:bookingId/reject", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+        const { bookingId } = req.params;
+        const { requestId, message } = req.body;
+
+        const booking = await Booking.findById(bookingId)
+            .populate('userId')
+            .populate('providerId');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        // Check if user is provider
+        if (booking.providerId._id.toString() !== user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Only the provider can reject reschedule requests"
+            });
+        }
+
+        // Find request
+        const request = booking.reschedule?.requests?.find(r => r.requestId === requestId);
+
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message: "Reschedule request not found"
+            });
+        }
+
+        if (request.status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: "Request has already been processed"
+            });
+        }
+
+        // Update request status
+        request.status = 'rejected';
+        request.response = {
+            respondedAt: new Date(),
+            message
+        };
+
+        booking.reschedule.hasActiveRequest = false;
+        booking.markModified('reschedule');
+
+        await booking.save();
+
+        // Notify customer
+        await createBookingNotification(
+            booking.userId._id,
+            'booking',
+            'Reschedule Rejected',
+            `Your reschedule request for ${booking.serviceName} has been declined`,
+            booking._id
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Reschedule request rejected",
+            data: booking
+        });
+    } catch (error) {
+        console.error("Error rejecting reschedule:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error rejecting reschedule",
+            error: error.message
+        });
+    }
+});
+
+// Get all reschedule requests for provider
+app.get("/api/provider/reschedule-requests", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const { status = 'pending', page = 1, limit = 20 } = req.query;
+
+        // Find bookings with reschedule requests
+        let query = {
+            providerId: user._id,
+            'reschedule.hasActiveRequest': true
+        };
+
+        const bookings = await Booking.find(query)
+            .populate('userId', 'name email profilePic')
+            .populate('serviceId', 'title images')
+            .sort({ 'reschedule.requests.requestedAt': -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .lean();
+
+        // Extract only the active requests
+        const rescheduleRequests = bookings.map(booking => {
+            const activeRequest = booking.reschedule?.requests?.find(r => r.status === 'pending');
+            return {
+                ...booking,
+                activeRequest
+            };
+        }).filter(b => b.activeRequest);
+
+        const total = rescheduleRequests.length;
+
+        res.status(200).json({
+            success: true,
+            data: rescheduleRequests,
+            pagination: {
+                total,
+                page: parseInt(page),
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching reschedule requests:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching reschedule requests",
+            error: error.message
+        });
+    }
+});
+
 // ============= REVIEW/RATING ROUTES =============
 
 // Submit a review for a service
@@ -2675,6 +3616,65 @@ app.get("/admin/settings", authenticateJWT, requireAdmin, async (req, res) => {
     }
 });
 
+// ============= SYSTEM INITIALIZATION =============
+
+// Initialize default cancellation policies (run once)
+app.post("/api/admin/init-policies", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        // Check if user is admin
+        if (!user || !user.isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: "Only administrators can initialize policies"
+            });
+        }
+
+        console.log('Initializing default cancellation policies...');
+        const policies = await seedDefaultPolicies();
+
+        res.status(200).json({
+            success: true,
+            message: "Default cancellation policies initialized successfully",
+            data: policies
+        });
+    } catch (error) {
+        console.error("Error initializing policies:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error initializing policies",
+            error: error.message
+        });
+    }
+});
+
+// Check if default policies exist
+app.get("/api/admin/policies-status", authenticateJWT, async (req, res) => {
+    try {
+        const count = await CancellationPolicy.countDocuments({ isDefault: true });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                defaultPoliciesCount: count,
+                isInitialized: count > 0,
+                message: count > 0
+                    ? `${count} default policies found`
+                    : 'No default policies found. Run POST /api/admin/init-policies to initialize.'
+            }
+        });
+    } catch (error) {
+        console.error("Error checking policies status:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error checking policies status",
+            error: error.message
+        });
+    }
+});
+
 // ============= ERROR HANDLING =============
 
 // 404 handler
@@ -2707,3 +3707,4 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 module.exports = app;
+// 

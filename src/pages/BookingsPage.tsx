@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar } from 'lucide-react'
+import { Calendar, RotateCcw } from 'lucide-react'
 import { bookingAPI } from '../services/api'
 import { BookingStatus } from '../types'
 import { formatCurrency, formatDateRange } from '../utils/format'
 import Header from '../components/layout/Header'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
+import CancelBookingModal from '../components/booking/CancelBookingModal'
+import RescheduleBookingModal from '../components/booking/RescheduleBookingModal'
 
 interface Booking {
   _id: string
+  serviceId: { _id: string } | string
   serviceName: string
   serviceLocation: string
   serviceImages: string[]
@@ -23,6 +26,9 @@ const BookingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming')
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false)
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
 
   // Fetch user bookings
   useEffect(() => {
@@ -65,6 +71,25 @@ const BookingsPage: React.FC = () => {
         return 'bg-red-100 text-red-800'
       case BookingStatus.COMPLETED:
         return 'bg-blue-100 text-blue-800'
+    }
+  }
+
+  const handleCancelClick = (booking: Booking) => {
+    setSelectedBooking(booking)
+    setCancelModalOpen(true)
+  }
+
+  const handleRescheduleClick = (booking: Booking) => {
+    setSelectedBooking(booking)
+    setRescheduleModalOpen(true)
+  }
+
+  const handleRefreshBookings = async () => {
+    try {
+      const response = await bookingAPI.getUserBookings({ limit: 50 })
+      setBookings(response.data || [])
+    } catch (error) {
+      console.error('Error refreshing bookings:', error)
     }
   }
 
@@ -116,7 +141,7 @@ const BookingsPage: React.FC = () => {
                 onClick={() => setActiveTab(tab.key as any)}
                 className={`py-4 border-b-2 font-semibold transition-colors ${
                   activeTab === tab.key
-                    ? 'border-primary-500 text-primary-500'
+                    ? 'border-secondary-500 text-secondary-500'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -168,23 +193,23 @@ const BookingsPage: React.FC = () => {
                         {formatCurrency(booking.totalAmount)}
                       </span>
 
-                      <div className="flex space-x-2">
-                        {booking.status === 'pending' && (
-                          <button
-                            onClick={async () => {
-                              try {
-                                await bookingAPI.cancelBooking(booking._id, 'Cancelled by user')
-                                // Refresh bookings
-                                const response = await bookingAPI.getUserBookings({ limit: 50 })
-                                setBookings(response.data || [])
-                              } catch (error) {
-                                console.error('Error cancelling booking:', error)
-                              }
-                            }}
-                            className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
-                          >
-                            Cancel
-                          </button>
+                      <div className="flex flex-wrap gap-2">
+                        {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                          <>
+                            <button
+                              onClick={() => handleRescheduleClick(booking)}
+                              className="flex items-center space-x-1 px-3 py-1 bg-secondary-500 text-white text-sm rounded-lg hover:bg-secondary-600 transition-colors"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Reschedule</span>
+                            </button>
+                            <button
+                              onClick={() => handleCancelClick(booking)}
+                              className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </>
                         )}
                         <button className="px-3 py-1 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600 transition-colors">
                           View Details
@@ -200,6 +225,43 @@ const BookingsPage: React.FC = () => {
       </div>
 
       <BottomNavigation />
+
+      {/* Modals */}
+      {selectedBooking && (
+        <>
+          <CancelBookingModal
+            isOpen={cancelModalOpen}
+            onClose={() => {
+              setCancelModalOpen(false)
+              setSelectedBooking(null)
+            }}
+            bookingId={selectedBooking._id}
+            bookingDetails={{
+              serviceName: selectedBooking.serviceName,
+              checkInDate: selectedBooking.checkInDate,
+              totalAmount: selectedBooking.totalAmount
+            }}
+            onSuccess={handleRefreshBookings}
+          />
+
+          <RescheduleBookingModal
+            isOpen={rescheduleModalOpen}
+            onClose={() => {
+              setRescheduleModalOpen(false)
+              setSelectedBooking(null)
+            }}
+            bookingId={selectedBooking._id}
+            serviceId={typeof selectedBooking.serviceId === 'string' ? selectedBooking.serviceId : selectedBooking.serviceId._id}
+            bookingDetails={{
+              serviceName: selectedBooking.serviceName,
+              checkInDate: selectedBooking.checkInDate,
+              checkOutDate: selectedBooking.checkOutDate,
+              totalAmount: selectedBooking.totalAmount
+            }}
+            onSuccess={handleRefreshBookings}
+          />
+        </>
+      )}
     </div>
   )
 }

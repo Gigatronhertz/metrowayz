@@ -154,11 +154,33 @@ export const bookingAPI = {
   },
 
   // Cancel booking
-  cancelBooking: async (id: string, reason?: string) => {
-    return fetchWithAuth(`/api/bookings/${id}`, {
-      method: 'DELETE',
-      body: JSON.stringify({ reason }),
+  cancelBooking: async (id: string, reason?: string, reasonCategory?: string) => {
+    return fetchWithAuth(`/api/bookings/${id}/cancel`, {
+      method: 'POST',
+      body: JSON.stringify({ reason, reasonCategory }),
     });
+  },
+
+  // Get cancellation preview
+  getCancellationPreview: async (id: string) => {
+    return fetchWithAuth(`/api/bookings/${id}/cancellation-preview`);
+  },
+
+  // Request to reschedule booking
+  rescheduleBooking: async (id: string, data: {
+    newCheckInDate: string;
+    newCheckOutDate: string;
+    message?: string;
+  }) => {
+    return fetchWithAuth(`/api/bookings/${id}/reschedule`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get reschedule quote
+  getRescheduleQuote: async (id: string, newCheckInDate: string, newCheckOutDate: string) => {
+    return fetchWithAuth(`/api/bookings/${id}/reschedule-quote?newCheckInDate=${newCheckInDate}&newCheckOutDate=${newCheckOutDate}`);
   },
 };
 
