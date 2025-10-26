@@ -194,7 +194,8 @@ const BookingsPage: React.FC = () => {
                       </span>
 
                       <div className="flex flex-wrap gap-2">
-                        {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                        {/* Show buttons for upcoming bookings (not completed or cancelled) */}
+                        {booking.status !== 'cancelled' && booking.status !== 'completed' && (
                           <>
                             <button
                               onClick={() => handleRescheduleClick(booking)}
@@ -214,6 +215,8 @@ const BookingsPage: React.FC = () => {
                         <button className="px-3 py-1 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600 transition-colors">
                           View Details
                         </button>
+                        {/* Debug: Show status */}
+                        <span className="text-xs text-gray-500 self-center">({booking.status})</span>
                       </div>
                     </div>
                   </div>
