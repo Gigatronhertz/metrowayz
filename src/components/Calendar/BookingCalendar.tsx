@@ -105,7 +105,15 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
   // Check if date is available
   const isDateAvailable = (dateStr: string) => {
-    return availableDates.includes(dateStr)
+    // If we have available dates from API, use them
+    if (availableDates.length > 0) {
+      return availableDates.includes(dateStr)
+    }
+    // Otherwise, treat all future dates as available
+    const date = new Date(dateStr)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return date >= today
   }
 
   // Check if date is in the past

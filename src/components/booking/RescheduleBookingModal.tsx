@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Info, AlertCircle, Check } from 'lucide-react'
 import { bookingAPI } from '../../services/api'
 import Button from '../ui/Button'
@@ -32,6 +32,30 @@ const RescheduleBookingModal: React.FC<RescheduleBookingModalProps> = ({
   const [loading, setLoading] = useState(false)
   const [quote, setQuote] = useState<any>(null)
   const [loadingQuote, setLoadingQuote] = useState(false)
+  const [bookedDates, setBookedDates] = useState<string[]>([])
+  const [loadingDates, setLoadingDates] = useState(false)
+
+  // Fetch booked dates when modal opens
+  useEffect(() => {
+    if (isOpen && serviceId) {
+      fetchBookedDates()
+    }
+  }, [isOpen, serviceId])
+
+  const fetchBookedDates = async () => {
+    try {
+      setLoadingDates(true)
+      const response = await bookingAPI.getBookedDates(serviceId)
+      if (response.success && response.data) {
+        setBookedDates(response.data)
+      }
+    } catch (error) {
+      console.error('Error fetching booked dates:', error)
+      setBookedDates([])
+    } finally {
+      setLoadingDates(false)
+    }
+  }
 
   const handleDateSelect = async (checkIn: string, checkOut: string) => {
     setCheckInDate(checkIn)
@@ -145,15 +169,21 @@ const RescheduleBookingModal: React.FC<RescheduleBookingModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Select New Dates
             </label>
-            <div className="border border-gray-200 rounded-xl overflow-hidden">
-              <BookingCalendar
-                serviceId={serviceId}
-                bookedDates={[]}
-                selectedCheckIn={checkInDate || undefined}
-                selectedCheckOut={checkOutDate || undefined}
-                onDateSelect={handleDateSelect}
-              />
-            </div>
+            {loadingDates ? (
+              <div className="border border-gray-200 rounded-xl p-8 text-center">
+                <p className="text-gray-500">Loading available dates...</p>
+              </div>
+            ) : (
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <BookingCalendar
+                  serviceId={serviceId}
+                  bookedDates={bookedDates}
+                  selectedCheckIn={checkInDate || undefined}
+                  selectedCheckOut={checkOutDate || undefined}
+                  onDateSelect={handleDateSelect}
+                />
+              </div>
+            )}
           </div>
 
           {/* New Dates Display */}
