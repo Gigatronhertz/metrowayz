@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, Heart, Share2, Calendar } from 'lucide-react'
-import { serviceAPI, favoriteAPI, reviewAPI, bookingAPI } from '../services/api'
+import { MapPin, Heart, Share2 } from 'lucide-react'
+import { serviceAPI, favoriteAPI, reviewAPI } from '../services/api'
 import { formatCurrency } from '../utils/format'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Rating from '../components/ui/Rating'
-import BookingCalendar from '../components/Calendar/BookingCalendar'
 
 interface Service {
   _id: string
@@ -33,10 +32,8 @@ const ServiceDetailsPage: React.FC = () => {
   const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState<any[]>([])
-  const [bookedDates, setBookedDates] = useState<string[]>([])
-  const [showCalendar, setShowCalendar] = useState(false)
 
-  // Fetch service details and booked dates
+  // Fetch service details
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return
@@ -45,14 +42,6 @@ const ServiceDetailsPage: React.FC = () => {
         setLoading(true)
         const response = await serviceAPI.getServiceById(id)
         setService(response.data)
-
-        // Fetch booked dates for calendar
-        try {
-          const bookedResponse = await bookingAPI.getBookedDates(id)
-          setBookedDates(bookedResponse.data || [])
-        } catch (err) {
-          console.error('Error fetching booked dates:', err)
-        }
 
         // Check if favorited
         try {
@@ -224,44 +213,6 @@ const ServiceDetailsPage: React.FC = () => {
               <p className="text-gray-500">Interactive map would go here</p>
             </div>
           </div>
-        </div>
-
-        {/* Availability Calendar */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Calendar className="w-5 h-5 mr-2" />
-              Availability
-            </h2>
-            <button
-              onClick={() => setShowCalendar(!showCalendar)}
-              className="text-primary-500 font-semibold text-sm"
-            >
-              {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
-            </button>
-          </div>
-
-          {showCalendar ? (
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <BookingCalendar
-                serviceId={id || ''}
-                bookedDates={bookedDates}
-                onDateSelect={(checkIn, checkOut) => {
-                  // Navigate to booking page with selected dates
-                  navigate(`/booking/${id}`, {
-                    state: { checkIn, checkOut }
-                  })
-                }}
-                price={service.price}
-              />
-            </div>
-          ) : (
-            <div className="bg-primary-50 rounded-2xl p-4 text-center">
-              <p className="text-primary-700">
-                Click "Show Calendar" to view available dates and make a booking
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Reviews */}
