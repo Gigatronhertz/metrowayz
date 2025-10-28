@@ -2705,6 +2705,14 @@ app.get("/api/services/:serviceId/reviews", async (req, res) => {
         const { serviceId } = req.params;
         const { page = 1, limit = 10, sortBy = 'createdAt' } = req.query;
 
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(serviceId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid service ID format"
+            });
+        }
+
         const sortOptions = {};
         if (sortBy === 'helpful') {
             sortOptions.helpfulCount = -1;
@@ -2724,7 +2732,7 @@ app.get("/api/services/:serviceId/reviews", async (req, res) => {
 
         // Calculate rating breakdown
         const ratingBreakdown = await Review.aggregate([
-            { $match: { serviceId: mongoose.Types.ObjectId(serviceId) } },
+            { $match: { serviceId: new mongoose.Types.ObjectId(serviceId) } },
             { $group: { _id: '$rating', count: { $sum: 1 } } },
             { $sort: { _id: -1 } }
         ]);
