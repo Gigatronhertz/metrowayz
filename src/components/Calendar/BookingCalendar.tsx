@@ -30,6 +30,14 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+  // Debug: Log booked dates
+  useEffect(() => {
+    if (bookedDates.length > 0) {
+      console.log('📅 Booked dates received:', bookedDates.length, 'dates')
+      console.log('Sample booked dates:', bookedDates.slice(0, 5))
+    }
+  }, [bookedDates])
+
   // Fetch available dates when month changes
   useEffect(() => {
     const fetchAvailableDates = async () => {
@@ -260,13 +268,14 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
               key={day}
               onClick={() => !isDisabled && handleDateClick(year, month, day)}
               disabled={isDisabled}
+              title={isBooked ? 'This date is already booked' : isPast ? 'Past date' : isAvailable ? 'Available' : ''}
               className={`
                 calendar-day
                 ${isDisabled ? 'disabled' : ''}
-                ${isSelected ? 'selected' : ''}
-                ${isCheckIn ? 'check-in' : ''}
-                ${isCheckOut ? 'check-out' : ''}
                 ${isBooked ? 'booked' : ''}
+                ${isSelected && !isBooked ? 'selected' : ''}
+                ${isCheckIn && !isBooked ? 'check-in' : ''}
+                ${isCheckOut && !isBooked ? 'check-out' : ''}
                 ${isAvailable && !isBooked && !isPast ? 'available' : ''}
               `}
             >

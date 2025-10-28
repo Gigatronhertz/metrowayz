@@ -6,6 +6,7 @@ import { formatCurrency } from '../utils/format'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Rating from '../components/ui/Rating'
+import Map from '../components/common/Map'
 
 interface Service {
   _id: string
@@ -207,11 +208,18 @@ const ServiceDetailsPage: React.FC = () => {
         {/* Location */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Location</h2>
-          <div className="h-48 bg-gray-200 rounded-2xl flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500">Interactive map would go here</p>
-            </div>
+          <div className="h-64 rounded-2xl overflow-hidden">
+            <Map
+              latitude={service.latitude}
+              longitude={service.longitude}
+              title={service.title}
+              zoom={14}
+              className="h-full w-full"
+            />
+          </div>
+          <div className="mt-3 flex items-center text-gray-600">
+            <MapPin className="w-4 h-4 mr-2" />
+            <span className="text-sm">{service.location}</span>
           </div>
         </div>
 
