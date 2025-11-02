@@ -6,8 +6,8 @@ const getAuthToken = () => {
   return localStorage.getItem('authToken');
 };
 
-// Helper to make authenticated requests
-const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+// Helper to make authenticated requests with retry logic
+const fetchWithAuth = async (url: string, options: RequestInit = {}, retries = 2) => {
   const token = getAuthToken();
 
   const headers: Record<string, string> = {
@@ -18,20 +18,32 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${url}`, {
-    ...options,
-    headers: {
-      ...headers,
-      ...(options.headers || {}),
-    },
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      ...options,
+      headers: {
+        ...headers,
+        ...(options.headers || {}),
+      },
+      // Increase timeout for cold starts
+      signal: AbortSignal.timeout(30000), // 30 seconds
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(error.message || 'Request failed');
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Request failed' }));
+      throw new Error(error.message || 'Request failed');
+    }
+
+    return response.json();
+  } catch (error: any) {
+    // Retry on network errors (cold starts, timeouts)
+    if (retries > 0 && (error.name === 'AbortError' || error.message.includes('fetch'))) {
+      console.log(`Retrying request to ${url}... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      return fetchWithAuth(url, options, retries - 1);
+    }
+    throw error;
   }
-
-  return response.json();
 };
 
 // ============= SERVICE APIs =============
@@ -323,10 +335,63 @@ export const favoriteAPI = {
   },
 };
 
+// ============= PAYMENT APIs =============
+
+export const paymentAPI = {
+  // Initialize payment
+  initializePayment: async (data: {
+    bookingId: string;
+    amount: number;
+    paymentMethod: string;
+    reference?: string;
+  }) => {
+    return fetchWithAuth('/api/payments/initialize', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Verify payment
+  verifyPayment: async (reference: string) => {
+    return fetchWithAuth(`/api/payments/verify/${reference}`);
+  },
+
+  // Get payment details
+  getPaymentDetails: async (paymentId: string) => {
+    return fetchWithAuth(`/api/payments/${paymentId}`);
+  },
+
+  // Get user's payment history
+  getPaymentHistory: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, String(value));
+        }
+      });
+    }
+    return fetchWithAuth(`/api/payments/history?${queryParams.toString()}`);
+  },
+
+  // Paystack webhook handler (for backend use)
+  handlePaystackWebhook: async (data: any) => {
+    return fetchWithAuth('/api/payments/paystack/webhook', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export default {
   service: serviceAPI,
   booking: bookingAPI,
   review: reviewAPI,
   notification: notificationAPI,
   favorite: favoriteAPI,
+  payment: paymentAPI,
 };

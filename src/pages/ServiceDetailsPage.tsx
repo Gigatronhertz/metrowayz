@@ -58,6 +58,7 @@ const ServiceDetailsPage: React.FC = () => {
           setReviews(reviewResponse.data || [])
         } catch (err) {
           console.error('Error fetching reviews:', err)
+          setReviews([]) // Set empty array on error
         }
       } catch (error) {
         console.error('Error fetching service:', error)

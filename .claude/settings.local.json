@@ -8,7 +8,10 @@
       "Bash(npm run dev)",
       "Bash(npm install leaflet react-leaflet)",
       "Bash(npm install leaflet react-leaflet@4.2.1 --legacy-peer-deps)",
-      "Bash(npm install -D @types/leaflet --legacy-peer-deps)"
+      "Bash(npm install -D @types/leaflet --legacy-peer-deps)",
+      "WebFetch(domain:paystack.com)",
+      "WebSearch",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
