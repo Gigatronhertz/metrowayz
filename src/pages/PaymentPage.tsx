@@ -45,11 +45,17 @@ const PaymentPage: React.FC = () => {
 
   // Create booking after payment
   const createBookingAfterPayment = async (reference: string) => {
-    if (!bookingData) return
+    console.log('📝 Starting booking creation with reference:', reference)
+
+    if (!bookingData) {
+      console.error('❌ No booking data available')
+      return
+    }
 
     setIsProcessing(true)
 
     try {
+      console.log('🔍 Checking availability...')
       // First, check if dates are still available
       const availabilityCheck = await bookingAPI.checkAvailability(
         bookingData.serviceId,
@@ -57,14 +63,19 @@ const PaymentPage: React.FC = () => {
         bookingData.checkOutDate
       )
 
+      console.log('Availability response:', availabilityCheck)
+
       if (!availabilityCheck.data) {
+        console.error('❌ Dates not available')
         alert('Sorry, these dates are no longer available. Your payment will be refunded.')
         setIsProcessing(false)
         return
       }
 
+      console.log('✅ Dates available, creating booking...')
+
       // Create booking with payment reference
-      await bookingAPI.createBooking({
+      const bookingResponse = await bookingAPI.createBooking({
         serviceId: bookingData.serviceId,
         checkInDate: bookingData.checkInDate,
         checkOutDate: bookingData.checkOutDate,
@@ -72,31 +83,18 @@ const PaymentPage: React.FC = () => {
         specialRequests: bookingData.specialRequests || '',
       })
 
+      console.log('✅ Booking created successfully!', bookingResponse)
+
       // Clear pending booking data
       localStorage.removeItem('pendingBooking')
 
       setShowSuccess(true)
     } catch (error) {
-      console.error('Error creating booking:', error)
+      console.error('❌ Error creating booking:', error)
       alert('Failed to create booking. Please contact support with reference: ' + reference)
     } finally {
       setIsProcessing(false)
     }
-  }
-
-  // Paystack success handler
-  const handlePaystackSuccess = async (reference: any) => {
-    console.log('Paystack payment successful:', reference)
-    setPaymentReference(reference.reference)
-
-    // Create booking after successful payment
-    await createBookingAfterPayment(reference.reference)
-  }
-
-  // Paystack close handler
-  const handlePaystackClose = () => {
-    console.log('Payment popup closed')
-    setIsProcessing(false)
   }
 
   // Generate and store payment reference on mount
@@ -107,6 +105,28 @@ const PaymentPage: React.FC = () => {
       console.log('Generated payment reference:', ref)
     }
   }, [bookingData, paymentReference])
+
+  // Paystack success handler
+  const handlePaystackSuccess = async (reference: any) => {
+    console.log('🎉 Payment successful! Reference:', reference)
+    console.log('Full reference object:', JSON.stringify(reference))
+
+    try {
+      setIsProcessing(true)
+
+      // Create booking after successful payment
+      await createBookingAfterPayment(reference.reference || reference.trxref || paymentReference)
+    } catch (error) {
+      console.error('Error in success handler:', error)
+      alert('Payment successful but booking failed. Please contact support with reference: ' + (reference.reference || paymentReference))
+    }
+  }
+
+  // Paystack close handler
+  const handlePaystackClose = () => {
+    console.log('Payment popup closed')
+    setIsProcessing(false)
+  }
 
   // Configure Paystack payment - will update when reference is set
   const paystackConfig = bookingData && user && paymentReference ? {
@@ -130,8 +150,14 @@ const PaymentPage: React.FC = () => {
         },
       ],
     },
-    onSuccess: handlePaystackSuccess,
-    onClose: handlePaystackClose,
+    onSuccess: (reference: any) => {
+      console.log('✅ onSuccess callback triggered!', reference)
+      handlePaystackSuccess(reference)
+    },
+    onClose: () => {
+      console.log('❌ onClose callback triggered!')
+      handlePaystackClose()
+    },
   } : {
     email: '',
     amount: 0,
