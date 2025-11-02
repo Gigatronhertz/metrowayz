@@ -6,7 +6,7 @@ import { bookingAPI } from '../services/api'
 import { formatCurrency } from '../utils/format'
 import { useAuth } from '../context/AuthContext'
 import { isPaystackConfigured, getPaystackPublicKey } from '../config/paystack'
-import { buildPaystackConfig, convertToKobo, generatePaymentReference } from '../services/paystack'
+import { convertToKobo, generatePaymentReference } from '../services/paystack'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -174,7 +174,9 @@ const PaymentPage: React.FC = () => {
 
     // Initiate Paystack payment
     setIsProcessing(true)
-    initializePayment()
+
+    // The hook uses the config passed during initialization
+    initializePayment({} as any)
   }
 
   const handleSuccessClose = () => {
