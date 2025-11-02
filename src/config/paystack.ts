@@ -1,6 +1,7 @@
 // Paystack configuration
 export const paystackConfig = {
-  publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
+  // Hardcoded for testing - TODO: Move back to environment variable for production
+  publicKey: 'pk_test_80a4a79babd37d5f2992e3d61c08b4c99194332f',
 
   // Paystack currency (NGN for Nigeria)
   currency: 'NGN',
@@ -29,7 +30,7 @@ export const isPaystackConfigured = (): boolean => {
 // Get Paystack public key
 export const getPaystackPublicKey = (): string => {
   if (!isPaystackConfigured()) {
-    console.warn('Paystack public key is not configured. Please set VITE_PAYSTACK_PUBLIC_KEY in your .env file');
+    console.warn('Paystack public key is not configured.');
   }
   return paystackConfig.publicKey;
 };

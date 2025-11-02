@@ -23,6 +23,15 @@ const PaymentPage: React.FC = () => {
   // Check if Paystack is configured
   const paystackConfigured = isPaystackConfigured()
 
+  // Debug logging
+  useEffect(() => {
+    console.log('=== PAYSTACK CONFIG DEBUG ===')
+    console.log('Public Key from env:', import.meta.env.VITE_PAYSTACK_PUBLIC_KEY)
+    console.log('Is Configured:', paystackConfigured)
+    console.log('Public Key:', getPaystackPublicKey())
+    console.log('============================')
+  }, [])
+
   // Load booking data from localStorage
   useEffect(() => {
     const pendingBooking = localStorage.getItem('pendingBooking')
