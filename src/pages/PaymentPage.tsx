@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, CreditCard, Wallet } from 'lucide-react'
+import { Check, CreditCard } from 'lucide-react'
 import { usePaystackPayment } from 'react-paystack'
 import { bookingAPI } from '../services/api'
 import { formatCurrency } from '../utils/format'
@@ -23,30 +23,6 @@ const PaymentPage: React.FC = () => {
   // Check if Paystack is configured
   const paystackConfigured = isPaystackConfigured()
 
-  // Configure Paystack payment
-  const paystackConfig = bookingData && user ? buildPaystackConfig(
-    {
-      email: user.email,
-      amount: convertToKobo(bookingData.totalAmount || 0),
-      reference: paymentReference || generatePaymentReference(),
-      metadata: {
-        bookingId: 'pending',
-        serviceId: bookingData.serviceId,
-        serviceName: bookingData.serviceName,
-        userId: user.id,
-        userName: user.name,
-      },
-    },
-    handlePaystackSuccess,
-    handlePaystackClose
-  ) : null
-
-  const initializePayment = usePaystackPayment(paystackConfig || {
-    email: '',
-    amount: 0,
-    publicKey: getPaystackPublicKey(),
-  })
-
   // Load booking data from localStorage
   useEffect(() => {
     const pendingBooking = localStorage.getItem('pendingBooking')
@@ -57,21 +33,6 @@ const PaymentPage: React.FC = () => {
       navigate('/search')
     }
   }, [navigate])
-
-  // Paystack success handler
-  const handlePaystackSuccess = async (reference: any) => {
-    console.log('Paystack payment successful:', reference)
-    setPaymentReference(reference.reference)
-
-    // Create booking after successful payment
-    await createBookingAfterPayment(reference.reference)
-  }
-
-  // Paystack close handler
-  const handlePaystackClose = () => {
-    console.log('Payment popup closed')
-    setIsProcessing(false)
-  }
 
   // Create booking after payment
   const createBookingAfterPayment = async (reference: string) => {
@@ -114,6 +75,45 @@ const PaymentPage: React.FC = () => {
     }
   }
 
+  // Paystack success handler
+  const handlePaystackSuccess = async (reference: any) => {
+    console.log('Paystack payment successful:', reference)
+    setPaymentReference(reference.reference)
+
+    // Create booking after successful payment
+    await createBookingAfterPayment(reference.reference)
+  }
+
+  // Paystack close handler
+  const handlePaystackClose = () => {
+    console.log('Payment popup closed')
+    setIsProcessing(false)
+  }
+
+  // Configure Paystack payment
+  const paystackConfig = bookingData && user ? buildPaystackConfig(
+    {
+      email: user.email,
+      amount: convertToKobo(bookingData.totalAmount || 0),
+      reference: paymentReference || generatePaymentReference(),
+      metadata: {
+        bookingId: 'pending',
+        serviceId: bookingData.serviceId,
+        serviceName: bookingData.serviceName,
+        userId: user._id,
+        userName: user.name,
+      },
+    },
+    handlePaystackSuccess,
+    handlePaystackClose
+  ) : null
+
+  const initializePayment = usePaystackPayment(paystackConfig || {
+    email: '',
+    amount: 0,
+    publicKey: getPaystackPublicKey(),
+  })
+
   const paymentMethods = [
     {
       id: 'paystack',
@@ -144,7 +144,7 @@ const PaymentPage: React.FC = () => {
 
     // Initiate Paystack payment
     setIsProcessing(true)
-    initializePayment()
+    initializePayment(undefined as any)
   }
 
   const handleSuccessClose = () => {
