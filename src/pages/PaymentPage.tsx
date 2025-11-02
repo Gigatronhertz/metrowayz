@@ -14,7 +14,7 @@ import Card from '../components/ui/Card'
 const PaymentPage: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('free')
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('paystack')
   const [isProcessing, setIsProcessing] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [bookingData, setBookingData] = useState<any>(null)
@@ -115,93 +115,36 @@ const PaymentPage: React.FC = () => {
   }
 
   const paymentMethods = [
-    ...(paystackConfigured && bookingData?.totalAmount > 0 ? [
-      {
-        id: 'paystack',
-        name: 'Pay with Paystack',
-        description: 'Card, Bank Transfer, USSD',
-        icon: CreditCard,
-      },
-    ] : []),
     {
-      id: 'free',
-      name: 'Free Booking (No Payment Required)',
-      description: 'Book now, pay later',
-      icon: Check,
+      id: 'paystack',
+      name: 'Pay with Paystack',
+      description: 'Card, Bank Transfer, USSD',
+      icon: CreditCard,
     },
   ]
 
   const handlePayment = async () => {
     if (!bookingData) return
 
-    // If Paystack is selected, initiate Paystack payment
-    if (selectedPaymentMethod === 'paystack') {
-      if (!paystackConfigured) {
-        alert('Paystack is not configured. Please contact support.')
-        return
-      }
-
-      if (!user?.email) {
-        alert('Please log in to make a payment.')
-        navigate('/login')
-        return
-      }
-
-      // Generate payment reference
-      const reference = generatePaymentReference()
-      setPaymentReference(reference)
-
-      // Initiate Paystack payment
-      setIsProcessing(true)
-      initializePayment()
+    // Check Paystack configuration
+    if (!paystackConfigured) {
+      alert('Payment system is not configured. Please contact support.')
       return
     }
 
-    // Free booking flow
-    setIsProcessing(true)
-
-    try {
-      // First, check if dates are still available
-      const availabilityCheck = await bookingAPI.checkAvailability(
-        bookingData.serviceId,
-        bookingData.checkInDate,
-        bookingData.checkOutDate
-      )
-
-      console.log('=== FRONTEND AVAILABILITY CHECK ===')
-      console.log('Full response:', availabilityCheck)
-      console.log('availabilityCheck.data:', availabilityCheck.data)
-      console.log('availabilityCheck.success:', availabilityCheck.success)
-      console.log('===================================')
-
-      if (!availabilityCheck.data) {
-        console.error('BLOCKING: Dates are not available!')
-        alert('Sorry, these dates are no longer available. Please go back and select different dates.')
-        setIsProcessing(false)
-        return
-      }
-
-      console.log('✅ Availability check passed! Proceeding with booking...')
-
-      // Dates are available, proceed with creating booking
-      await bookingAPI.createBooking({
-        serviceId: bookingData.serviceId,
-        checkInDate: bookingData.checkInDate,
-        checkOutDate: bookingData.checkOutDate,
-        guests: bookingData.guests || 1,
-        specialRequests: bookingData.specialRequests || ''
-      })
-
-      // Clear pending booking data
-      localStorage.removeItem('pendingBooking')
-
-      setShowSuccess(true)
-    } catch (error) {
-      console.error('Error creating booking:', error)
-      alert('Failed to create booking. Please try again.')
-    } finally {
-      setIsProcessing(false)
+    if (!user?.email) {
+      alert('Please log in to make a payment.')
+      navigate('/login')
+      return
     }
+
+    // Generate payment reference
+    const reference = generatePaymentReference()
+    setPaymentReference(reference)
+
+    // Initiate Paystack payment
+    setIsProcessing(true)
+    initializePayment()
   }
 
   const handleSuccessClose = () => {
@@ -314,15 +257,15 @@ const PaymentPage: React.FC = () => {
         </Card>
 
         {/* Info Card */}
-        <Card className="p-6 bg-green-50 border-green-200">
+        <Card className="p-6 bg-blue-50 border-blue-200">
           <div className="flex items-start space-x-3">
-            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
               <Check className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-green-800 mb-2">Free Booking</h3>
-              <p className="text-green-700 text-sm leading-relaxed">
-                This is a free booking! No payment required. You can cancel anytime before check-in.
+              <h3 className="font-semibold text-blue-800 mb-2">Secure Payment</h3>
+              <p className="text-blue-700 text-sm leading-relaxed">
+                Your payment is processed securely through Paystack. Your booking will be confirmed immediately after successful payment.
               </p>
             </div>
           </div>
@@ -335,11 +278,7 @@ const PaymentPage: React.FC = () => {
             isLoading={isProcessing}
             className="w-full"
           >
-            {isProcessing
-              ? 'Processing...'
-              : selectedPaymentMethod === 'paystack'
-                ? `Pay ${formatCurrency(bookingData.totalAmount)}`
-                : 'Confirm Booking (Free)'}
+            {isProcessing ? 'Processing...' : `Pay ${formatCurrency(bookingData.totalAmount)}`}
           </Button>
         </div>
       </div>
