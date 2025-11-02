@@ -1,7 +1,7 @@
 // Paystack configuration
 export const paystackConfig = {
   // Hardcoded for testing - TODO: Move back to environment variable for production
-  publicKey: 'pk_test_80a4a79babd37d5f2992e3d61c08b4c99194332f',
+  publicKey: 'pk_test_80a4a79badb37d5f2992e3d61c08b4c99194332f',
 
   // Paystack currency (NGN for Nigeria)
   currency: 'NGN',
