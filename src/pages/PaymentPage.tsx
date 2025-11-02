@@ -193,17 +193,17 @@ const PaymentPage: React.FC = () => {
     // Initiate Paystack payment
     setIsProcessing(true)
 
-    // Pass callbacks as parameters to initializePayment
-    initializePayment(
-      (reference: any) => {
+    // Pass callbacks as a single object parameter
+    initializePayment({
+      onSuccess: (reference: any) => {
         console.log('✅ onSuccess callback triggered!', reference)
         handlePaystackSuccess(reference)
       },
-      () => {
+      onClose: () => {
         console.log('❌ onClose callback triggered!')
         handlePaystackClose()
       }
-    )
+    } as any)
   }
 
   const handleSuccessClose = () => {
