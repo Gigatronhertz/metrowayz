@@ -99,29 +99,46 @@ const PaymentPage: React.FC = () => {
     setIsProcessing(false)
   }
 
-  // Configure Paystack payment
-  const paystackConfig = bookingData && user ? buildPaystackConfig(
-    {
-      email: user.email,
-      amount: convertToKobo(bookingData.totalAmount || 0),
-      reference: paymentReference || generatePaymentReference(),
-      metadata: {
-        bookingId: 'pending',
-        serviceId: bookingData.serviceId,
-        serviceName: bookingData.serviceName,
-        userId: user._id,
-        userName: user.name,
-      },
-    },
-    handlePaystackSuccess,
-    handlePaystackClose
-  ) : null
+  // Generate and store payment reference on mount
+  useEffect(() => {
+    if (!paymentReference && bookingData) {
+      const ref = generatePaymentReference()
+      setPaymentReference(ref)
+      console.log('Generated payment reference:', ref)
+    }
+  }, [bookingData, paymentReference])
 
-  const initializePayment = usePaystackPayment(paystackConfig || {
+  // Configure Paystack payment - will update when reference is set
+  const paystackConfig = bookingData && user && paymentReference ? {
+    email: user.email,
+    amount: convertToKobo(bookingData.totalAmount || 0),
+    publicKey: getPaystackPublicKey(),
+    reference: paymentReference,
+    currency: 'NGN',
+    channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'] as any,
+    metadata: {
+      bookingId: 'pending',
+      serviceId: bookingData.serviceId,
+      serviceName: bookingData.serviceName,
+      userId: user._id,
+      userName: user.name,
+      custom_fields: [
+        {
+          display_name: 'Platform',
+          variable_name: 'platform',
+          value: 'MetroWayz',
+        },
+      ],
+    },
+    onSuccess: handlePaystackSuccess,
+    onClose: handlePaystackClose,
+  } : {
     email: '',
     amount: 0,
     publicKey: getPaystackPublicKey(),
-  })
+  }
+
+  const initializePayment = usePaystackPayment(paystackConfig as any)
 
   const paymentMethods = [
     {
@@ -132,7 +149,7 @@ const PaymentPage: React.FC = () => {
     },
   ]
 
-  const handlePayment = async () => {
+  const handlePayment = () => {
     if (!bookingData) return
 
     // Check Paystack configuration
@@ -147,13 +164,17 @@ const PaymentPage: React.FC = () => {
       return
     }
 
-    // Generate payment reference
-    const reference = generatePaymentReference()
-    setPaymentReference(reference)
+    if (!paymentReference) {
+      alert('Payment reference not ready. Please try again.')
+      return
+    }
+
+    console.log('Initiating payment with reference:', paymentReference)
+    console.log('Payment config:', paystackConfig)
 
     // Initiate Paystack payment
     setIsProcessing(true)
-    initializePayment(undefined as any)
+    initializePayment()
   }
 
   const handleSuccessClose = () => {
