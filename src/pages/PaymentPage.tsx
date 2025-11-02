@@ -150,14 +150,6 @@ const PaymentPage: React.FC = () => {
         },
       ],
     },
-    onSuccess: (reference: any) => {
-      console.log('✅ onSuccess callback triggered!', reference)
-      handlePaystackSuccess(reference)
-    },
-    onClose: () => {
-      console.log('❌ onClose callback triggered!')
-      handlePaystackClose()
-    },
   } : {
     email: '',
     amount: 0,
@@ -201,8 +193,17 @@ const PaymentPage: React.FC = () => {
     // Initiate Paystack payment
     setIsProcessing(true)
 
-    // The hook uses the config passed during initialization
-    initializePayment({} as any)
+    // Pass callbacks as parameters to initializePayment
+    initializePayment(
+      (reference: any) => {
+        console.log('✅ onSuccess callback triggered!', reference)
+        handlePaystackSuccess(reference)
+      },
+      () => {
+        console.log('❌ onClose callback triggered!')
+        handlePaystackClose()
+      }
+    )
   }
 
   const handleSuccessClose = () => {
