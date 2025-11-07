@@ -2,7 +2,6 @@ import { Service, User, Booking, BookingStatus, NotificationItem, NotificationTy
 
 export const categories: Category[] = [
   { id: 'accommodation', name: 'Accommodation', icon: '🏠' },
-  { id: 'food-beverage', name: 'Food &\nBeverage', icon: '🍕' },
   { id: 'transportation', name: 'Transportation', icon: '🚗' },
   { id: 'event-services', name: 'Event\nServices', icon: '🎉' },
   { id: 'cleaning', name: 'Cleaning', icon: '🧹' },
@@ -68,44 +67,6 @@ export const services: Service[] = [
     amenities: ['GPS', 'Insurance', 'Fuel Efficient', 'Automatic', 'Bluetooth'],
     latitude: 6.6018,
     longitude: 3.3515,
-    isAvailable: true,
-  },
-  {
-    id: '4',
-    title: 'Gourmet Food Delivery',
-    category: 'Food Delivery',
-    description: 'Fresh gourmet meals prepared by top chefs and delivered to your doorstep.',
-    location: 'Multiple Locations',
-    price: 5500,
-    priceUnit: 'meal',
-    rating: 4.9,
-    reviewCount: 156,
-    images: [
-      'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
-      'https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg',
-    ],
-    amenities: ['Fresh Ingredients', 'Fast Delivery', '24/7 Service', 'Healthy Options'],
-    latitude: 6.5244,
-    longitude: 3.3792,
-    isAvailable: true,
-  },
-  {
-    id: '5',
-    title: 'Private Chef Service',
-    category: 'Private Chefs',
-    description: 'Professional chef service for intimate dinners, parties, and special occasions.',
-    location: 'Lagos Metropolitan',
-    price: 45000,
-    priceUnit: 'event',
-    rating: 4.7,
-    reviewCount: 43,
-    images: [
-      'https://images.pexels.com/photos/887827/pexels-photo-887827.jpeg',
-      'https://images.pexels.com/photos/4253302/pexels-photo-4253302.jpeg',
-    ],
-    amenities: ['Custom Menu', 'Professional Service', 'All Equipment Provided', 'Dietary Requirements'],
-    latitude: 6.5244,
-    longitude: 3.3792,
     isAvailable: true,
   },
 ]
@@ -176,11 +137,6 @@ export const notifications: NotificationItem[] = [
 ]
 
 export const banners = [
-  {
-    title: '🎉 Lagos Food Festival',
-    subtitle: 'Book top chefs for exclusive dining experiences',
-    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=400&fit=crop',
-  },
   {
     title: '🏠 Weekend Getaways',
     subtitle: '20% off luxury apartments this weekend',

@@ -44,9 +44,10 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
           </div>
 
           <div className="text-right">
-            <div className="font-bold text-primary-500">
+            <div className="font-bold text-primary-500 text-sm">
               {formatCurrency(service.price)}
             </div>
+            <div className="text-xs text-gray-500">/{service.priceUnit}</div>
           </div>
         </div>
       </Card>
@@ -84,9 +85,10 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
 
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-xl font-bold text-primary-500">
+            <div className="text-xl font-bold text-primary-500">
               {formatCurrency(service.price)}
-            </span>
+            </div>
+            <div className="text-sm text-gray-500">per {service.priceUnit}</div>
           </div>
         </div>
       </div>

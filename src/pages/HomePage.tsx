@@ -67,8 +67,6 @@ const HomePage: React.FC = () => {
     switch (selectedCategory) {
       case 'accommodation':
         return categoryLower.includes('accommodation')
-      case 'food-beverage':
-        return categoryLower.includes('food') || categoryLower.includes('beverage')
       case 'transportation':
         return categoryLower.includes('transportation')
       case 'event-services':
@@ -218,9 +216,10 @@ const HomePage: React.FC = () => {
                       {service.title}
                     </h3>
                     <p className="text-xs opacity-90 truncate mb-2">{service.location}</p>
-                    <span className="text-sm font-bold">
+                    <div className="text-sm font-bold">
                       ₦{service.price.toLocaleString()}
-                    </span>
+                      <span className="text-xs font-normal opacity-90"> /{service.priceUnit}</span>
+                    </div>
                   </div>
                 </div>
               );
@@ -293,9 +292,10 @@ const HomePage: React.FC = () => {
                         {service.title}
                       </h3>
                       <p className="text-xs text-gray-500 truncate mb-2">{service.location}</p>
-                      <span className="text-sm font-bold text-primary-500">
+                      <div className="text-sm font-bold text-primary-500">
                         ₦{service.price.toLocaleString()}
-                      </span>
+                        <span className="text-xs font-normal text-gray-500"> /{service.priceUnit}</span>
+                      </div>
                     </div>
                   </div>
                 );
