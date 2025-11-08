@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Calendar, MessageSquare } from 'lucide-react'
 import { serviceAPI, bookingAPI } from '../services/api'
-import { formatCurrency } from '../utils/format'
+import { formatCurrency, formatPriceUnit, getPluralPriceUnit } from '../utils/format'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -135,7 +135,7 @@ const BookingPage: React.FC = () => {
               <h2 className="font-semibold text-gray-900">{service.title}</h2>
               <p className="text-gray-600 text-sm">{service.location}</p>
               <p className="text-primary-500 font-semibold mt-1">
-                {formatCurrency(service.price)} per {service.priceUnit}
+                {formatCurrency(service.price)} {formatPriceUnit(service.priceUnit, 'long')}
               </p>
             </div>
           </div>
@@ -182,7 +182,7 @@ const BookingPage: React.FC = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {formatCurrency(service.price)} × {Math.max(1, Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24)))} {service.priceUnit}s
+                  {formatCurrency(service.price)} × {Math.max(1, Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24)))} {getPluralPriceUnit(service.priceUnit, Math.max(1, Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24))))}
                 </span>
                 <span className="font-semibold">
                   {formatCurrency(service.price * Math.max(1, Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24))))}

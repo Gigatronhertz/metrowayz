@@ -2,7 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Heart } from 'lucide-react'
 import { Service } from '../../types'
-import { formatCurrency } from '../../utils/format'
+import { formatCurrency, formatPriceUnit } from '../../utils/format'
 import Card from '../ui/Card'
 
 interface ServiceCardProps {
@@ -47,7 +47,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
             <div className="font-bold text-primary-500 text-sm">
               {formatCurrency(service.price)}
             </div>
-            <div className="text-xs text-gray-500">/{service.priceUnit}</div>
+            <div className="text-xs text-gray-500">{formatPriceUnit(service.priceUnit, 'short')}</div>
           </div>
         </div>
       </Card>
@@ -88,7 +88,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
             <div className="text-xl font-bold text-primary-500">
               {formatCurrency(service.price)}
             </div>
-            <div className="text-sm text-gray-500">per {service.priceUnit}</div>
+            <div className="text-sm text-gray-500">{formatPriceUnit(service.priceUnit, 'long')}</div>
           </div>
         </div>
       </div>

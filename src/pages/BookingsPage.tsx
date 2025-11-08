@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Calendar, RotateCcw } from 'lucide-react'
 import { bookingAPI } from '../services/api'
 import { BookingStatus } from '../types'
-import { formatCurrency, formatDateRange } from '../utils/format'
+import { formatCurrency, formatDateRange, formatPriceUnit } from '../utils/format'
 import Header from '../components/layout/Header'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
@@ -195,7 +195,7 @@ const BookingsPage: React.FC = () => {
                         </span>
                         {typeof booking.serviceId === 'object' && booking.serviceId.price && booking.serviceId.priceUnit && (
                           <div className="text-xs text-gray-500">
-                            {formatCurrency(booking.serviceId.price)} per {booking.serviceId.priceUnit}
+                            {formatCurrency(booking.serviceId.price)} {formatPriceUnit(booking.serviceId.priceUnit, 'long')}
                           </div>
                         )}
                       </div>

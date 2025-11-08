@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { MapPin, Heart, Share2 } from 'lucide-react'
 import { serviceAPI, favoriteAPI, reviewAPI } from '../services/api'
-import { formatCurrency } from '../utils/format'
+import { formatCurrency, formatPriceUnit } from '../utils/format'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Rating from '../components/ui/Rating'
@@ -168,7 +168,7 @@ const ServiceDetailsPage: React.FC = () => {
               <div className="text-2xl font-bold text-primary-500">
                 {formatCurrency(service.price)}
               </div>
-              <div className="text-sm text-gray-500">per {service.priceUnit}</div>
+              <div className="text-sm text-gray-500">{formatPriceUnit(service.priceUnit, 'long')}</div>
             </div>
           </div>
 
@@ -276,7 +276,7 @@ const ServiceDetailsPage: React.FC = () => {
             <div className="text-xl font-bold text-primary-500">
               {formatCurrency(service.price)}
             </div>
-            <div className="text-sm text-gray-500">per {service.priceUnit}</div>
+            <div className="text-sm text-gray-500">{formatPriceUnit(service.priceUnit, 'long')}</div>
           </div>
           <Button onClick={handleBookNow} className="px-8">
             Book Now

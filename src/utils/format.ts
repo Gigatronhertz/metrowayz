@@ -47,3 +47,33 @@ export const formatRelativeTime = (date: Date): string => {
     return formatDate(date)
   }
 }
+
+/**
+ * Format price unit for display with fallback
+ * @param unit - The price unit (e.g., 'night', 'day', 'hour')
+ * @param variant - Display variant: 'short' (e.g., '/night') or 'long' (e.g., 'per night')
+ * @returns Formatted price unit string
+ */
+export const formatPriceUnit = (unit?: string, variant: 'short' | 'long' = 'long'): string => {
+  const defaultUnit = 'day'
+  const priceUnit = unit || defaultUnit
+
+  return variant === 'short' ? `/${priceUnit}` : `per ${priceUnit}`
+}
+
+/**
+ * Get plural form of price unit
+ * @param unit - The price unit (e.g., 'night', 'day', 'hour')
+ * @param count - Number of units
+ * @returns Plural form of the unit
+ */
+export const getPluralPriceUnit = (unit?: string, count: number = 2): string => {
+  const defaultUnit = 'day'
+  const priceUnit = unit || defaultUnit
+
+  // Handle special cases
+  if (count === 1) return priceUnit
+
+  // Most units just add 's'
+  return `${priceUnit}s`
+}
