@@ -33,6 +33,8 @@ export interface Booking {
   serviceName: string
   serviceLocation: string
   serviceImages: string[]
+  servicePrice?: number
+  servicePriceUnit?: string
   checkIn: Date
   checkOut: Date
   guests: number

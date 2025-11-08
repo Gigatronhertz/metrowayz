@@ -1423,7 +1423,7 @@ app.get("/api/user/bookings", authenticateJWT, async (req, res) => {
         }
 
         const bookings = await Booking.find(query)
-            .populate('serviceId', 'title category images')
+            .populate('serviceId', 'title category images price priceUnit')
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
@@ -1472,7 +1472,7 @@ app.get("/api/provider/bookings", authenticateJWT, async (req, res) => {
 
         const bookings = await Booking.find(query)
             .populate('userId', 'name email profilePic phoneNumber')
-            .populate('serviceId', 'title category images')
+            .populate('serviceId', 'title category images price priceUnit')
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)

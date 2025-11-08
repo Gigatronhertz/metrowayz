@@ -11,7 +11,7 @@ import RescheduleBookingModal from '../components/booking/RescheduleBookingModal
 
 interface Booking {
   _id: string
-  serviceId: { _id: string } | string
+  serviceId: { _id: string; price?: number; priceUnit?: string } | string
   serviceName: string
   serviceLocation: string
   serviceImages: string[]
@@ -189,9 +189,16 @@ const BookingsPage: React.FC = () => {
                     </p>
 
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-lg text-primary-500">
-                        {formatCurrency(booking.totalAmount)}
-                      </span>
+                      <div>
+                        <span className="font-bold text-lg text-primary-500">
+                          {formatCurrency(booking.totalAmount)}
+                        </span>
+                        {typeof booking.serviceId === 'object' && booking.serviceId.price && booking.serviceId.priceUnit && (
+                          <div className="text-xs text-gray-500">
+                            {formatCurrency(booking.serviceId.price)} per {booking.serviceId.priceUnit}
+                          </div>
+                        )}
+                      </div>
 
                       <div className="flex flex-wrap gap-2">
                         {/* Show buttons for upcoming bookings (not completed or cancelled) */}
