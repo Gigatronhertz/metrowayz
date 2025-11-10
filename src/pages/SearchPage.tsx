@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Grid, List } from 'lucide-react'
+import { Grid, List, Map } from 'lucide-react'
 import { categories } from '../data/mockData'
 import { serviceAPI } from '../services/api'
 import { SearchFilters } from '../types'
@@ -8,6 +8,7 @@ import Header from '../components/layout/Header'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import SearchBar from '../components/common/SearchBar'
 import ServiceCard from '../components/common/ServiceCard'
+import ServicesMap from '../components/common/ServicesMap'
 
 interface Service {
   _id: string
@@ -21,6 +22,8 @@ interface Service {
   reviewCount: number
   images: Array<{ url: string } | string>
   amenities: string[]
+  latitude?: number
+  longitude?: number
   isAvailable: boolean
 }
 
@@ -28,7 +31,7 @@ const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all')
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'map'>('list')
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState<SearchFilters>({})
   const [services, setServices] = useState<Service[]>([])
@@ -142,6 +145,14 @@ const SearchPage: React.FC = () => {
             >
               <Grid className="w-5 h-5" />
             </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`p-2 rounded-lg ${
+                viewMode === 'map' ? 'bg-primary-500 text-white' : 'bg-white text-gray-600'
+              }`}
+            >
+              <Map className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
@@ -156,6 +167,8 @@ const SearchPage: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No services found</h3>
             <p className="text-gray-600">Try adjusting your search or filters</p>
           </div>
+        ) : viewMode === 'map' ? (
+          <ServicesMap services={filteredServices} />
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-2 gap-4' : 'space-y-4'}>
             {filteredServices.map((service) => (

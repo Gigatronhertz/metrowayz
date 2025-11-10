@@ -6,6 +6,7 @@ import vendorApi from '../../services/vendor/vendorApi';
 import { serviceAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import { Upload, X, MapPin } from 'lucide-react';
+import MapPicker from '../../components/vendor/MapPicker';
 
 const CATEGORIES = [
   'Accommodation',
@@ -179,6 +180,14 @@ const VendorServiceForm = () => {
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleLocationChange = (lat: number, lng: number) => {
+    setFormData(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng
     }));
   };
 
@@ -409,6 +418,47 @@ const VendorServiceForm = () => {
                   <span className="text-sm font-medium">{amenity}</span>
                 </label>
               ))}
+            </div>
+          </div>
+
+          {/* Map Location Picker */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Service Location</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Click on the map to set the exact location of your service. This will help customers find you easily.
+            </p>
+
+            <MapPicker
+              latitude={formData.latitude}
+              longitude={formData.longitude}
+              onLocationChange={handleLocationChange}
+            />
+
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Latitude
+                </label>
+                <input
+                  type="number"
+                  value={formData.latitude}
+                  readOnly
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                  step="any"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Longitude
+                </label>
+                <input
+                  type="number"
+                  value={formData.longitude}
+                  readOnly
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                  step="any"
+                />
+              </div>
             </div>
           </div>
 
