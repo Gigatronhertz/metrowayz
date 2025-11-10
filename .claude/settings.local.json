@@ -11,7 +11,8 @@
       "Bash(npm install -D @types/leaflet --legacy-peer-deps)",
       "WebFetch(domain:paystack.com)",
       "WebSearch",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

@@ -17,6 +17,7 @@ const Booking = require('./model/Booking');
 const Review = require('./model/Review');
 const Notification = require('./model/Notification');
 const Favorite = require('./model/Favorite');
+const Event = require('./model/Event');
 
 dotenv.config();
 const mongo_uri = process.env.MONGO_URI;
@@ -203,6 +204,29 @@ const requireAdmin = async (req, res, next) => {
     }
 };
 
+// Super Admin middleware
+const requireSuperAdmin = async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user || user.role !== 'super_admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Super Admin access required'
+            });
+        }
+
+        req.superAdmin = user;
+        next();
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
 // ============= AUTH ROUTES =============
 
 // Google Auth Route
@@ -267,6 +291,73 @@ app.get(
       `);
     }
 );
+
+// Manual Login for Super Admin
+app.post('/auth/super-admin/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Hardcoded credentials for super admin
+        const SUPER_ADMIN_EMAIL = 'superadmin@metrowayz.com';
+        const SUPER_ADMIN_PASSWORD = 'SuperAdmin@2024!';
+
+        if (email !== SUPER_ADMIN_EMAIL || password !== SUPER_ADMIN_PASSWORD) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+
+        // Find or create super admin user
+        let superAdmin = await User.findOne({ email: SUPER_ADMIN_EMAIL });
+
+        if (!superAdmin) {
+            superAdmin = new User({
+                googleId: 'super_admin_metrowayz_001',
+                name: 'Super Admin',
+                email: SUPER_ADMIN_EMAIL,
+                role: 'super_admin',
+                isAdmin: true,
+                businessName: 'MetroWayz Administration',
+                businessType: 'Administration',
+                phoneNumber: '+1-000-000-0000',
+                about: 'Super Administrator with full system access'
+            });
+            await superAdmin.save();
+        } else if (superAdmin.role !== 'super_admin') {
+            // Ensure user has super_admin role
+            superAdmin.role = 'super_admin';
+            superAdmin.isAdmin = true;
+            await superAdmin.save();
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: superAdmin.googleId },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.status(200).json({
+            success: true,
+            token,
+            user: {
+                id: superAdmin._id,
+                name: superAdmin.name,
+                email: superAdmin.email,
+                role: superAdmin.role,
+                isAdmin: superAdmin.isAdmin
+            },
+            message: 'Super Admin login successful'
+        });
+    } catch (error) {
+        console.error('Super Admin login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+});
 
 // ============= USER ROUTES =============
 
@@ -1341,6 +1432,26 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
         const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
         const totalAmount = service.price * Math.max(duration, 1);
 
+        // Determine initial booking status based on service settings
+        // Check if service has instant booking enabled
+        const instantBooking = service.bookingSettings?.instantBooking || false;
+        const requireApproval = service.bookingSettings?.requireApproval !== false; // Default true
+
+        let initialStatus = 'pending';
+        let customerNotificationTitle = 'Booking Request Sent';
+        let customerNotificationMessage = `Your booking request for ${service.title} is pending provider approval`;
+        let providerNotificationTitle = 'New Booking Request';
+        let providerNotificationMessage = `You have a new booking request for ${service.title}. Please review and approve.`;
+
+        // Auto-confirm if instant booking is enabled OR approval is not required
+        if (instantBooking || !requireApproval) {
+            initialStatus = 'confirmed';
+            customerNotificationTitle = 'Booking Confirmed';
+            customerNotificationMessage = `Your booking for ${service.title} has been confirmed`;
+            providerNotificationTitle = 'New Booking Received';
+            providerNotificationMessage = `You have a new booking for ${service.title}`;
+        }
+
         // Create booking
         const booking = new Booking({
             serviceId: service._id,
@@ -1354,27 +1465,29 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             guests: guests || 1,
             totalAmount,
             specialRequests: specialRequests || '',
-            status: 'confirmed' // Auto-confirm since no payment
+            status: initialStatus
         });
 
         await booking.save();
 
-        // Update service bookings count
-        service.bookings += 1;
-        await service.save();
+        // Only increment bookings count if confirmed
+        if (initialStatus === 'confirmed') {
+            service.bookings += 1;
+            await service.save();
 
-        // Update user total bookings using direct database update (bypass validation)
-        await User.collection.updateOne(
-            { _id: user._id },
-            { $inc: { totalBookings: 1 } }
-        );
+            // Update user total bookings using direct database update (bypass validation)
+            await User.collection.updateOne(
+                { _id: user._id },
+                { $inc: { totalBookings: 1 } }
+            );
+        }
 
         // Create notification for customer
         await createBookingNotification(
             user._id,
             'booking',
-            'Booking Confirmed',
-            `Your booking for ${service.title} has been confirmed`,
+            customerNotificationTitle,
+            customerNotificationMessage,
             booking._id
         );
 
@@ -1382,8 +1495,8 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
         await createBookingNotification(
             service.createdBy._id,
             'booking',
-            'New Booking Received',
-            `You have a new booking for ${service.title}`,
+            providerNotificationTitle,
+            providerNotificationMessage,
             booking._id
         );
 
@@ -1423,7 +1536,7 @@ app.get("/api/user/bookings", authenticateJWT, async (req, res) => {
         }
 
         const bookings = await Booking.find(query)
-            .populate('serviceId', 'title category images price priceUnit')
+            .populate('serviceId', 'title category images')
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
@@ -1472,7 +1585,7 @@ app.get("/api/provider/bookings", authenticateJWT, async (req, res) => {
 
         const bookings = await Booking.find(query)
             .populate('userId', 'name email profilePic phoneNumber')
-            .populate('serviceId', 'title category images price priceUnit')
+            .populate('serviceId', 'title category images')
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
@@ -1608,6 +1721,220 @@ app.put("/api/bookings/:id/status", authenticateJWT, async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error updating booking status",
+            error: error.message
+        });
+    }
+});
+
+// ============= BOOKING APPROVAL/REJECTION =============
+
+// Approve pending booking (Provider only)
+app.put("/api/provider/bookings/:id/approve", authenticateJWT, async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+        const { message } = req.body; // Optional message to customer
+
+        const booking = await Booking.findById(bookingId)
+            .populate('userId')
+            .populate('providerId')
+            .populate('serviceId');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        // Check if user is the provider
+        if (booking.providerId._id.toString() !== user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Only the service provider can approve bookings"
+            });
+        }
+
+        // Check if booking is pending
+        if (booking.status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot approve booking with status: ${booking.status}. Only pending bookings can be approved.`
+            });
+        }
+
+        // Check availability before approving
+        const isAvailable = await Booking.checkAvailability(
+            booking.serviceId._id,
+            booking.checkInDate,
+            booking.checkOutDate,
+            booking._id
+        );
+
+        if (!isAvailable) {
+            return res.status(400).json({
+                success: false,
+                message: "Dates are no longer available. Another booking has been confirmed for this period."
+            });
+        }
+
+        // Approve booking
+        booking.status = 'confirmed';
+        await booking.save();
+
+        // Increment service bookings count
+        await Service.findByIdAndUpdate(
+            booking.serviceId._id,
+            { $inc: { bookings: 1 } }
+        );
+
+        // Increment user total bookings
+        await User.collection.updateOne(
+            { _id: booking.userId._id },
+            { $inc: { totalBookings: 1 } }
+        );
+
+        // Notify customer
+        await createBookingNotification(
+            booking.userId._id,
+            'booking',
+            'Booking Approved',
+            message || `Your booking for ${booking.serviceName} has been approved by the provider`,
+            booking._id
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Booking approved successfully",
+            data: booking
+        });
+    } catch (error) {
+        console.error("Error approving booking:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error approving booking",
+            error: error.message
+        });
+    }
+});
+
+// Reject pending booking (Provider only)
+app.put("/api/provider/bookings/:id/reject", authenticateJWT, async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+        const { reason } = req.body; // Reason for rejection
+
+        const booking = await Booking.findById(bookingId)
+            .populate('userId')
+            .populate('providerId');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        // Check if user is the provider
+        if (booking.providerId._id.toString() !== user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Only the service provider can reject bookings"
+            });
+        }
+
+        // Check if booking is pending
+        if (booking.status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot reject booking with status: ${booking.status}. Only pending bookings can be rejected.`
+            });
+        }
+
+        // Reject booking (set to cancelled)
+        booking.status = 'cancelled';
+        booking.cancelledBy = 'provider';
+        booking.cancelledAt = new Date();
+        booking.cancellationReason = reason || 'Rejected by provider';
+        await booking.save();
+
+        // Notify customer
+        await createBookingNotification(
+            booking.userId._id,
+            'booking',
+            'Booking Rejected',
+            reason
+                ? `Your booking for ${booking.serviceName} was declined: ${reason}`
+                : `Your booking for ${booking.serviceName} was declined by the provider`,
+            booking._id
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Booking rejected successfully",
+            data: booking
+        });
+    } catch (error) {
+        console.error("Error rejecting booking:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error rejecting booking",
+            error: error.message
+        });
+    }
+});
+
+// Get pending bookings for provider (requires action)
+app.get("/api/provider/bookings/pending", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const { page = 1, limit = 20 } = req.query;
+
+        const pendingBookings = await Booking.find({
+            providerId: user._id,
+            status: 'pending'
+        })
+            .populate('userId', 'name email profilePic phoneNumber')
+            .populate('serviceId', 'title category images')
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .lean();
+
+        const total = await Booking.countDocuments({
+            providerId: user._id,
+            status: 'pending'
+        });
+
+        res.status(200).json({
+            success: true,
+            data: pendingBookings,
+            pagination: {
+                total,
+                page: parseInt(page),
+                pages: Math.ceil(total / limit)
+            },
+            message: total > 0
+                ? `You have ${total} pending booking${total > 1 ? 's' : ''} awaiting your approval`
+                : 'No pending bookings'
+        });
+    } catch (error) {
+        console.error("Error fetching pending bookings:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching pending bookings",
             error: error.message
         });
     }
@@ -2705,14 +3032,6 @@ app.get("/api/services/:serviceId/reviews", async (req, res) => {
         const { serviceId } = req.params;
         const { page = 1, limit = 10, sortBy = 'createdAt' } = req.query;
 
-        // Validate ObjectId
-        if (!mongoose.Types.ObjectId.isValid(serviceId)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid service ID format"
-            });
-        }
-
         const sortOptions = {};
         if (sortBy === 'helpful') {
             sortOptions.helpfulCount = -1;
@@ -2732,7 +3051,7 @@ app.get("/api/services/:serviceId/reviews", async (req, res) => {
 
         // Calculate rating breakdown
         const ratingBreakdown = await Review.aggregate([
-            { $match: { serviceId: new mongoose.Types.ObjectId(serviceId) } },
+            { $match: { serviceId: mongoose.Types.ObjectId(serviceId) } },
             { $group: { _id: '$rating', count: { $sum: 1 } } },
             { $sort: { _id: -1 } }
         ]);
@@ -3683,6 +4002,596 @@ app.get("/api/admin/policies-status", authenticateJWT, async (req, res) => {
     }
 });
 
+// ============= SUPER ADMIN ROUTES =============
+
+// Get all vendors (super admin only)
+app.get("/api/super-admin/vendors", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const { search, status, page = 1, limit = 20 } = req.query;
+
+        const query = { role: 'vendor' };
+
+        // Search by name, email, or business name
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { businessName: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const vendors = await User.find(query)
+            .select('-__v')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await User.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            data: vendors,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching vendors:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching vendors",
+            error: error.message
+        });
+    }
+});
+
+// Get all bookings from all vendors (super admin only)
+app.get("/api/super-admin/bookings", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const { status, vendorId, startDate, endDate, page = 1, limit = 20 } = req.query;
+
+        const query = {};
+
+        if (status) query.status = status;
+        if (vendorId) {
+            const service = await Service.findOne({ createdBy: vendorId });
+            if (service) query.serviceId = service._id;
+        }
+        if (startDate || endDate) {
+            query.checkInDate = {};
+            if (startDate) query.checkInDate.$gte = new Date(startDate);
+            if (endDate) query.checkInDate.$lte = new Date(endDate);
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const bookings = await Booking.find(query)
+            .populate('serviceId', 'title category price priceType')
+            .populate('userId', 'name email phoneNumber')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await Booking.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            data: bookings,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching all bookings:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching bookings",
+            error: error.message
+        });
+    }
+});
+
+// Get all services from all vendors (super admin only)
+app.get("/api/super-admin/services", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const { category, status, search, page = 1, limit = 20 } = req.query;
+
+        const query = {};
+
+        if (category) query.category = category;
+        if (status) query.status = status;
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const services = await Service.find(query)
+            .populate('createdBy', 'name email businessName')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await Service.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            data: services,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching all services:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching services",
+            error: error.message
+        });
+    }
+});
+
+// Get all cancellation/reschedule requests (super admin only)
+app.get("/api/super-admin/cancellation-requests", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const { status, type, page = 1, limit = 20 } = req.query;
+
+        const query = {};
+
+        // Find bookings with cancellation or reschedule requests
+        if (status === 'pending') {
+            query.$or = [
+                { 'cancellationRequest.status': 'pending' },
+                { 'rescheduleRequest.status': 'pending' }
+            ];
+        } else if (status === 'approved') {
+            query.$or = [
+                { 'cancellationRequest.status': 'approved' },
+                { 'rescheduleRequest.status': 'approved' }
+            ];
+        } else if (status === 'rejected') {
+            query.$or = [
+                { 'cancellationRequest.status': 'rejected' },
+                { 'rescheduleRequest.status': 'rejected' }
+            ];
+        }
+
+        if (type === 'cancellation') {
+            query.cancellationRequest = { $exists: true, $ne: null };
+        } else if (type === 'reschedule') {
+            query.rescheduleRequest = { $exists: true, $ne: null };
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const requests = await Booking.find(query)
+            .populate('serviceId', 'title category price')
+            .populate('userId', 'name email phoneNumber')
+            .sort({ 'cancellationRequest.requestedAt': -1, 'rescheduleRequest.requestedAt': -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await Booking.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            data: requests,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching cancellation requests:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching cancellation requests",
+            error: error.message
+        });
+    }
+});
+
+// Approve/Reject cancellation request (super admin only)
+app.put("/api/super-admin/cancellation-requests/:bookingId/:action", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const { bookingId, action } = req.params;
+        const { adminNotes } = req.body;
+
+        if (!['approve', 'reject'].includes(action)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid action. Must be 'approve' or 'reject'"
+            });
+        }
+
+        const booking = await Booking.findById(bookingId)
+            .populate('serviceId', 'title')
+            .populate('userId', 'name email');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        if (!booking.cancellationRequest) {
+            return res.status(400).json({
+                success: false,
+                message: "No cancellation request found for this booking"
+            });
+        }
+
+        // Update cancellation request
+        booking.cancellationRequest.status = action === 'approve' ? 'approved' : 'rejected';
+        booking.cancellationRequest.processedAt = new Date();
+        booking.cancellationRequest.processedBy = req.superAdmin._id;
+        booking.cancellationRequest.adminNotes = adminNotes || `${action === 'approve' ? 'Approved' : 'Rejected'} by Super Admin`;
+
+        // If approved, update booking status
+        if (action === 'approve') {
+            booking.status = 'cancelled';
+        }
+
+        await booking.save();
+
+        // Create notification for user
+        await Notification.create({
+            userId: booking.userId._id,
+            type: 'booking_status',
+            title: `Cancellation Request ${action === 'approve' ? 'Approved' : 'Rejected'}`,
+            message: `Your cancellation request for "${booking.serviceId.title}" has been ${action === 'approve' ? 'approved' : 'rejected'}.`,
+            relatedId: booking._id,
+            relatedModel: 'Booking'
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `Cancellation request ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
+            data: booking
+        });
+    } catch (error) {
+        console.error("Error processing cancellation request:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error processing cancellation request",
+            error: error.message
+        });
+    }
+});
+
+// Get dashboard stats (super admin only)
+app.get("/api/super-admin/stats", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const [
+            totalVendors,
+            totalBookings,
+            totalServices,
+            pendingCancellations,
+            totalRevenue
+        ] = await Promise.all([
+            User.countDocuments({ role: 'vendor' }),
+            Booking.countDocuments(),
+            Service.countDocuments(),
+            Booking.countDocuments({ 'cancellationRequest.status': 'pending' }),
+            Booking.aggregate([
+                { $match: { status: 'completed' } },
+                { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+            ])
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                totalVendors,
+                totalBookings,
+                totalServices,
+                pendingCancellations,
+                totalRevenue: totalRevenue[0]?.total || 0
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching super admin stats:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching stats",
+            error: error.message
+        });
+    }
+});
+
+// ============= EVENTS ROUTES =============
+
+// Get all events (public - no auth required)
+app.get("/api/events", async (req, res) => {
+    try {
+        const { status, category, search, featured, page = 1, limit = 20 } = req.query;
+
+        const query = {};
+
+        if (status) query.status = status;
+        if (category) query.category = category;
+        if (featured === 'true') query.featured = true;
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+                { location: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const events = await Event.find(query)
+            .populate('createdBy', 'name email')
+            .sort({ eventDate: 1 }) // Sort by event date ascending
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await Event.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            data: events,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching events:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching events",
+            error: error.message
+        });
+    }
+});
+
+// Get single event by ID (public - no auth required)
+app.get("/api/events/:id", async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id)
+            .populate('createdBy', 'name email');
+
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: "Event not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: event
+        });
+    } catch (error) {
+        console.error("Error fetching event:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching event",
+            error: error.message
+        });
+    }
+});
+
+// Create event (super admin only)
+app.post("/api/super-admin/events", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const {
+            title,
+            description,
+            eventDate,
+            eventTime,
+            location,
+            venue,
+            ticketPrice,
+            image,
+            category,
+            capacity,
+            tags,
+            featured
+        } = req.body;
+
+        // Validate required fields
+        if (!title || !eventDate || !eventTime || !location || ticketPrice === undefined || !image) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing required fields: title, eventDate, eventTime, location, ticketPrice, image"
+            });
+        }
+
+        const event = new Event({
+            title,
+            description,
+            eventDate,
+            eventTime,
+            location,
+            venue,
+            ticketPrice,
+            image,
+            category,
+            capacity: capacity || 0,
+            availableTickets: capacity || 0,
+            tags: tags || [],
+            featured: featured || false,
+            createdBy: req.superAdmin._id
+        });
+
+        await event.save();
+
+        res.status(201).json({
+            success: true,
+            message: "Event created successfully",
+            data: event
+        });
+    } catch (error) {
+        console.error("Error creating event:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error creating event",
+            error: error.message
+        });
+    }
+});
+
+// Update event (super admin only)
+app.put("/api/super-admin/events/:id", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const {
+            title,
+            description,
+            eventDate,
+            eventTime,
+            location,
+            venue,
+            ticketPrice,
+            image,
+            category,
+            capacity,
+            availableTickets,
+            status,
+            tags,
+            featured
+        } = req.body;
+
+        const event = await Event.findById(req.params.id);
+
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: "Event not found"
+            });
+        }
+
+        // Update fields
+        if (title) event.title = title;
+        if (description !== undefined) event.description = description;
+        if (eventDate) event.eventDate = eventDate;
+        if (eventTime) event.eventTime = eventTime;
+        if (location) event.location = location;
+        if (venue !== undefined) event.venue = venue;
+        if (ticketPrice !== undefined) event.ticketPrice = ticketPrice;
+        if (image) event.image = image;
+        if (category) event.category = category;
+        if (capacity !== undefined) {
+            event.capacity = capacity;
+            // If capacity increased, add to available tickets
+            if (capacity > event.capacity) {
+                event.availableTickets += (capacity - event.capacity);
+            }
+        }
+        if (availableTickets !== undefined) event.availableTickets = availableTickets;
+        if (status) event.status = status;
+        if (tags) event.tags = tags;
+        if (featured !== undefined) event.featured = featured;
+
+        await event.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Event updated successfully",
+            data: event
+        });
+    } catch (error) {
+        console.error("Error updating event:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error updating event",
+            error: error.message
+        });
+    }
+});
+
+// Delete event (super admin only)
+app.delete("/api/super-admin/events/:id", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id);
+
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: "Event not found"
+            });
+        }
+
+        // Delete image from Cloudinary
+        if (event.image && event.image.publicId) {
+            try {
+                await cloudinary.uploader.destroy(event.image.publicId);
+            } catch (cloudinaryError) {
+                console.error("Error deleting image from Cloudinary:", cloudinaryError);
+            }
+        }
+
+        await Event.findByIdAndDelete(req.params.id);
+
+        res.status(200).json({
+            success: true,
+            message: "Event deleted successfully"
+        });
+    } catch (error) {
+        console.error("Error deleting event:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error deleting event",
+            error: error.message
+        });
+    }
+});
+
+// Get event statistics (super admin only)
+app.get("/api/super-admin/events/stats/overview", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const [
+            totalEvents,
+            upcomingEvents,
+            ongoingEvents,
+            completedEvents
+        ] = await Promise.all([
+            Event.countDocuments(),
+            Event.countDocuments({ status: 'upcoming' }),
+            Event.countDocuments({ status: 'ongoing' }),
+            Event.countDocuments({ status: 'completed' })
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                totalEvents,
+                upcomingEvents,
+                ongoingEvents,
+                completedEvents
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching event stats:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching event statistics",
+            error: error.message
+        });
+    }
+});
+
 // ============= ERROR HANDLING =============
 
 // 404 handler
@@ -3715,4 +4624,3 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 module.exports = app;
-// 
