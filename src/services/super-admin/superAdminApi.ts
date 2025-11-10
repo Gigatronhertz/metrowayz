@@ -162,18 +162,18 @@ export const superAdminCancellationAPI = {
   },
 
   // Approve cancellation request
-  approveCancellation: async (bookingId: string, notes?: string) => {
+  approveCancellation: async (bookingId: string, adminNotes?: string) => {
     return fetchWithAuth(`/api/super-admin/cancellation-requests/${bookingId}/approve`, {
       method: 'PUT',
-      body: JSON.stringify({ notes }),
+      body: JSON.stringify({ adminNotes }),
     });
   },
 
   // Reject cancellation request
-  rejectCancellation: async (bookingId: string, reason?: string) => {
+  rejectCancellation: async (bookingId: string, adminNotes?: string) => {
     return fetchWithAuth(`/api/super-admin/cancellation-requests/${bookingId}/reject`, {
       method: 'PUT',
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify({ adminNotes }),
     });
   },
 };

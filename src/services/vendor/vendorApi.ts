@@ -81,12 +81,8 @@ export const vendorServiceAPI = {
       });
     }
 
-    // Get current user to filter by createdBy
-    const userResponse = await fetchWithAuth('/user-details');
-    const userId = userResponse.user._id;
-    queryParams.append('createdBy', userId);
-
-    return fetchWithAuth(`/api/public/services?${queryParams.toString()}`);
+    // Use /services endpoint which auto-filters by authenticated user
+    return fetchWithAuth(`/services?${queryParams.toString()}`);
   },
 
   // Create new service

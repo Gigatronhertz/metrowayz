@@ -21,8 +21,8 @@ const CancellationRequests = () => {
 
   // Approve mutation
   const approveMutation = useMutation({
-    mutationFn: ({ bookingId, notes }: { bookingId: string; notes?: string }) =>
-      superAdminApi.cancellation.approveCancellation(bookingId, notes),
+    mutationFn: ({ bookingId, adminNotes }: { bookingId: string; adminNotes?: string }) =>
+      superAdminApi.cancellation.approveCancellation(bookingId, adminNotes),
     onSuccess: () => {
       toast.success('Cancellation approved successfully');
       queryClient.invalidateQueries({ queryKey: ['super-admin-cancellations'] });
@@ -36,8 +36,8 @@ const CancellationRequests = () => {
 
   // Reject mutation
   const rejectMutation = useMutation({
-    mutationFn: ({ bookingId, reason }: { bookingId: string; reason?: string }) =>
-      superAdminApi.cancellation.rejectCancellation(bookingId, reason),
+    mutationFn: ({ bookingId, adminNotes }: { bookingId: string; adminNotes?: string }) =>
+      superAdminApi.cancellation.rejectCancellation(bookingId, adminNotes),
     onSuccess: () => {
       toast.success('Cancellation rejected');
       queryClient.invalidateQueries({ queryKey: ['super-admin-cancellations'] });
@@ -61,12 +61,12 @@ const CancellationRequests = () => {
     if (actionType === 'approve') {
       approveMutation.mutate({
         bookingId: selectedRequest._id,
-        notes: notes || undefined,
+        adminNotes: notes || undefined,
       });
     } else {
       rejectMutation.mutate({
         bookingId: selectedRequest._id,
-        reason: notes || undefined,
+        adminNotes: notes || undefined,
       });
     }
   };
