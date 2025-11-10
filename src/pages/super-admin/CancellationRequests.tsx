@@ -16,7 +16,7 @@ const CancellationRequests = () => {
   // Fetch cancellation requests
   const { data: requestsData, isLoading } = useQuery({
     queryKey: ['super-admin-cancellations'],
-    queryFn: superAdminApi.cancellation.getCancellationRequests,
+    queryFn: () => superAdminApi.cancellation.getCancellationRequests(),
   });
 
   // Approve mutation
@@ -85,17 +85,17 @@ const CancellationRequests = () => {
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Pending Requests</p>
             <p className="text-2xl font-bold text-yellow-600">
-              {requestsData?.requests?.filter((r: any) => r.cancellationStatus === 'pending').length || 0}
+              {(requestsData as any)?.requests?.filter((r: any) => r.cancellationStatus === 'pending').length || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Approved Today</p>
-            <p className="text-2xl font-bold text-green-600">{requestsData?.approvedToday || 0}</p>
+            <p className="text-2xl font-bold text-green-600">{(requestsData as any)?.approvedToday || 0}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Refund Amount</p>
             <p className="text-2xl font-bold text-purple-600">
-              ₦{requestsData?.totalRefundAmount?.toLocaleString() || 0}
+              ₦{(requestsData as any)?.totalRefundAmount?.toLocaleString() || 0}
             </p>
           </div>
         </div>
@@ -106,9 +106,9 @@ const CancellationRequests = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
             <p className="text-gray-500 mt-4">Loading requests...</p>
           </div>
-        ) : requestsData?.requests?.length > 0 ? (
+        ) : (requestsData as any)?.requests?.length > 0 ? (
           <div className="space-y-4">
-            {requestsData.requests.map((request: any) => (
+            {(requestsData as any).requests.map((request: any) => (
               <div
                 key={request._id}
                 className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"

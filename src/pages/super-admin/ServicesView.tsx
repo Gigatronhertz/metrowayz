@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import SuperAdminLayout from '../../components/super-admin/SuperAdminLayout';
 import superAdminApi from '../../services/super-admin/superAdminApi';
-import { Search, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 const CATEGORIES = [
   'All',

@@ -25,6 +25,15 @@ import VendorProfile from './pages/vendor/VendorProfile'
 import VendorSettings from './pages/vendor/VendorSettings'
 import VendorReviews from './pages/vendor/VendorReviews'
 
+// Super Admin Pages
+import SuperAdminLogin from './pages/super-admin/SuperAdminLogin'
+import SuperAdminDashboard from './pages/super-admin/SuperAdminDashboard'
+import VendorsManagement from './pages/super-admin/VendorsManagement'
+import BookingsManagement from './pages/super-admin/BookingsManagement'
+import ServicesView from './pages/super-admin/ServicesView'
+import CancellationRequests from './pages/super-admin/CancellationRequests'
+import EventsManagement from './pages/super-admin/EventsManagement'
+
 function App() {
   return (
     <AuthProvider>
@@ -189,6 +198,64 @@ function App() {
             element={
               <ProtectedRoute>
                 <VendorSettings />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Super Admin Routes */}
+          <Route
+            path="/super-admin/login"
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <SuperAdminLogin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/vendors"
+            element={
+              <ProtectedRoute>
+                <VendorsManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/bookings"
+            element={
+              <ProtectedRoute>
+                <BookingsManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/services"
+            element={
+              <ProtectedRoute>
+                <ServicesView />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/cancellations"
+            element={
+              <ProtectedRoute>
+                <CancellationRequests />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/events"
+            element={
+              <ProtectedRoute>
+                <EventsManagement />
               </ProtectedRoute>
             }
           />

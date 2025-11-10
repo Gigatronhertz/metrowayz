@@ -31,7 +31,7 @@ const EventsManagement = () => {
   // Fetch events
   const { data: eventsData, isLoading } = useQuery({
     queryKey: ['super-admin-events'],
-    queryFn: superAdminApi.events.getAllEvents,
+    queryFn: () => superAdminApi.events.getAllEvents(),
   });
 
   // Create event mutation
@@ -216,24 +216,24 @@ const EventsManagement = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Total Events</p>
-            <p className="text-2xl font-bold text-gray-900">{eventsData?.length || 0}</p>
+            <p className="text-2xl font-bold text-gray-900">{(eventsData as any)?.length || 0}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Upcoming</p>
             <p className="text-2xl font-bold text-blue-600">
-              {eventsData?.filter((e: any) => e.status === 'upcoming').length || 0}
+              {(eventsData as any)?.filter((e: any) => e.status === 'upcoming').length || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Featured</p>
             <p className="text-2xl font-bold text-purple-600">
-              {eventsData?.filter((e: any) => e.featured).length || 0}
+              {(eventsData as any)?.filter((e: any) => e.featured).length || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Total Capacity</p>
             <p className="text-2xl font-bold text-green-600">
-              {eventsData?.reduce((acc: number, e: any) => acc + (e.capacity || 0), 0) || 0}
+              {(eventsData as any)?.reduce((acc: number, e: any) => acc + (e.capacity || 0), 0) || 0}
             </p>
           </div>
         </div>
@@ -244,9 +244,9 @@ const EventsManagement = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
             <p className="text-gray-500 mt-4">Loading events...</p>
           </div>
-        ) : eventsData?.length > 0 ? (
+        ) : (eventsData as any)?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {eventsData.map((event: any) => (
+            {(eventsData as any).map((event: any) => (
               <div key={event._id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 {/* Event Image */}
                 <div className="relative h-48 bg-gray-200">
