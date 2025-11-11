@@ -8,6 +8,7 @@ export const categories: Category[] = [
   { id: 'entertainment', name: 'Entertainment', icon: '🎭' },
   { id: 'health-wellness', name: 'Health &\nWellness', icon: '💪' },
   { id: 'professional', name: 'Professional\nServices', icon: '💼' },
+  { id: 'private-chefs', name: 'Private\nChefs', icon: '👨‍🍳' },
 ]
 
 export const services: Service[] = [

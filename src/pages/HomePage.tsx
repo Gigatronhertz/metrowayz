@@ -81,6 +81,8 @@ const HomePage: React.FC = () => {
         return categoryLower.includes('health') || categoryLower.includes('wellness')
       case 'professional':
         return categoryLower.includes('professional')
+      case 'private-chefs':
+        return categoryLower.includes('chef') || categoryLower.includes('private chef')
       default:
         return true
     }

@@ -15,7 +15,8 @@ const CATEGORIES = [
   'Cleaning',
   'Entertainment',
   'Health & Wellness',
-  'Professional Services'
+  'Professional Services',
+  'Private Chefs'
 ];
 
 const PRICE_UNITS = [
@@ -64,9 +65,14 @@ const VendorServiceForm = () => {
   const [uploading, setUploading] = useState(false);
 
   // Fetch service data if editing
-  const { data: serviceData } = useQuery({
-    queryKey: ['service', id],
-    queryFn: () => serviceAPI.getServiceById(id!),
+  const { data: serviceData, isLoading: isLoadingService } = useQuery({
+    queryKey: ['service-edit', id],
+    queryFn: async () => {
+      console.log('🔄 Fetching service for edit, ID:', id);
+      const result = await vendorApi.service.getServiceForEdit(id!);
+      console.log('✅ Service data fetched:', result);
+      return result;
+    },
     enabled: isEditing,
   });
 

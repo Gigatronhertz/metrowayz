@@ -1099,6 +1099,51 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
     }
 });
 
+// Get single service for editing (vendor endpoint with full data)
+app.get("/services/:id", authenticateJWT, async (req, res) => {
+    try {
+        const serviceId = req.params.id;
+        const userId = req.user.userId;
+
+        const service = await Service.findById(serviceId).lean();
+
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                message: "Service not found"
+            });
+        }
+
+        // Check if user owns the service or is admin
+        const user = await User.findOne({ googleId: userId });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        if (service.createdBy.toString() !== user._id.toString() && !user.isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to view this service"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            service: service
+        });
+    } catch (error) {
+        console.error("Error fetching service:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching service",
+            error: error.message
+        });
+    }
+});
+
 app.put("/services/:id", authenticateJWT, async (req, res) => {
     try {
         const serviceId = req.params.id;

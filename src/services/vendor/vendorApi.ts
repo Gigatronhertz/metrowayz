@@ -93,6 +93,11 @@ export const vendorServiceAPI = {
     return fetchWithAuth(`/services?${queryParams.toString()}`);
   },
 
+  // Get single service for editing (vendor endpoint with full data)
+  getServiceForEdit: async (id: string) => {
+    return fetchWithAuth(`/services/${id}`);
+  },
+
   // Create new service
   createService: async (data: {
     title: string;
