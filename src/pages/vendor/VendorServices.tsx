@@ -14,9 +14,13 @@ const VendorServices = () => {
   // Fetch vendor's services
   const { data: servicesData, isLoading } = useQuery({
     queryKey: ['vendor-services', statusFilter],
-    queryFn: () => vendorApi.service.getMyServices({
-      status: statusFilter === 'all' ? undefined : statusFilter,
-    }),
+    queryFn: async () => {
+      const result = await vendorApi.service.getMyServices({
+        status: statusFilter === 'all' ? undefined : statusFilter,
+      });
+      console.log('Vendor services data:', result);
+      return result;
+    },
   });
 
   // Delete service mutation
@@ -111,9 +115,9 @@ const VendorServices = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="text-gray-500 mt-4">Loading services...</p>
           </div>
-        ) : servicesData?.services?.length > 0 ? (
+        ) : servicesData?.data?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {servicesData.services.map((service: any) => (
+            {servicesData.data.map((service: any) => (
               <div key={service._id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 {/* Service Image */}
                 <div className="relative h-48 bg-gray-200">

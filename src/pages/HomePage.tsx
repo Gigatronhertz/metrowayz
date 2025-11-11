@@ -51,6 +51,7 @@ const HomePage: React.FC = () => {
           sortBy: 'createdAt',
           sortOrder: 'desc'
         })
+        console.log('Fetched services:', response.data)
         setServices(response.data || [])
       } catch (error) {
         console.error('Error fetching services:', error)
@@ -196,9 +197,11 @@ const HomePage: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {nearbyServices.map((service) => {
-              const imageUrl = typeof service.images[0] === 'string'
-                ? service.images[0]
-                : service.images[0]?.url || '/placeholder.jpg';
+              const imageUrl = service.images && service.images.length > 0
+                ? (typeof service.images[0] === 'string'
+                    ? service.images[0]
+                    : service.images[0]?.url)
+                : '/placeholder.jpg';
 
               return (
                 <div
@@ -246,7 +249,9 @@ const HomePage: React.FC = () => {
                 service={{
                   ...service,
                   id: service._id,
-                  images: service.images.map(img => typeof img === 'string' ? img : img.url),
+                  images: service.images && Array.isArray(service.images)
+                    ? service.images.map(img => typeof img === 'string' ? img : img?.url || '/placeholder.jpg')
+                    : ['/placeholder.jpg'],
                   latitude: service.latitude || 0,
                   longitude: service.longitude || 0
                 } as any}
@@ -273,9 +278,11 @@ const HomePage: React.FC = () => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {filteredServices.slice(2).map((service) => {
-                const imageUrl = typeof service.images[0] === 'string'
-                  ? service.images[0]
-                  : service.images[0]?.url || '/placeholder.jpg';
+                const imageUrl = service.images && service.images.length > 0
+                  ? (typeof service.images[0] === 'string'
+                      ? service.images[0]
+                      : service.images[0]?.url)
+                  : '/placeholder.jpg';
 
                 return (
                   <div

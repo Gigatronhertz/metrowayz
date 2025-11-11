@@ -17,16 +17,20 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
     navigate(`/service/${service.id}`)
   }
 
+  const imageUrl = service.images && service.images.length > 0
+    ? (typeof service.images[0] === 'string' ? service.images[0] : service.images[0]?.url || '/placeholder.jpg')
+    : '/placeholder.jpg';
+
   if (variant === 'compact') {
     return (
-      <Card 
+      <Card
         className="cursor-pointer hover:shadow-md transition-shadow"
         onClick={handleClick}
       >
         <div className="flex p-4 space-x-4">
           <div className="relative">
             <img
-              src={service.images[0]}
+              src={imageUrl}
               alt={service.title}
               className="w-28 h-28 rounded-lg object-cover"
             />
@@ -55,13 +59,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
   }
 
   return (
-    <Card 
+    <Card
       className="cursor-pointer hover:shadow-lg transition-shadow group"
       onClick={handleClick}
     >
       <div className="relative">
         <img
-          src={service.images[0]}
+          src={imageUrl}
           alt={service.title}
           className="w-full h-48 object-cover"
         />
