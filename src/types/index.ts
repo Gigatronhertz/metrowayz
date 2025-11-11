@@ -1,3 +1,9 @@
+export interface ServiceImage {
+  url: string
+  publicId: string
+  resourceType?: string
+}
+
 export interface Service {
   id: string
   title: string
@@ -8,7 +14,7 @@ export interface Service {
   priceUnit: string
   rating: number
   reviewCount: number
-  images: string[]
+  images: (string | ServiceImage)[]
   amenities: string[]
   latitude: number
   longitude: number

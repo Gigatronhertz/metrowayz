@@ -17,8 +17,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
     navigate(`/service/${service.id}`)
   }
 
+  const getImageUrl = (img: string | { url: string; publicId: string } | undefined): string => {
+    if (!img) return '/placeholder.jpg';
+    return typeof img === 'string' ? img : img.url;
+  };
+
   const imageUrl = service.images && service.images.length > 0
-    ? (typeof service.images[0] === 'string' ? service.images[0] : service.images[0]?.url || '/placeholder.jpg')
+    ? getImageUrl(service.images[0])
     : '/placeholder.jpg';
 
   if (variant === 'compact') {
