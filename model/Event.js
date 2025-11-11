@@ -17,6 +17,19 @@ const eventSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    venue: {
+        type: String,
+        default: ''
+    },
+    // Location coordinates for map display
+    latitude: {
+        type: Number,
+        default: 0
+    },
+    longitude: {
+        type: Number,
+        default: 0
+    },
     eventDate: {
         type: Date,
         required: true
@@ -29,7 +42,15 @@ const eventSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    ticketPrice: {
+        type: Number,
+        default: 0
+    },
     capacity: {
+        type: Number,
+        default: 0
+    },
+    availableTickets: {
         type: Number,
         default: 0
     },
@@ -52,12 +73,20 @@ const eventSchema = new mongoose.Schema({
     organizer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false
     },
     organizerName: {
         type: String,
         default: ''
     },
+    tags: [{
+        type: String
+    }],
     status: {
         type: String,
         enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],

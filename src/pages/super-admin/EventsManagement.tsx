@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SuperAdminLayout from '../../components/super-admin/SuperAdminLayout';
 import superAdminApi from '../../services/super-admin/superAdminApi';
 import vendorApi from '../../services/vendor/vendorApi';
+import MapPicker from '../../components/vendor/MapPicker';
 import { Plus, Edit, Trash2, Calendar, MapPin, DollarSign, Users, X, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -21,6 +22,9 @@ const EventsManagement = () => {
     eventDate: '',
     eventTime: '',
     location: '',
+    venue: '',
+    latitude: 0,
+    longitude: 0,
     ticketPrice: '',
     category: 'Music',
     capacity: '',
@@ -82,6 +86,9 @@ const EventsManagement = () => {
         eventDate: event.eventDate ? format(new Date(event.eventDate), 'yyyy-MM-dd') : '',
         eventTime: event.eventTime || '',
         location: event.location || '',
+        venue: event.venue || '',
+        latitude: event.latitude || 0,
+        longitude: event.longitude || 0,
         ticketPrice: event.ticketPrice?.toString() || '',
         category: event.category || 'Music',
         capacity: event.capacity?.toString() || '',
@@ -96,6 +103,9 @@ const EventsManagement = () => {
         eventDate: '',
         eventTime: '',
         location: '',
+        venue: '',
+        latitude: 0,
+        longitude: 0,
         ticketPrice: '',
         category: 'Music',
         capacity: '',
@@ -115,6 +125,9 @@ const EventsManagement = () => {
       eventDate: '',
       eventTime: '',
       location: '',
+      venue: '',
+      latitude: 0,
+      longitude: 0,
       ticketPrice: '',
       category: 'Music',
       capacity: '',
@@ -401,14 +414,42 @@ const EventsManagement = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Location *
+                      Location (City/Area) *
                     </label>
                     <input
                       type="text"
                       value={formData.location}
                       onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g., Lagos, Nigeria"
                       required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Venue (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.venue}
+                      onChange={(e) => setFormData(prev => ({ ...prev, venue: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g., Eko Convention Center"
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <MapPin className="inline w-4 h-4 mr-1" />
+                      Event Location on Map
+                    </label>
+                    <MapPicker
+                      initialLat={formData.latitude}
+                      initialLng={formData.longitude}
+                      onLocationSelect={(lat, lng) => {
+                        setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+                      }}
                     />
                   </div>
 

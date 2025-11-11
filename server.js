@@ -4519,6 +4519,8 @@ app.post("/api/super-admin/events", authenticateJWT, requireSuperAdmin, async (r
             eventTime,
             location,
             venue,
+            latitude,
+            longitude,
             ticketPrice,
             image,
             category,
@@ -4542,7 +4544,10 @@ app.post("/api/super-admin/events", authenticateJWT, requireSuperAdmin, async (r
             eventTime,
             location,
             venue,
+            latitude: latitude || 0,
+            longitude: longitude || 0,
             ticketPrice,
+            price: ticketPrice, // Also set price for backward compatibility
             image,
             category,
             capacity: capacity || 0,
@@ -4579,6 +4584,8 @@ app.put("/api/super-admin/events/:id", authenticateJWT, requireSuperAdmin, async
             eventTime,
             location,
             venue,
+            latitude,
+            longitude,
             ticketPrice,
             image,
             category,
@@ -4605,7 +4612,12 @@ app.put("/api/super-admin/events/:id", authenticateJWT, requireSuperAdmin, async
         if (eventTime) event.eventTime = eventTime;
         if (location) event.location = location;
         if (venue !== undefined) event.venue = venue;
-        if (ticketPrice !== undefined) event.ticketPrice = ticketPrice;
+        if (latitude !== undefined) event.latitude = latitude;
+        if (longitude !== undefined) event.longitude = longitude;
+        if (ticketPrice !== undefined) {
+            event.ticketPrice = ticketPrice;
+            event.price = ticketPrice; // Also update price for backward compatibility
+        }
         if (image) event.image = image;
         if (category) event.category = category;
         if (capacity !== undefined) {
