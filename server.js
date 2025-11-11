@@ -909,11 +909,33 @@ app.get("/api/public/categories", async (req, res) => {
     }
 });
 
+// DEBUG ENDPOINT - Check all services in database
+app.get("/debug/services", authenticateJWT, async (req, res) => {
+    try {
+        const allServices = await Service.find({}).select('title createdBy creatorName status createdAt').limit(50).lean();
+        const total = await Service.countDocuments({});
+
+        console.log('🐛 DEBUG - Total services in DB:', total);
+
+        res.json({
+            success: true,
+            total: total,
+            services: allServices,
+            message: 'Debug: All services in database'
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Admin/Provider endpoint - Create service (requires authentication)
 app.post("/create-service", authenticateJWT, async (req, res) => {
     try {
         const userId = req.user.userId;
+        console.log('🆕 CREATE SERVICE - JWT userId:', userId);
+
         const user = await User.findOne({ googleId: userId });
+        console.log('🆕 CREATE SERVICE - Found user:', user ? { _id: user._id, name: user.name, email: user.email } : null);
 
         if (!user) {
             return res.status(404).json({
@@ -931,7 +953,8 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
         }
 
         // Log for debugging
-        console.log('Creating service with images:', images);
+        console.log('🆕 CREATE SERVICE - Images count:', images.length);
+        console.log('🆕 CREATE SERVICE - Service title:', req.body.title);
 
         // Add creator info to service
         const serviceData = {
@@ -945,8 +968,12 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
             createdAt: new Date()
         };
 
+        console.log('🆕 CREATE SERVICE - Saving with createdBy:', user._id);
+
         const service = new Service(serviceData);
         await service.save();
+
+        console.log('🆕 CREATE SERVICE - Saved successfully! Service ID:', service._id);
 
         res.status(201).json({
             success: true,
@@ -980,8 +1007,10 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
         let user = null;
         try {
             const userId = req.user?.userId;
+            console.log('🔍 GET /services - JWT userId:', userId);
             if (userId) {
                 user = await User.findOne({ googleId: userId });
+                console.log('🔍 GET /services - Found user:', user ? { _id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } : null);
             }
         } catch (userError) {
             console.error("Error finding user:", userError);
@@ -992,6 +1021,9 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
         // Filter by user's services only (unless admin or user not found)
         if (user && !user.isAdmin) {
             query.createdBy = user._id;
+            console.log('🔍 GET /services - Query filter (createdBy):', user._id);
+        } else {
+            console.log('🔍 GET /services - No user filter (user:', user ? 'admin' : 'null', ')');
         }
 
         // Add search functionality
@@ -1017,6 +1049,8 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
         let services = [];
         let total = 0;
 
+        console.log('🔍 GET /services - Final query:', JSON.stringify(query));
+
         try {
             services = await Service.find(query)
                 .populate('createdBy', 'name email')
@@ -1027,6 +1061,12 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
                 .exec();
 
             total = await Service.countDocuments(query);
+
+            console.log('🔍 GET /services - Found services:', services.length);
+            console.log('🔍 GET /services - Total count:', total);
+            if (services.length > 0) {
+                console.log('🔍 GET /services - First service createdBy:', services[0].createdBy);
+            }
         } catch (dbError) {
             console.error("Database error fetching services:", dbError);
             // Return empty array instead of erroring

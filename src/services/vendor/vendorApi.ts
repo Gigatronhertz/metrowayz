@@ -19,6 +19,9 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}, retries = 2
   }
 
   try {
+    console.log('🌐 API Request:', `${API_BASE_URL}${url}`);
+    console.log('🔑 Has token:', !!token);
+
     const response = await fetch(`${API_BASE_URL}${url}`, {
       ...options,
       headers: {
@@ -28,12 +31,17 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}, retries = 2
       signal: AbortSignal.timeout(30000),
     });
 
+    console.log('📥 API Response status:', response.status);
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Request failed' }));
+      console.error('❌ API Error:', error);
       throw new Error(error.message || 'Request failed');
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log('✅ API Success:', url, 'Data count:', data.data?.length || 'N/A');
+    return data;
   } catch (error: any) {
     if (retries > 0 && (error.name === 'AbortError' || error.message.includes('fetch'))) {
       console.log(`Retrying request to ${url}... (${retries} attempts left)`);
