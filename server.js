@@ -802,9 +802,23 @@ app.get("/api/public/services", async (req, res) => {
             delete query.$or; // Remove the top-level $or since we moved it into $and
         }
 
-        // Filter by category
+        // Filter by category with new mapping
         if (category && category !== 'all') {
-            query.category = category;
+            const categoryLower = category.toLowerCase();
+
+            // Map new category structure
+            if (categoryLower === 'professional' || categoryLower === 'professional services') {
+                // Professional Services includes: Transportation, Events, Cleaning, Health & Wellness, and Professional Services
+                query.category = {
+                    $regex: 'transportation|event|cleaning|health|wellness|professional',
+                    $options: 'i'
+                };
+            } else if (categoryLower === 'private chefs' || categoryLower === 'private-chefs') {
+                query.category = { $regex: 'chef|private chef', $options: 'i' };
+            } else {
+                // Direct match for Accommodation and Entertainment
+                query.category = { $regex: category, $options: 'i' };
+            }
         }
 
         // Filter by price range
@@ -1035,9 +1049,23 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
             ];
         }
 
-        // Filter by category
+        // Filter by category with new mapping
         if (category && category !== 'all') {
-            query.category = category;
+            const categoryLower = category.toLowerCase();
+
+            // Map new category structure
+            if (categoryLower === 'professional' || categoryLower === 'professional services') {
+                // Professional Services includes: Transportation, Events, Cleaning, Health & Wellness, and Professional Services
+                query.category = {
+                    $regex: 'transportation|event|cleaning|health|wellness|professional',
+                    $options: 'i'
+                };
+            } else if (categoryLower === 'private chefs' || categoryLower === 'private-chefs') {
+                query.category = { $regex: 'chef|private chef', $options: 'i' };
+            } else {
+                // Direct match for Accommodation and Entertainment
+                query.category = { $regex: category, $options: 'i' };
+            }
         }
 
         // Filter by status

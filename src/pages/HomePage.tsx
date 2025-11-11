@@ -67,22 +67,20 @@ const HomePage: React.FC = () => {
   const filteredServices = services.filter(service => {
     const categoryLower = service.category.toLowerCase()
     switch (selectedCategory) {
-      case 'accommodation':
-        return categoryLower.includes('accommodation')
-      case 'transportation':
-        return categoryLower.includes('transportation')
-      case 'event-services':
-        return categoryLower.includes('event')
-      case 'cleaning':
-        return categoryLower.includes('cleaning')
-      case 'entertainment':
-        return categoryLower.includes('entertainment')
-      case 'health-wellness':
-        return categoryLower.includes('health') || categoryLower.includes('wellness')
-      case 'professional':
-        return categoryLower.includes('professional')
       case 'private-chefs':
         return categoryLower.includes('chef') || categoryLower.includes('private chef')
+      case 'entertainment':
+        return categoryLower.includes('entertainment')
+      case 'accommodation':
+        return categoryLower.includes('accommodation')
+      case 'professional':
+        // Professional Services includes: Transportation, Events, Cleaning, Health & Wellness, and Professional Services
+        return categoryLower.includes('professional') ||
+               categoryLower.includes('transportation') ||
+               categoryLower.includes('event') ||
+               categoryLower.includes('cleaning') ||
+               categoryLower.includes('health') ||
+               categoryLower.includes('wellness')
       default:
         return true
     }
