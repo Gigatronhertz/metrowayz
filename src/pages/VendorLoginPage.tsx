@@ -2,35 +2,27 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import GoogleSignInButton from '../components/auth/GoogleSignInButton';
-import { Store, Users, DollarSign, Calendar, ArrowRight } from 'lucide-react';
+import { Store, Users, DollarSign, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const VendorLoginPage = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     // Store that this is a vendor login attempt
     localStorage.setItem('loginIntent', 'vendor');
 
     // If already logged in, redirect to vendor dashboard
-    if (user && !loading) {
+    if (user) {
       navigate('/vendor/dashboard');
     }
-  }, [user, loading, navigate]);
+  }, [user, navigate]);
 
   const handleGoogleSignIn = () => {
     // Store redirect path before OAuth
     localStorage.setItem('redirectAfterAuth', '/vendor/dashboard');
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">

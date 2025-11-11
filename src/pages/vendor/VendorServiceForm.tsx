@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import vendorApi from '../../services/vendor/vendorApi';
-import { serviceAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import { Upload, X, MapPin } from 'lucide-react';
 import MapPicker from '../../components/vendor/MapPicker';
@@ -65,7 +64,7 @@ const VendorServiceForm = () => {
   const [uploading, setUploading] = useState(false);
 
   // Fetch service data if editing
-  const { data: serviceData, isLoading: isLoadingService } = useQuery({
+  const { data: serviceData } = useQuery({
     queryKey: ['service-edit', id],
     queryFn: async () => {
       console.log('🔄 Fetching service for edit, ID:', id);

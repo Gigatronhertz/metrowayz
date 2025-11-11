@@ -445,9 +445,9 @@ const EventsManagement = () => {
                       Event Location on Map
                     </label>
                     <MapPicker
-                      initialLat={formData.latitude}
-                      initialLng={formData.longitude}
-                      onLocationSelect={(lat, lng) => {
+                      latitude={formData.latitude}
+                      longitude={formData.longitude}
+                      onLocationChange={(lat, lng) => {
                         setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
                       }}
                     />
