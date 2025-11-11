@@ -12,15 +12,29 @@ const VendorServices = () => {
   const [statusFilter, setStatusFilter] = useState('all');
 
   // Fetch vendor's services
-  const { data: servicesData, isLoading } = useQuery({
+  const { data: servicesData, isLoading, error, isError } = useQuery({
     queryKey: ['vendor-services', statusFilter],
     queryFn: async () => {
+      console.log('🚀 FETCHING VENDOR SERVICES - Status filter:', statusFilter);
       const result = await vendorApi.service.getMyServices({
         status: statusFilter === 'all' ? undefined : statusFilter,
       });
-      console.log('Vendor services data:', result);
+      console.log('✅ VENDOR SERVICES RESULT:', result);
+      console.log('📊 Services count:', result?.data?.length);
       return result;
     },
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  // Log for debugging
+  console.log('🔍 VendorServices State:', {
+    isLoading,
+    isError,
+    error,
+    hasData: !!servicesData,
+    dataLength: servicesData?.data?.length,
+    servicesData
   });
 
   // Delete service mutation
