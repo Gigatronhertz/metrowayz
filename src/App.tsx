@@ -5,6 +5,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import OnboardingPage from './pages/OnboardingPage'
 import RoleSelectionPage from './pages/RoleSelectionPage'
 import BecomeVendorPage from './pages/BecomeVendorPage'
+import VendorLoginPage from './pages/VendorLoginPage'
 import HomePage from './pages/HomePage'
 import SearchPage from './pages/SearchPage'
 import ServiceDetailsPage from './pages/ServiceDetailsPage'
@@ -60,6 +61,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <BecomeVendorPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendor"
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <VendorLoginPage />
               </ProtectedRoute>
             }
           />

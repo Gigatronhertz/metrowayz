@@ -13,11 +13,28 @@ const VendorBookings = () => {
   const [showModal, setShowModal] = useState(false);
 
   // Fetch bookings
-  const { data: bookingsData, isLoading } = useQuery({
+  const { data: bookingsData, isLoading, error } = useQuery({
     queryKey: ['vendor-bookings', statusFilter],
-    queryFn: () => vendorApi.booking.getProviderBookings({
-      status: statusFilter === 'all' ? undefined : statusFilter,
-    }),
+    queryFn: async () => {
+      console.log('🚀 FETCHING VENDOR BOOKINGS - Status filter:', statusFilter);
+      const result = await vendorApi.booking.getProviderBookings({
+        status: statusFilter === 'all' ? undefined : statusFilter,
+      });
+      console.log('✅ VENDOR BOOKINGS RESULT:', result);
+      console.log('📊 Bookings count:', result?.data?.length);
+      return result;
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  // Log for debugging
+  console.log('🔍 VendorBookings State:', {
+    isLoading,
+    error,
+    hasData: !!bookingsData,
+    dataLength: bookingsData?.data?.length,
+    bookings: bookingsData?.data
   });
 
   // Approve booking mutation

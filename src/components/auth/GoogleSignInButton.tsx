@@ -27,7 +27,23 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
     try {
       await loginWithGoogle()
       onSuccess?.()
-      navigate('/home', { replace: true })
+
+      // Check for stored redirect path (for vendor login)
+      const redirectPath = localStorage.getItem('redirectAfterAuth')
+      const loginIntent = localStorage.getItem('loginIntent')
+
+      // Clear stored values
+      localStorage.removeItem('redirectAfterAuth')
+      localStorage.removeItem('loginIntent')
+
+      // Redirect based on intent
+      if (redirectPath) {
+        navigate(redirectPath, { replace: true })
+      } else if (loginIntent === 'vendor') {
+        navigate('/vendor/dashboard', { replace: true })
+      } else {
+        navigate('/home', { replace: true })
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Authentication failed'
       onError?.(errorMessage)
