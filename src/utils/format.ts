@@ -1,10 +1,9 @@
 export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
+  // Format with explicit Naira symbol
+  return `₦${amount.toLocaleString('en-NG', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount)
+  })}`
 }
 
 export const formatDate = (date: Date): string => {
