@@ -915,13 +915,31 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
         const userId = req.user.userId;
         const user = await User.findOne({ googleId: userId });
 
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found. Please log in again."
+            });
+        }
+
+        // Validate and clean images array
+        let images = [];
+        if (req.body.images && Array.isArray(req.body.images)) {
+            images = req.body.images.filter(img =>
+                img && img.url && img.publicId
+            );
+        }
+
+        // Log for debugging
+        console.log('Creating service with images:', images);
+
         // Add creator info to service
         const serviceData = {
             ...req.body,
             createdBy: user._id,
             creatorName: user.name,
             creatorEmail: user.email,
-            images: req.body.images || [],
+            images: images,
             bookings: 0,
             rating: 0,
             createdAt: new Date()
@@ -936,8 +954,21 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
             service,
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        console.error("Create service error:", error);
+
+        // Send more detailed error for validation errors
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: "Validation error: " + error.message,
+                errors: error.errors
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: "Internal server error: " + error.message
+        });
     }
 });
 

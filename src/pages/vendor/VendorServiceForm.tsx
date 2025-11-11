@@ -133,7 +133,7 @@ const VendorServiceForm = () => {
     try {
       // Get Cloudinary signature
       const signatureData = await vendorApi.service.getCloudinarySignature();
-      const { signature, timestamp, cloudName, apiKey } = signatureData;
+      const { signature, timestamp, cloudName, apiKey, folder } = signatureData.data;
 
       const uploadedImages: Array<{ url: string; publicId: string; resourceType: string }> = [];
 
@@ -141,9 +141,9 @@ const VendorServiceForm = () => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('signature', signature);
-        formData.append('timestamp', timestamp);
+        formData.append('timestamp', timestamp.toString());
         formData.append('api_key', apiKey);
-        formData.append('folder', 'metrowayz-services');
+        formData.append('folder', folder);
 
         const response = await fetch(
           `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -155,6 +155,16 @@ const VendorServiceForm = () => {
 
         const data = await response.json();
 
+        if (!response.ok) {
+          console.error('Cloudinary upload error:', data);
+          throw new Error(data.error?.message || 'Upload failed');
+        }
+
+        if (!data.secure_url || !data.public_id) {
+          console.error('Missing data from Cloudinary:', data);
+          throw new Error('Invalid response from Cloudinary');
+        }
+
         uploadedImages.push({
           url: data.secure_url,
           publicId: data.public_id,
@@ -162,12 +172,14 @@ const VendorServiceForm = () => {
         });
       }
 
+      console.log('Uploaded images:', uploadedImages);
+
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...uploadedImages]
       }));
 
-      toast.success('Images uploaded successfully');
+      toast.success(`${uploadedImages.length} image(s) uploaded successfully`);
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to upload images');
@@ -205,10 +217,15 @@ const VendorServiceForm = () => {
       return;
     }
 
-    mutation.mutate({
+    const submitData = {
       ...formData,
       price: parseFloat(formData.price),
-    });
+    };
+
+    console.log('Submitting service data:', submitData);
+    console.log('Images in submit:', submitData.images);
+
+    mutation.mutate(submitData);
   };
 
   return (

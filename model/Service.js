@@ -29,8 +29,14 @@ const serviceSchema = new mongoose.Schema({
 
     // Images stored as array of objects with url and publicId
     images: [{
-        url: String,
-        publicId: String,
+        url: {
+            type: String,
+            required: false
+        },
+        publicId: {
+            type: String,
+            required: false
+        },
         resourceType: {
             type: String,
             default: 'image'
