@@ -178,7 +178,7 @@ const VendorDashboard = () => {
           </div>
 
           <div className="p-4 border-t border-gray-200 text-center">
-            <a href="/vendor/bookings" className="text-blue-600 hover:text-blue-700 font-medium">
+            <a href="/vendor/bookings" className="text-primary-600 hover:text-primary-700 font-medium">
               View All Bookings →
             </a>
           </div>
@@ -191,8 +191,8 @@ const VendorDashboard = () => {
             className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-blue-100 rounded-full p-3">
-                <Package size={24} className="text-blue-600" />
+              <div className="bg-primary-100 rounded-full p-3">
+                <Package size={24} className="text-primary-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Add New Service</h3>

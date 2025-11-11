@@ -12,7 +12,8 @@
       "WebFetch(domain:paystack.com)",
       "WebSearch",
       "Bash(npm install:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

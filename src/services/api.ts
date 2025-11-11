@@ -1,5 +1,5 @@
 // Base API configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://metrowayz.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://metrowayz.onrender.com';
 
 // Helper to get auth token
 const getAuthToken = () => {
