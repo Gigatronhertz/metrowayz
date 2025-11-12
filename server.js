@@ -175,15 +175,21 @@ const authenticateJWT = (req, res, next) => {
         ? authHeader.split(' ')[1]
         : authHeader;
 
+    console.log('🔑 authenticateJWT - Token present:', !!token);
+    console.log('🔑 authenticateJWT - Token preview:', token ? token.substring(0, 20) + '...' : 'none');
+
     if (!token) {
+        console.log('❌ authenticateJWT: No token provided');
         return res.status(401).json({ message: 'No token provided' });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('✅ authenticateJWT - Decoded token:', decoded);
         req.user = decoded;
         next();
     } catch (err) {
+        console.error('❌ authenticateJWT - Token verification failed:', err.message);
         return res.status(403).json({ message: 'Invalid token' });
     }
 };
@@ -207,19 +213,40 @@ const requireAdmin = async (req, res, next) => {
 // Super Admin middleware
 const requireSuperAdmin = async (req, res, next) => {
     try {
+        console.log('🔐 requireSuperAdmin middleware - req.user:', req.user);
         const userId = req.user.userId;
-        const user = await User.findOne({ googleId: userId });
+        console.log('🔍 Looking up user with googleId:', userId);
 
-        if (!user || user.role !== 'super_admin') {
+        const user = await User.findOne({ googleId: userId });
+        console.log('🔍 Found user:', user ? {
+            _id: user._id,
+            email: user.email,
+            googleId: user.googleId,
+            role: user.role,
+            isAdmin: user.isAdmin
+        } : null);
+
+        if (!user) {
+            console.log('❌ requireSuperAdmin: User not found');
             return res.status(403).json({
                 success: false,
-                message: 'Super Admin access required'
+                message: 'Super Admin access required - User not found'
             });
         }
 
+        if (user.role !== 'super_admin') {
+            console.log('❌ requireSuperAdmin: User role is not super_admin, got:', user.role);
+            return res.status(403).json({
+                success: false,
+                message: `Super Admin access required - Current role: ${user.role || 'none'}`
+            });
+        }
+
+        console.log('✅ requireSuperAdmin: Access granted');
         req.superAdmin = user;
         next();
     } catch (error) {
+        console.error('❌ requireSuperAdmin error:', error);
         return res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -299,6 +326,51 @@ app.get('/auth/super-admin/test', (req, res) => {
         message: 'Super Admin endpoint is reachable',
         timestamp: new Date().toISOString()
     });
+});
+
+// Debug endpoint to check current user (authenticated)
+app.get('/auth/whoami', authenticateJWT, async (req, res) => {
+    try {
+        console.log('🔍 WhoAmI - JWT user:', req.user);
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        console.log('🔍 WhoAmI - Found user:', user ? {
+            _id: user._id,
+            email: user.email,
+            googleId: user.googleId,
+            role: user.role,
+            isAdmin: user.isAdmin
+        } : null);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found in database',
+                jwtUserId: userId
+            });
+        }
+
+        res.json({
+            success: true,
+            jwt: req.user,
+            database: {
+                _id: user._id,
+                email: user.email,
+                name: user.name,
+                googleId: user.googleId,
+                role: user.role,
+                isAdmin: user.isAdmin
+            }
+        });
+    } catch (error) {
+        console.error('❌ WhoAmI error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
 });
 
 // Endpoint to ensure super admin user exists with correct role (public for setup)
