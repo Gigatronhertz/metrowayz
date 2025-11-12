@@ -26,11 +26,16 @@ const VendorSidebar = () => {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-primary-500">MetroWayz</h1>
-        <p className="text-sm text-gray-500 mt-1">Vendor Portal</p>
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <img src="/logo.svg" alt="MetroWayz" className="w-10 h-10" />
+          <div>
+            <h1 className="text-xl font-display font-bold text-gray-900">MetroWayz</h1>
+            <p className="text-xs text-gray-500 mt-0.5">Vendor Portal</p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
@@ -41,15 +46,19 @@ const VendorSidebar = () => {
               <NavLink
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary-50 text-primary-600'
+                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`
                 }
               >
-                <item.icon size={20} />
-                <span className="font-medium">{item.label}</span>
+                {({ isActive }) => (
+                  <>
+                    <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                    <span className="font-medium text-sm">{item.label}</span>
+                  </>
+                )}
               </NavLink>
             </li>
           ))}
@@ -57,13 +66,13 @@ const VendorSidebar = () => {
       </nav>
 
       {/* Logout Button */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-100">
         <button
           onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors w-full"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200 w-full"
         >
           <LogOut size={20} />
-          <span className="font-medium">Logout</span>
+          <span className="font-medium text-sm">Logout</span>
         </button>
       </div>
     </aside>
