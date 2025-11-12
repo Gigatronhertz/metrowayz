@@ -37,9 +37,22 @@
   .container-padding {
     @apply px-4 sm:px-6 lg:px-8;
   }
-  
+
+  .container-max {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
   .section-spacing {
-    @apply py-8 sm:py-12 lg:py-16;
+    @apply py-12 sm:py-16 lg:py-24;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 

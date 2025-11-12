@@ -1,10 +1,10 @@
 import { Service, User, Booking, BookingStatus, NotificationItem, NotificationType, Category } from '../types'
 
 export const categories: Category[] = [
-  { id: 'private-chefs', name: 'Private\nChefs', icon: '👨‍🍳' },
-  { id: 'entertainment', name: 'Entertainment', icon: '🎭' },
-  { id: 'accommodation', name: 'Accommodation', icon: '🏠' },
-  { id: 'professional', name: 'Professional\nServices', icon: '💼' },
+  { id: 'private-chefs', name: 'Private Chefs', icon: 'ChefHat' },
+  { id: 'entertainment', name: 'Entertainment', icon: 'Music' },
+  { id: 'accommodation', name: 'Accommodation', icon: 'Home' },
+  { id: 'professional', name: 'Professional Services', icon: 'Briefcase' },
 ]
 
 export const services: Service[] = [

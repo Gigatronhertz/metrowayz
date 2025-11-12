@@ -90,57 +90,86 @@ const HomePage: React.FC = () => {
   const featuredServices = filteredServices.slice(0, 2)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-20">
-      {/* Header */}
-      <div className="bg-white shadow-soft">
-        <div className="container-padding py-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <img
-                src="/logo.svg"
-                alt="MetroWayz Logo"
-                className="w-12 h-12"
-              />
+    <div className="min-h-screen bg-white pb-20 lg:pb-0">
+      {/* Desktop Header */}
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <div className="container-max py-4 lg:py-5">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+              <img src="/logo.svg" alt="MetroWayz" className="w-10 h-10 lg:w-12 lg:h-12" />
               <div>
-                <h1 className="text-3xl font-display font-bold text-gray-900">Welcome! 👋</h1>
-                <p className="text-gray-600 text-sm mt-1">Your lifestyle services in one place</p>
+                <h1 className="text-xl lg:text-2xl font-display font-bold text-gray-900">MetroWayz</h1>
+                <p className="hidden lg:block text-xs text-gray-500">Premium Lifestyle Services</p>
               </div>
             </div>
-            <button
-              onClick={() => {/* Navigate to notifications */}}
-              className="p-3 bg-gray-100 rounded-full relative hover:bg-gray-200 transition-colors"
-            >
-              <Bell className="w-6 h-6 text-gray-700" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary-500 rounded-full border-2 border-white"></span>
-            </button>
-          </div>
 
-          {/* Enhanced Search Bar */}
-          <div className="max-w-2xl">
-            <SearchBar
-              placeholder="Search for services, chefs, venues..."
-              onFilterClick={() => navigate('/search')}
-            />
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-8">
+              <button className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">
+                Services
+              </button>
+              <button className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">
+                Become a Vendor
+              </button>
+              <button className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">
+                Help
+              </button>
+            </nav>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {/* Navigate to notifications */}}
+                className="relative p-2.5 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                <Bell className="w-5 h-5 lg:w-6 lg:h-6 text-gray-600" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full"></span>
+              </button>
+              <button
+                onClick={() => navigate('/login')}
+                className="hidden lg:block px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                Sign In
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="container-padding space-y-10 py-8">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-primary-50 via-white to-secondary-50 py-12 lg:py-20">
+        <div className="container-max">
+          <div className="max-w-4xl mx-auto text-center mb-10">
+            <h2 className="text-4xl lg:text-6xl font-display font-bold text-gray-900 mb-4 lg:mb-6">
+              Discover Premium
+              <span className="block text-primary-600">Lifestyle Services</span>
+            </h2>
+            <p className="text-lg lg:text-xl text-gray-600 mb-8 lg:mb-10 max-w-2xl mx-auto">
+              Book private chefs, luxury accommodations, entertainment, and professional services with ease
+            </p>
+
+            {/* Hero Search */}
+            <div className="max-w-3xl mx-auto">
+              <SearchBar
+                placeholder="Search for services, chefs, venues, or locations..."
+                onFilterClick={() => navigate('/search')}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="container-max space-y-16 lg:space-y-24 py-12 lg:py-16">
         {/* Categories */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-display font-bold text-gray-900">Explore Services</h2>
-              <p className="text-sm text-gray-600 mt-1">Discover what you need, when you need it</p>
-            </div>
-            <button
-              onClick={() => navigate('/search')}
-              className="text-primary-600 font-semibold hover:text-primary-700 transition-colors text-sm"
-            >
-              See all →
-            </button>
+          <div className="text-center mb-10 lg:mb-12">
+            <h2 className="text-3xl lg:text-5xl font-display font-bold text-gray-900 mb-3">Browse by Category</h2>
+            <p className="text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
+              Curated services to match your lifestyle needs
+            </p>
           </div>
-          <div className="flex space-x-4 overflow-x-auto pb-3 scrollbar-hide">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -192,19 +221,13 @@ const HomePage: React.FC = () => {
 
         {/* Explore Nearby */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-display font-bold text-gray-900">Popular Near You</h2>
-              <p className="text-sm text-gray-600 mt-1">Top-rated services in your area</p>
-            </div>
-            <button
-              onClick={() => navigate('/search')}
-              className="text-primary-600 font-semibold hover:text-primary-700 transition-colors text-sm"
-            >
-              See all →
-            </button>
+          <div className="text-center mb-10 lg:mb-12">
+            <h2 className="text-3xl lg:text-5xl font-display font-bold text-gray-900 mb-3">Popular Near You</h2>
+            <p className="text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
+              Highly-rated services available in your area
+            </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
             {nearbyServices.map((service) => {
               const imageUrl = service.images && service.images.length > 0
                 ? (typeof service.images[0] === 'string'
@@ -242,19 +265,13 @@ const HomePage: React.FC = () => {
 
         {/* Featured Services */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-display font-bold text-gray-900">Featured Services</h2>
-              <p className="text-sm text-gray-600 mt-1">Hand-picked selections just for you</p>
-            </div>
-            <button
-              onClick={() => navigate('/search')}
-              className="text-primary-600 font-semibold hover:text-primary-700 transition-colors text-sm"
-            >
-              See all →
-            </button>
+          <div className="text-center mb-10 lg:mb-12">
+            <h2 className="text-3xl lg:text-5xl font-display font-bold text-gray-900 mb-3">Featured Services</h2>
+            <p className="text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
+              Premium selections handpicked for quality and excellence
+            </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
             {featuredServices.map((service) => (
               <ServiceCard
                 key={service._id}
