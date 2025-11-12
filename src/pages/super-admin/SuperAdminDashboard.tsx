@@ -1,6 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SuperAdminLayout from '../../components/super-admin/SuperAdminLayout';
 import superAdminApi from '../../services/super-admin/superAdminApi';
+import toast from 'react-hot-toast';
 import {
   Users,
   Package,
@@ -9,14 +11,31 @@ import {
   DollarSign,
   XCircle,
   CalendarRange,
-  Activity
+  Activity,
+  RefreshCw
 } from 'lucide-react';
 
 const SuperAdminDashboard = () => {
+  const queryClient = useQueryClient();
+  const [migrationResult, setMigrationResult] = useState<any>(null);
+
   // Fetch platform stats
   const { data: stats, isLoading } = useQuery({
     queryKey: ['super-admin-stats'],
     queryFn: superAdminApi.dashboard.getStats,
+  });
+
+  // Fix vendor roles mutation
+  const fixVendorRolesMutation = useMutation({
+    mutationFn: superAdminApi.vendors.fixVendorRoles,
+    onSuccess: (data) => {
+      toast.success(data.message || 'Vendor roles fixed successfully!');
+      setMigrationResult(data.data);
+      queryClient.invalidateQueries({ queryKey: ['super-admin-stats'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to fix vendor roles');
+    },
   });
 
   const statCards = [
@@ -215,6 +234,67 @@ const SuperAdminDashboard = () => {
                   <span className="text-lg text-primary-600">→</span>
                 </p>
               </a>
+            </div>
+
+            {/* Maintenance Section */}
+            <div className="bg-white rounded-2xl shadow-card p-6 border border-gray-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-secondary-500 rounded-xl p-3 shadow-sm">
+                  <RefreshCw size={24} className="text-white" strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-display font-bold text-gray-900">Database Maintenance</h3>
+                  <p className="text-sm text-gray-600 mt-1">Run migration scripts and data fixes</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Fix Vendor Roles</h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Update users with business info to have vendor role (required for vendor list to show)
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => fixVendorRolesMutation.mutate()}
+                      disabled={fixVendorRolesMutation.isPending}
+                      className="px-4 py-2 bg-secondary-500 text-white rounded-lg font-semibold hover:bg-secondary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                    >
+                      {fixVendorRolesMutation.isPending ? (
+                        <>
+                          <RefreshCw size={16} className="animate-spin" />
+                          Running...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw size={16} />
+                          Run Fix
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {migrationResult && (
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm font-semibold text-green-800">
+                        ✅ Updated {migrationResult.updated} of {migrationResult.found} users
+                      </p>
+                      {migrationResult.users && migrationResult.users.length > 0 && (
+                        <div className="mt-2 text-xs text-green-700">
+                          <p className="font-semibold">Updated vendors:</p>
+                          <ul className="list-disc list-inside mt-1">
+                            {migrationResult.users.map((user: any) => (
+                              <li key={user.id}>{user.name} ({user.email})</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </>
         )}

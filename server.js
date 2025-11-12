@@ -485,6 +485,12 @@ app.post('/update-profile', authenticateJWT, async (req, res) => {
         if (locations !== undefined) updateFields.locations = locations;
         if (socialLinks !== undefined) updateFields.socialLinks = socialLinks;
 
+        // If business information is being set, mark user as vendor
+        if (businessName || businessType || businessDescription) {
+            updateFields.role = 'vendor';
+            console.log('Setting user role to vendor');
+        }
+
         console.log('Update fields prepared:', JSON.stringify(updateFields, null, 2));
 
         // Use MongoDB native collection to completely bypass Mongoose schema validation
@@ -4189,6 +4195,61 @@ app.get("/api/super-admin/vendors", authenticateJWT, requireSuperAdmin, async (r
         res.status(500).json({
             success: false,
             message: "Error fetching vendors",
+            error: error.message
+        });
+    }
+});
+
+// Migration endpoint to fix existing vendors (super admin only)
+app.post("/api/super-admin/fix-vendor-roles", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        // Find all users who have business information but no vendor role
+        const usersWithBusiness = await User.find({
+            $and: [
+                { $or: [
+                    { businessName: { $exists: true, $ne: '' } },
+                    { businessType: { $exists: true, $ne: '' } },
+                    { businessDescription: { $exists: true, $ne: '' } }
+                ]},
+                { $or: [
+                    { role: { $exists: false } },
+                    { role: { $ne: 'vendor' } },
+                    { role: null }
+                ]}
+            ]
+        });
+
+        console.log(`Found ${usersWithBusiness.length} users with business info but no vendor role`);
+
+        // Update all of them to have vendor role
+        const updateResult = await User.updateMany(
+            {
+                _id: { $in: usersWithBusiness.map(u => u._id) }
+            },
+            {
+                $set: { role: 'vendor' }
+            }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully updated ${updateResult.modifiedCount} users to vendor role`,
+            data: {
+                found: usersWithBusiness.length,
+                updated: updateResult.modifiedCount,
+                users: usersWithBusiness.map(u => ({
+                    id: u._id,
+                    name: u.name,
+                    email: u.email,
+                    businessName: u.businessName
+                }))
+            }
+        });
+    } catch (error) {
+        console.error("Error fixing vendor roles:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fixing vendor roles",
             error: error.message
         });
     }

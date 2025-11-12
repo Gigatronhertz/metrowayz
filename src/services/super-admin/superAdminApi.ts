@@ -95,6 +95,13 @@ export const superAdminVendorsAPI = {
     }
     return fetchWithAuth(`/api/super-admin/vendors?${queryParams.toString()}`);
   },
+
+  // Fix vendor roles (migration endpoint)
+  fixVendorRoles: async () => {
+    return fetchWithAuth('/api/super-admin/fix-vendor-roles', {
+      method: 'POST',
+    });
+  },
 };
 
 // ============= BOOKINGS MANAGEMENT =============

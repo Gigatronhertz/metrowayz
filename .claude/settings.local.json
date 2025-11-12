@@ -18,7 +18,10 @@
       "WebFetch(domain:needachefng.com)",
       "WebFetch(domain:priceline.github.io)",
       "WebFetch(domain:chowdeck.com)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(lsof:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
