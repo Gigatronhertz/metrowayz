@@ -49,6 +49,9 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}, retries = 2
 export const superAdminAuthAPI = {
   // Super Admin login with email/password
   login: async (email: string, password: string) => {
+    console.log('📤 Sending Super Admin Login Request to:', `${API_BASE_URL}/auth/super-admin/login`);
+    console.log('📤 With credentials:', { email, passwordLength: password.length });
+
     const response = await fetch(`${API_BASE_URL}/auth/super-admin/login`, {
       method: 'POST',
       headers: {
@@ -57,12 +60,19 @@ export const superAdminAuthAPI = {
       body: JSON.stringify({ email, password }),
     });
 
+    console.log('📥 Response status:', response.status);
+    console.log('📥 Response ok:', response.ok);
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Login failed' }));
-      throw new Error(error.message || 'Invalid credentials');
+      const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
+      console.error('❌ Login Error Response:', errorData);
+      console.error('❌ Full response:', response);
+      throw new Error(errorData.message || 'Invalid credentials');
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log('✅ Login Success Response:', data);
+    return data;
   },
 };
 

@@ -292,6 +292,15 @@ app.get(
     }
 );
 
+// Test endpoint to verify backend is working
+app.get('/auth/super-admin/test', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Super Admin endpoint is reachable',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Manual Login for Super Admin
 app.post('/auth/super-admin/login', async (req, res) => {
     try {
