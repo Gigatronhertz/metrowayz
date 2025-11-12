@@ -32,6 +32,7 @@ const HomePage: React.FC = () => {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
+  const [scrollPastServices, setScrollPastServices] = useState(false)
 
   // Auto-scroll banners
   useEffect(() => {
@@ -39,6 +40,18 @@ const HomePage: React.FC = () => {
       setCurrentBannerIndex((prev) => (prev + 1) % banners.length)
     }, 4000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Scroll detection
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY
+      // Detect if scrolled past services section (approximately 800px down)
+      setScrollPastServices(scrollPosition > 800)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   // Fetch services from API
@@ -91,18 +104,44 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white pb-20 lg:pb-0 relative">
-      {/* Desktop Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
-        <div className="container-max py-4 lg:py-5">
+      {/* Mobile & Desktop Header */}
+      <header className={`bg-white border-b border-gray-100 transition-all duration-300 z-50 ${
+        scrollPastServices ? 'sticky top-0 shadow-md' : 'relative'
+      }`}>
+        <div className="container-max py-3 lg:py-5">
           <div className="flex items-center justify-between">
-            {/* Logo */}
+            {/* Logo - Icon only on mobile */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-              <img src="/logo.svg" alt="MetroWayz" className="w-10 h-10 lg:w-12 lg:h-12" />
-              <div>
-                <h1 className="text-xl lg:text-2xl font-display font-bold text-gray-900">MetroWayz</h1>
-                <p className="hidden lg:block text-xs text-gray-500">Premium Lifestyle Services</p>
+              <img src="/logo.svg" alt="MetroWayz" className="w-9 h-9 lg:w-12 lg:h-12" />
+              <div className="hidden lg:block">
+                <h1 className="text-2xl font-display font-bold text-gray-900">MetroWayz</h1>
+                <p className="text-xs text-gray-500">Premium Lifestyle Services</p>
               </div>
             </div>
+
+            {/* Mobile Navigation - Shows when scrolled past services */}
+            <nav className="flex lg:hidden items-center gap-4">
+              {scrollPastServices && (
+                <button
+                  onClick={() => navigate('/search')}
+                  className="text-sm font-semibold text-primary-600 animate-fade-in"
+                >
+                  Services
+                </button>
+              )}
+              <button
+                onClick={() => navigate('/become-vendor')}
+                className="text-xs font-medium text-gray-700"
+              >
+                Vendor
+              </button>
+              <button
+                onClick={() => navigate('/login')}
+                className="text-xs font-medium px-3 py-1.5 bg-primary-500 text-white rounded-lg"
+              >
+                Login
+              </button>
+            </nav>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8">
@@ -123,18 +162,18 @@ const HomePage: React.FC = () => {
               </button>
             </nav>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-3">
+            {/* Desktop Right Actions - Notification only on desktop */}
+            <div className="hidden lg:flex items-center gap-3">
               <button
                 onClick={() => {/* Navigate to notifications */}}
                 className="relative p-2.5 hover:bg-gray-50 rounded-xl transition-colors"
               >
-                <Bell className="w-5 h-5 lg:w-6 lg:h-6 text-gray-600" />
+                <Bell className="w-6 h-6 text-gray-600" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full"></span>
               </button>
               <button
                 onClick={() => navigate('/login')}
-                className="hidden lg:block px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-xl transition-colors"
+                className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-xl transition-colors"
               >
                 Sign In
               </button>
