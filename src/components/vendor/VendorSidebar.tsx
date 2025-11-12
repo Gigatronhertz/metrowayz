@@ -7,7 +7,8 @@ import {
   Star,
   Settings,
   User,
-  LogOut
+  LogOut,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -65,8 +66,15 @@ const VendorSidebar = () => {
         </ul>
       </nav>
 
-      {/* Logout Button */}
-      <div className="p-4 border-t border-gray-100">
+      {/* Logout and Admin Access */}
+      <div className="p-4 border-t border-gray-100 space-y-2">
+        <NavLink
+          to="/super-admin/login"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-purple-600 hover:bg-purple-50 transition-all duration-200 w-full"
+        >
+          <Shield size={20} />
+          <span className="font-medium text-sm">Super Admin</span>
+        </NavLink>
         <button
           onClick={logout}
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200 w-full"

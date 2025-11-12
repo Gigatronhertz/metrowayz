@@ -107,6 +107,8 @@ const ServiceDetailsPage: React.FC = () => {
   }
 
   const handleBookNow = () => {
+    // Store the intended booking destination
+    localStorage.setItem('redirectAfterAuth', `/booking/${service._id}`)
     navigate(`/booking/${service._id}`)
   }
 

@@ -5,34 +5,47 @@ import { useAuth } from '../../context/AuthContext'
 interface ProtectedRouteProps {
   children: React.ReactNode
   requireAuth?: boolean
+  redirectTo?: string
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
-  requireAuth = true 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  requireAuth = true,
+  redirectTo
 }) => {
   const { isAuthenticated, isLoading } = useAuth()
   const location = useLocation()
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50">
         <div className="text-center">
           <div className="spinner w-8 h-8 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600 font-medium">Loading...</p>
         </div>
       </div>
     )
   }
 
   if (requireAuth && !isAuthenticated) {
-    // Redirect to login page with return url
+    // Store the intended destination
+    localStorage.setItem('redirectAfterAuth', location.pathname + location.search)
+
+    // Redirect to login page
     return <Navigate to="/" state={{ from: location }} replace />
   }
 
   if (!requireAuth && isAuthenticated) {
-    // Redirect authenticated users away from login page
-    return <Navigate to="/home" replace />
+    // Check if there's a stored redirect path
+    const redirectPath = localStorage.getItem('redirectAfterAuth')
+
+    if (redirectPath && redirectPath !== '/') {
+      localStorage.removeItem('redirectAfterAuth')
+      return <Navigate to={redirectPath} replace />
+    }
+
+    // Default redirect for authenticated users
+    return <Navigate to={redirectTo || "/home"} replace />
   }
 
   return <>{children}</>

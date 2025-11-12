@@ -10,8 +10,9 @@ const VendorLoginPage = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Store that this is a vendor login attempt
+    // Store that this is a vendor login attempt and where to redirect
     localStorage.setItem('loginIntent', 'vendor');
+    localStorage.setItem('redirectAfterAuth', '/vendor/dashboard');
 
     // If already logged in, redirect to vendor dashboard
     if (user) {
@@ -20,8 +21,9 @@ const VendorLoginPage = () => {
   }, [user, navigate]);
 
   const handleGoogleSignIn = () => {
-    // Store redirect path before OAuth
+    // Ensure redirect path is set before OAuth
     localStorage.setItem('redirectAfterAuth', '/vendor/dashboard');
+    localStorage.setItem('loginIntent', 'vendor');
   };
 
   return (

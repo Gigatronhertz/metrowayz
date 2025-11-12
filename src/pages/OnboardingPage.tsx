@@ -31,7 +31,15 @@ const OnboardingPage: React.FC = () => {
   // Redirect if already authenticated
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/home', { replace: true })
+      // Check if there's a stored redirect path
+      const redirectPath = localStorage.getItem('redirectAfterAuth')
+
+      if (redirectPath && redirectPath !== '/') {
+        localStorage.removeItem('redirectAfterAuth')
+        navigate(redirectPath, { replace: true })
+      } else {
+        navigate('/home', { replace: true })
+      }
     }
   }, [isAuthenticated, navigate])
 
