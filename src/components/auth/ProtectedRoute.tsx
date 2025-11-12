@@ -35,7 +35,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/" state={{ from: location }} replace />
   }
 
-  if (!requireAuth && isAuthenticated) {
+  if (!requireAuth && isAuthenticated && location.pathname === '/') {
+    // Only redirect authenticated users away from the login page
     // Check if there's a stored redirect path
     const redirectPath = localStorage.getItem('redirectAfterAuth')
 
@@ -44,7 +45,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       return <Navigate to={redirectPath} replace />
     }
 
-    // Default redirect for authenticated users
+    // Default redirect for authenticated users on login page
     return <Navigate to={redirectTo || "/home"} replace />
   }
 

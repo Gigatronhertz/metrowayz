@@ -66,7 +66,7 @@ function App() {
           <Route
             path="/home"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAuth={false}>
                 <HomePage />
               </ProtectedRoute>
             }

@@ -22,6 +22,7 @@ const OnboardingPage: React.FC = () => {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
+  const [isVendorMode, setIsVendorMode] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -53,6 +54,11 @@ const OnboardingPage: React.FC = () => {
   }
 
   const handleGoogleSuccess = () => {
+    // Set redirect based on vendor mode
+    if (isVendorMode) {
+      localStorage.setItem('redirectAfterAuth', '/vendor/dashboard')
+      localStorage.setItem('loginIntent', 'vendor')
+    }
     toast.success('Successfully signed in with Google!')
   }
 
@@ -77,6 +83,32 @@ const OnboardingPage: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
+          {/* Vendor Mode Toggle */}
+          <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">
+                  {isVendorMode ? 'Vendor Login Mode' : 'Customer Login Mode'}
+                </p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  {isVendorMode ? 'Access vendor dashboard' : 'Book services and manage bookings'}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsVendorMode(!isVendorMode)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
+                  isVendorMode ? 'bg-purple-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                    isVendorMode ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
           <div className="flex mb-6">
             <button
               onClick={() => setIsLogin(true)}

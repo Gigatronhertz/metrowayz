@@ -12,7 +12,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
-const VendorSidebar = () => {
+interface VendorSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const VendorSidebar = ({ isOpen, onClose }: VendorSidebarProps) => {
   const { logout } = useAuth();
 
   const navItems = [
@@ -27,9 +32,11 @@ const VendorSidebar = () => {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm">
+    <aside className={`fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-40 transform transition-transform duration-300 lg:translate-x-0 ${
+      isOpen ? 'translate-x-0' : '-translate-x-full'
+    }`}>
       {/* Logo */}
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-6 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img src="/logo.svg" alt="MetroWayz" className="w-10 h-10" />
           <div>
@@ -37,6 +44,15 @@ const VendorSidebar = () => {
             <p className="text-xs text-gray-500 mt-0.5">Vendor Portal</p>
           </div>
         </div>
+        {/* Close button for mobile */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* Navigation */}

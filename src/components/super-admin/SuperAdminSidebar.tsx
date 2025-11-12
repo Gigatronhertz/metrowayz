@@ -12,7 +12,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
-const SuperAdminSidebar = () => {
+interface SuperAdminSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const SuperAdminSidebar = ({ isOpen, onClose }: SuperAdminSidebarProps) => {
   const { logout } = useAuth();
 
   const navItems = [
@@ -26,9 +31,11 @@ const SuperAdminSidebar = () => {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-purple-900 via-indigo-900 to-purple-900 text-white flex flex-col shadow-xl">
+    <aside className={`fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-purple-900 via-indigo-900 to-purple-900 text-white flex flex-col shadow-xl z-40 transform transition-transform duration-300 lg:translate-x-0 ${
+      isOpen ? 'translate-x-0' : '-translate-x-full'
+    }`}>
       {/* Logo */}
-      <div className="p-6 border-b border-purple-700/50">
+      <div className="p-6 border-b border-purple-700/50 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl p-2 shadow-lg">
             <Shield size={28} className="text-white" strokeWidth={2.5} />
@@ -38,6 +45,15 @@ const SuperAdminSidebar = () => {
             <p className="text-xs text-yellow-400 font-semibold">Super Admin</p>
           </div>
         </div>
+        {/* Close button for mobile */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-2 hover:bg-purple-800/50 rounded-lg"
+        >
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* Navigation */}

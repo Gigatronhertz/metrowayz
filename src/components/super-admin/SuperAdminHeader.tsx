@@ -1,16 +1,27 @@
-import { Bell, Search, Shield } from 'lucide-react';
+import { Bell, Search, Shield, Menu } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useState } from 'react';
 
-const SuperAdminHeader = () => {
+interface SuperAdminHeaderProps {
+  onMenuClick: () => void;
+}
+
+const SuperAdminHeader = ({ onMenuClick }: SuperAdminHeaderProps) => {
   const { user } = useAuth();
   const [notifications] = useState(0);
 
   return (
-    <header className="fixed top-0 right-0 left-64 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 z-10 shadow-sm">
-      {/* Search Bar */}
-      <div className="flex-1 max-w-2xl">
-        <div className="relative">
+    <header className="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 lg:px-8 z-10 shadow-sm">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={onMenuClick}
+        className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+      >
+        <Menu className="w-6 h-6 text-gray-600" />
+      </button>
+      {/* Search Bar - Hidden on small screens */}
+      <div className="hidden md:flex flex-1 max-w-2xl">
+        <div className="relative w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
@@ -18,6 +29,11 @@ const SuperAdminHeader = () => {
             className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
           />
         </div>
+      </div>
+
+      {/* Mobile - Show title instead of search */}
+      <div className="flex-1 md:hidden">
+        <h1 className="text-lg font-display font-bold text-gray-900">Super Admin</h1>
       </div>
 
       {/* Right Section */}
@@ -33,11 +49,11 @@ const SuperAdminHeader = () => {
         </button>
 
         {/* Admin Profile */}
-        <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
-            <Shield size={20} className="text-yellow-400" strokeWidth={2.5} />
+        <div className="flex items-center gap-2 lg:gap-3 pl-2 lg:pl-4 border-l border-gray-100">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+            <Shield size={16} className="lg:w-5 lg:h-5 text-yellow-400" strokeWidth={2.5} />
           </div>
-          <div>
+          <div className="hidden lg:block">
             <p className="text-sm font-semibold text-gray-900">{user?.name || 'Super Admin'}</p>
             <p className="text-xs text-purple-600 font-semibold">Super Administrator</p>
           </div>

@@ -4,6 +4,7 @@ import { Bell } from 'lucide-react'
 import { categories, banners } from '../data/mockData'
 import { serviceAPI } from '../services/api'
 import { formatPriceUnit } from '../utils/format'
+import { useAuth } from '../hooks/useAuth'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import CategoryCard from '../components/common/CategoryCard'
 import ServiceCard from '../components/common/ServiceCard'
@@ -28,6 +29,7 @@ interface Service {
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
+  const { isAuthenticated, logout } = useAuth()
   const [selectedCategory, setSelectedCategory] = useState('accommodation')
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
   const [services, setServices] = useState<Service[]>([])
@@ -111,7 +113,7 @@ const HomePage: React.FC = () => {
         <div className="container-max py-3 lg:py-5">
           <div className="flex items-center justify-between">
             {/* Logo - Icon only on mobile */}
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/home')}>
               <img src="/logo.svg" alt="MetroWayz" className="w-9 h-9 lg:w-12 lg:h-12" />
               <div className="hidden lg:block">
                 <h1 className="text-2xl font-display font-bold text-gray-900">MetroWayz</h1>
@@ -130,17 +132,35 @@ const HomePage: React.FC = () => {
                 </button>
               )}
               <button
-                onClick={() => navigate('/vendor')}
-                className="text-xs font-medium text-gray-700"
+                onClick={() => {
+                  console.log('Vendor button clicked')
+                  navigate('/vendor')
+                }}
+                className="text-xs font-medium text-gray-700 hover:text-primary-600 transition-colors"
               >
                 Vendor
               </button>
-              <button
-                onClick={() => navigate('/login')}
-                className="text-xs font-medium px-3 py-1.5 bg-primary-500 text-white rounded-lg"
-              >
-                Login
-              </button>
+              {isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    console.log('Logout clicked')
+                    logout()
+                  }}
+                  className="text-xs font-medium px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                >
+                  Logout
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    console.log('Login button clicked')
+                    navigate('/')
+                  }}
+                  className="text-xs font-medium px-3 py-1.5 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+                >
+                  Login
+                </button>
+              )}
             </nav>
 
             {/* Desktop Navigation */}
@@ -152,7 +172,10 @@ const HomePage: React.FC = () => {
                 Services
               </button>
               <button
-                onClick={() => navigate('/vendor')}
+                onClick={() => {
+                  console.log('Desktop Vendor button clicked')
+                  navigate('/vendor')
+                }}
                 className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors"
               >
                 Become a Vendor
@@ -171,12 +194,27 @@ const HomePage: React.FC = () => {
                 <Bell className="w-6 h-6 text-gray-600" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full"></span>
               </button>
-              <button
-                onClick={() => navigate('/login')}
-                className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-xl transition-colors"
-              >
-                Sign In
-              </button>
+              {isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    console.log('Desktop Logout clicked')
+                    logout()
+                  }}
+                  className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors"
+                >
+                  Logout
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    console.log('Desktop Login button clicked')
+                    navigate('/')
+                  }}
+                  className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-xl transition-colors"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
         </div>
