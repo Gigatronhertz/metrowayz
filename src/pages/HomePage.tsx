@@ -130,7 +130,7 @@ const HomePage: React.FC = () => {
                 </button>
               )}
               <button
-                onClick={() => navigate('/become-vendor')}
+                onClick={() => navigate('/vendor')}
                 className="text-xs font-medium text-gray-700"
               >
                 Vendor
@@ -152,7 +152,7 @@ const HomePage: React.FC = () => {
                 Services
               </button>
               <button
-                onClick={() => navigate('/become-vendor')}
+                onClick={() => navigate('/vendor')}
                 className="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors"
               >
                 Become a Vendor

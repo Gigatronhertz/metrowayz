@@ -4,7 +4,6 @@ import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import OnboardingPage from './pages/OnboardingPage'
 import RoleSelectionPage from './pages/RoleSelectionPage'
-import BecomeVendorPage from './pages/BecomeVendorPage'
 import VendorLoginPage from './pages/VendorLoginPage'
 import HomePage from './pages/HomePage'
 import SearchPage from './pages/SearchPage'
@@ -53,14 +52,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <RoleSelectionPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/become-vendor"
-            element={
-              <ProtectedRoute>
-                <BecomeVendorPage />
               </ProtectedRoute>
             }
           />

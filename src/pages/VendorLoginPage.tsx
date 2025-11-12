@@ -107,13 +107,7 @@ const VendorLoginPage = () => {
         </div>
 
         <div className="mt-6 text-center text-sm text-gray-600">
-          Not a vendor yet?{' '}
-          <button
-            onClick={() => navigate('/become-vendor')}
-            className="text-secondary-600 hover:underline font-semibold"
-          >
-            Register here
-          </button>
+          New to MetroWayz? Sign in with Google to get started as a vendor
         </div>
       </div>
     </div>
