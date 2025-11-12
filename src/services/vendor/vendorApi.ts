@@ -69,6 +69,11 @@ export const vendorDashboardAPI = {
   getAnalytics: async () => {
     return fetchWithAuth('/dashboard-analytics');
   },
+
+  // Debug endpoint to see what data exists
+  getDebugData: async () => {
+    return fetchWithAuth('/debug-my-data');
+  },
 };
 
 // ============= VENDOR SERVICE APIs =============

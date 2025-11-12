@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import vendorApi from '../../services/vendor/vendorApi';
@@ -6,11 +7,14 @@ import {
   Package,
   Calendar,
   TrendingUp,
-  Clock
+  Clock,
+  Bug
 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const VendorDashboard = () => {
+  const [showDebug, setShowDebug] = useState(false);
+
   // Fetch dashboard stats
   const { data: stats } = useQuery({
     queryKey: ['vendor-stats'],
@@ -21,6 +25,13 @@ const VendorDashboard = () => {
   const { data: recentBookings, isLoading: bookingsLoading } = useQuery({
     queryKey: ['recent-bookings'],
     queryFn: vendorApi.dashboard.getRecentBookings,
+  });
+
+  // Fetch debug data
+  const { data: debugData } = useQuery({
+    queryKey: ['vendor-debug'],
+    queryFn: vendorApi.dashboard.getDebugData,
+    enabled: showDebug,
   });
 
   const statCards = [
@@ -231,6 +242,89 @@ const VendorDashboard = () => {
               </div>
             </div>
           </a>
+        </div>
+
+        {/* Debug Section */}
+        <div className="mt-8">
+          <button
+            onClick={() => setShowDebug(!showDebug)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium text-gray-700"
+          >
+            <Bug size={16} />
+            {showDebug ? 'Hide' : 'Show'} Debug Info
+          </button>
+
+          {showDebug && debugData && (
+            <div className="mt-4 bg-white rounded-2xl shadow-card p-6 border border-gray-100">
+              <h3 className="text-xl font-display font-bold text-gray-900 mb-4">Debug Information</h3>
+
+              <div className="space-y-6">
+                {/* User Info */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Your Account</h4>
+                  <div className="bg-gray-50 rounded-lg p-4 text-sm font-mono">
+                    <p><strong>ID:</strong> {debugData.data?.user?._id}</p>
+                    <p><strong>Name:</strong> {debugData.data?.user?.name}</p>
+                    <p><strong>Email:</strong> {debugData.data?.user?.email}</p>
+                    <p><strong>Role:</strong> {debugData.data?.user?.role || 'NOT SET'}</p>
+                    <p><strong>Business:</strong> {debugData.data?.user?.businessName || 'N/A'}</p>
+                  </div>
+                </div>
+
+                {/* Services */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Services ({debugData.data?.services?.count || 0})</h4>
+                  {debugData.data?.services?.count > 0 ? (
+                    <div className="bg-green-50 rounded-lg p-4">
+                      <p className="text-sm text-green-800 mb-2">✅ You have {debugData.data.services.count} service(s)</p>
+                      <div className="space-y-2">
+                        {debugData.data.services.list.map((service: any) => (
+                          <div key={service._id} className="text-xs bg-white rounded p-2">
+                            <p><strong>{service.title}</strong></p>
+                            <p className="text-gray-600">Status: {service.status}</p>
+                            <p className="text-gray-600 font-mono">ID: {service._id}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-50 rounded-lg p-4">
+                      <p className="text-sm text-yellow-800">⚠️ No services found. Create your first service!</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bookings */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Bookings</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-xs text-gray-600 mb-1">By Provider ID</p>
+                      <p className="text-2xl font-bold">{debugData.data?.bookings?.byProviderId?.count || 0}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-xs text-gray-600 mb-1">By Service ID</p>
+                      <p className="text-2xl font-bold">{debugData.data?.bookings?.byServiceId?.count || 0}</p>
+                    </div>
+                  </div>
+                  {debugData.data?.bookings?.byProviderId?.count === 0 && debugData.data?.bookings?.byServiceId?.count === 0 && (
+                    <div className="mt-3 bg-yellow-50 rounded-lg p-4">
+                      <p className="text-sm text-yellow-800">⚠️ No bookings found. Once customers book your services, they'll appear here.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Database Totals */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Platform Totals</h4>
+                  <div className="bg-blue-50 rounded-lg p-4 text-sm">
+                    <p><strong>All Services:</strong> {debugData.data?.databaseTotals?.allServices || 0}</p>
+                    <p><strong>All Bookings:</strong> {debugData.data?.databaseTotals?.allBookings || 0}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </VendorLayout>

@@ -531,6 +531,96 @@ app.post('/update-profile', authenticateJWT, async (req, res) => {
 
 // ============= DASHBOARD ROUTES =============
 
+// Debug endpoint for current vendor
+app.get("/debug-my-data", authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Get services created by this user
+        const services = await Service.find({ createdBy: user._id });
+        console.log('🔍 DEBUG: Services found for user:', services.length);
+
+        // Get all bookings with this user as providerId
+        const bookingsByProviderId = await Booking.find({ providerId: user._id });
+        console.log('🔍 DEBUG: Bookings by providerId:', bookingsByProviderId.length);
+
+        // Get bookings for this user's services
+        const serviceIds = services.map(s => s._id);
+        const bookingsByServiceId = await Booking.find({ serviceId: { $in: serviceIds } });
+        console.log('🔍 DEBUG: Bookings by serviceId:', bookingsByServiceId.length);
+
+        // Get all services in the database (to see if any exist)
+        const allServicesCount = await Service.countDocuments({});
+        const allBookingsCount = await Booking.countDocuments({});
+
+        res.status(200).json({
+            success: true,
+            data: {
+                user: {
+                    _id: user._id,
+                    googleId: user.googleId,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    businessName: user.businessName,
+                    isAdmin: user.isAdmin
+                },
+                services: {
+                    count: services.length,
+                    list: services.map(s => ({
+                        _id: s._id,
+                        title: s.title,
+                        createdBy: s.createdBy,
+                        status: s.status,
+                        createdAt: s.createdAt
+                    }))
+                },
+                bookings: {
+                    byProviderId: {
+                        count: bookingsByProviderId.length,
+                        list: bookingsByProviderId.slice(0, 5).map(b => ({
+                            _id: b._id,
+                            serviceName: b.serviceName,
+                            status: b.status,
+                            providerId: b.providerId,
+                            serviceId: b.serviceId
+                        }))
+                    },
+                    byServiceId: {
+                        count: bookingsByServiceId.length,
+                        list: bookingsByServiceId.slice(0, 5).map(b => ({
+                            _id: b._id,
+                            serviceName: b.serviceName,
+                            status: b.status,
+                            providerId: b.providerId,
+                            serviceId: b.serviceId
+                        }))
+                    }
+                },
+                databaseTotals: {
+                    allServices: allServicesCount,
+                    allBookings: allBookingsCount
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error in debug-my-data:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching debug data",
+            error: error.message
+        });
+    }
+});
+
 app.get("/dashboard-stats", authenticateJWT, async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -599,15 +689,20 @@ app.get("/dashboard-stats", authenticateJWT, async (req, res) => {
         const stats = {
             totalRevenue,
             totalBookings,
+            totalServices,
             activeServices,
+            pendingBookings: allBookings.filter(b => b.status === 'pending').length,
             averageRating: parseFloat(averageRating),
             monthlyGrowth: parseFloat(monthlyGrowth),
             conversionRate: parseFloat(conversionRate)
         };
 
+        console.log('📊 DASHBOARD STATS for user', user.email, ':', stats);
+
         res.status(200).json({
             success: true,
-            data: stats
+            stats: stats, // Changed from 'data' to 'stats' to match frontend
+            data: stats   // Keep both for compatibility
         });
     } catch (error) {
         console.error("Error fetching dashboard stats:", error);
@@ -639,9 +734,12 @@ app.get("/recent-bookings", authenticateJWT, async (req, res) => {
             .limit(5)
             .lean();
 
+        console.log('📋 RECENT BOOKINGS for user', user.email, ':', bookings.length);
+
         res.status(200).json({
             success: true,
-            data: bookings
+            bookings: bookings,  // Changed from 'data' to 'bookings' to match frontend
+            data: bookings       // Keep both for compatibility
         });
     } catch (error) {
         console.error("Error fetching recent bookings:", error);
@@ -4195,6 +4293,82 @@ app.get("/api/super-admin/vendors", authenticateJWT, requireSuperAdmin, async (r
         res.status(500).json({
             success: false,
             message: "Error fetching vendors",
+            error: error.message
+        });
+    }
+});
+
+// Debug endpoint to check vendor data (super admin only)
+app.get("/api/super-admin/debug-vendor/:vendorId", authenticateJWT, requireSuperAdmin, async (req, res) => {
+    try {
+        const { vendorId } = req.params;
+
+        // Get vendor user
+        const vendor = await User.findById(vendorId);
+        if (!vendor) {
+            return res.status(404).json({
+                success: false,
+                message: "Vendor not found"
+            });
+        }
+
+        // Get services created by this vendor
+        const services = await Service.find({ createdBy: vendorId });
+
+        // Get bookings for this vendor's services
+        const serviceIds = services.map(s => s._id);
+        const bookings = await Booking.find({ serviceId: { $in: serviceIds } });
+
+        // Get bookings by providerId
+        const bookingsByProviderId = await Booking.find({ providerId: vendorId });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                vendor: {
+                    _id: vendor._id,
+                    name: vendor.name,
+                    email: vendor.email,
+                    role: vendor.role,
+                    businessName: vendor.businessName,
+                    googleId: vendor.googleId
+                },
+                services: {
+                    count: services.length,
+                    list: services.map(s => ({
+                        _id: s._id,
+                        title: s.title,
+                        createdBy: s.createdBy,
+                        status: s.status
+                    }))
+                },
+                bookings: {
+                    byServiceId: {
+                        count: bookings.length,
+                        list: bookings.map(b => ({
+                            _id: b._id,
+                            serviceId: b.serviceId,
+                            providerId: b.providerId,
+                            status: b.status
+                        }))
+                    },
+                    byProviderId: {
+                        count: bookingsByProviderId.length,
+                        list: bookingsByProviderId.map(b => ({
+                            _id: b._id,
+                            serviceId: b.serviceId,
+                            providerId: b.providerId,
+                            status: b.status
+                        }))
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error debugging vendor:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error debugging vendor",
             error: error.message
         });
     }
