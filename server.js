@@ -297,16 +297,29 @@ app.post('/auth/super-admin/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        console.log('🔐 Super Admin Login Request:', {
+            receivedEmail: email,
+            receivedPasswordLength: password?.length,
+            emailMatch: email === 'superadmin@metrowayz.com',
+            passwordMatch: password === 'SuperAdmin@2024!',
+            body: req.body
+        });
+
         // Hardcoded credentials for super admin
         const SUPER_ADMIN_EMAIL = 'superadmin@metrowayz.com';
         const SUPER_ADMIN_PASSWORD = 'SuperAdmin@2024!';
 
         if (email !== SUPER_ADMIN_EMAIL || password !== SUPER_ADMIN_PASSWORD) {
+            console.log('❌ Super Admin Login Failed: Invalid credentials');
+            console.log('Expected email:', SUPER_ADMIN_EMAIL, 'Got:', email);
+            console.log('Expected password:', SUPER_ADMIN_PASSWORD, 'Got:', password);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
             });
         }
+
+        console.log('✅ Super Admin credentials matched!');
 
         // Find or create super admin user
         let superAdmin = await User.findOne({ email: SUPER_ADMIN_EMAIL });

@@ -35,7 +35,20 @@ const SuperAdminLogin = () => {
       return;
     }
 
-    mutation.mutate(formData);
+    // Trim whitespace from inputs
+    const cleanedData = {
+      email: formData.email.trim(),
+      password: formData.password.trim()
+    };
+
+    console.log('🔐 Super Admin Login Attempt:', {
+      email: cleanedData.email,
+      passwordLength: cleanedData.password.length,
+      expectedEmail: 'superadmin@metrowayz.com',
+      expectedPassword: 'SuperAdmin@2024!'
+    });
+
+    mutation.mutate(cleanedData);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,9 +134,19 @@ const SuperAdminLogin = () => {
 
           {/* Default Credentials (for development) */}
           <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600 text-center font-mono">
+            <p className="text-xs text-gray-600 text-center font-mono mb-2">
               Default: superadmin@metrowayz.com / SuperAdmin@2024!
             </p>
+            <button
+              type="button"
+              onClick={() => setFormData({
+                email: 'superadmin@metrowayz.com',
+                password: 'SuperAdmin@2024!'
+              })}
+              className="w-full text-xs px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-medium transition-colors"
+            >
+              Auto-Fill Credentials
+            </button>
           </div>
         </div>
 
