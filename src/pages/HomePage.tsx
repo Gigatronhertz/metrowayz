@@ -90,7 +90,7 @@ const HomePage: React.FC = () => {
   const featuredServices = filteredServices.slice(0, 2)
 
   return (
-    <div className="min-h-screen bg-white pb-20 lg:pb-0">
+    <div className="min-h-screen bg-white pb-20 lg:pb-0 relative">
       {/* Desktop Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="container-max py-4 lg:py-5">
