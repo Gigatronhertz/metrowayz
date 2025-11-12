@@ -301,6 +301,59 @@ app.get('/auth/super-admin/test', (req, res) => {
     });
 });
 
+// Endpoint to ensure super admin user exists with correct role (public for setup)
+app.post('/auth/super-admin/ensure-setup', async (req, res) => {
+    try {
+        const SUPER_ADMIN_EMAIL = 'superadmin@metrowayz.com';
+
+        // Find or create super admin user
+        let superAdmin = await User.findOne({ email: SUPER_ADMIN_EMAIL });
+
+        if (!superAdmin) {
+            superAdmin = new User({
+                googleId: 'super_admin_metrowayz_001',
+                name: 'Super Admin',
+                email: SUPER_ADMIN_EMAIL,
+                role: 'super_admin',
+                isAdmin: true,
+                businessName: 'MetroWayz Administration',
+                businessType: 'Administration',
+                phoneNumber: '+1-000-000-0000',
+                about: 'Super Administrator with full system access'
+            });
+            await superAdmin.save();
+
+            return res.status(200).json({
+                success: true,
+                message: 'Super Admin user created successfully',
+                action: 'created'
+            });
+        }
+
+        // Update existing user to have super_admin role
+        const hadRole = superAdmin.role;
+        superAdmin.role = 'super_admin';
+        superAdmin.isAdmin = true;
+        superAdmin.googleId = superAdmin.googleId || 'super_admin_metrowayz_001';
+        await superAdmin.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Super Admin user updated successfully',
+            action: 'updated',
+            previousRole: hadRole,
+            currentRole: superAdmin.role
+        });
+    } catch (error) {
+        console.error('Error ensuring super admin setup:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+});
+
 // Manual Login for Super Admin
 app.post('/auth/super-admin/login', async (req, res) => {
     try {

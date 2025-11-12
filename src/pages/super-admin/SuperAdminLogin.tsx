@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { Shield, Lock, Mail } from 'lucide-react';
@@ -13,16 +13,56 @@ const SuperAdminLogin = () => {
     email: '',
     password: '',
   });
+  const [setupComplete, setSetupComplete] = useState(false);
+
+  // Ensure super admin is set up in database on mount
+  useEffect(() => {
+    const ensureSetup = async () => {
+      try {
+        console.log('🔧 Ensuring Super Admin setup...');
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://metrowayz.onrender.com'}/auth/super-admin/ensure-setup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+        console.log('✅ Super Admin setup result:', data);
+
+        if (data.success) {
+          setSetupComplete(true);
+          if (data.action === 'created') {
+            toast.success('Super Admin account initialized');
+          } else if (data.action === 'updated') {
+            toast.success('Super Admin role updated');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Failed to ensure super admin setup:', error);
+        toast.error('Failed to initialize Super Admin');
+      }
+    };
+
+    ensureSetup();
+  }, []);
 
   const mutation = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       superAdminApi.auth.login(email, password),
     onSuccess: async (data) => {
+      console.log('✅ Super Admin Login Response:', data);
+      console.log('✅ Token:', data.token);
+      console.log('✅ User:', data.user);
+
       toast.success('Login successful!');
       await login(data.token, data.user);
+
+      console.log('✅ Navigating to dashboard...');
       navigate('/super-admin/dashboard');
     },
     onError: (error: any) => {
+      console.error('❌ Super Admin Login Error:', error);
       toast.error(error.message || 'Invalid credentials');
     },
   });
@@ -115,13 +155,31 @@ const SuperAdminLogin = () => {
               </div>
             </div>
 
+            {/* Setup Status */}
+            {!setupComplete && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                <p className="text-xs text-blue-800 font-medium">
+                  Setting up Super Admin account...
+                </p>
+              </div>
+            )}
+
+            {setupComplete && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-xs text-green-800 font-medium text-center">
+                  ✅ Super Admin account ready
+                </p>
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || !setupComplete}
               className="w-full bg-secondary-500 text-white py-3 rounded-lg font-semibold hover:bg-secondary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
-              {mutation.isPending ? 'Logging in...' : 'Login as Super Admin'}
+              {mutation.isPending ? 'Logging in...' : !setupComplete ? 'Please wait...' : 'Login as Super Admin'}
             </button>
           </form>
 
