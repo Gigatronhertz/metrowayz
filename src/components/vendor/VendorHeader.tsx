@@ -50,7 +50,7 @@ const VendorHeader = ({ onMenuClick }: VendorHeaderProps) => {
 
         {/* User Profile */}
         <div className="flex items-center gap-2 lg:gap-3 pl-2 lg:pl-4 border-l border-gray-100">
-          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center shadow-md">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary-500 rounded-full flex items-center justify-center shadow-sm">
             <User size={16} className="lg:w-5 lg:h-5 text-white" />
           </div>
           <div className="hidden lg:block">

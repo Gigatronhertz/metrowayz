@@ -73,7 +73,7 @@ const VendorDashboard = () => {
     <VendorLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="bg-gradient-to-br from-primary-50 to-secondary-50 -m-6 p-8 rounded-2xl mb-8">
+        <div className="bg-white border-b border-gray-100 -m-6 p-8 mb-8">
           <h1 className="text-4xl font-display font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-2 text-lg">Welcome back! Here's what's happening with your business.</p>
         </div>
@@ -93,7 +93,7 @@ const VendorDashboard = () => {
                     </p>
                   )}
                 </div>
-                <div className={`${stat.color} rounded-2xl p-4 shadow-lg`}>
+                <div className={`${stat.color} rounded-xl p-4 shadow-sm`}>
                   <stat.icon size={28} className="text-white" strokeWidth={2} />
                 </div>
               </div>
@@ -192,7 +192,7 @@ const VendorDashboard = () => {
             className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-gray-100 group"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl p-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <div className="bg-primary-500 rounded-xl p-4 shadow-sm group-hover:scale-105 transition-transform duration-300">
                 <Package size={28} className="text-white" strokeWidth={2} />
               </div>
               <div>
@@ -207,7 +207,7 @@ const VendorDashboard = () => {
             className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-gray-100 group"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl p-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <div className="bg-secondary-500 rounded-xl p-4 shadow-sm group-hover:scale-105 transition-transform duration-300">
                 <Clock size={28} className="text-white" strokeWidth={2} />
               </div>
               <div>
@@ -222,7 +222,7 @@ const VendorDashboard = () => {
             className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-gray-100 group"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl p-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+              <div className="bg-green-500 rounded-xl p-4 shadow-sm group-hover:scale-105 transition-transform duration-300">
                 <DollarSign size={28} className="text-white" strokeWidth={2} />
               </div>
               <div>

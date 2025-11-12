@@ -26,7 +26,7 @@ const SuperAdminHeader = ({ onMenuClick }: SuperAdminHeaderProps) => {
           <input
             type="text"
             placeholder="Search vendors, bookings, services..."
-            className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+            className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
           />
         </div>
       </div>
@@ -50,12 +50,12 @@ const SuperAdminHeader = ({ onMenuClick }: SuperAdminHeaderProps) => {
 
         {/* Admin Profile */}
         <div className="flex items-center gap-2 lg:gap-3 pl-2 lg:pl-4 border-l border-gray-100">
-          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
-            <Shield size={16} className="lg:w-5 lg:h-5 text-yellow-400" strokeWidth={2.5} />
+          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-secondary-500 rounded-full flex items-center justify-center shadow-sm">
+            <Shield size={16} className="lg:w-5 lg:h-5 text-white" strokeWidth={2.5} />
           </div>
           <div className="hidden lg:block">
             <p className="text-sm font-semibold text-gray-900">{user?.name || 'Super Admin'}</p>
-            <p className="text-xs text-purple-600 font-semibold">Super Administrator</p>
+            <p className="text-xs text-secondary-600 font-semibold">Super Administrator</p>
           </div>
         </div>
       </div>

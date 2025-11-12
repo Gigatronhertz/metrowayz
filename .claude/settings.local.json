@@ -17,7 +17,8 @@
       "WebFetch(domain:www.priceline.com)",
       "WebFetch(domain:needachefng.com)",
       "WebFetch(domain:priceline.github.io)",
-      "WebFetch(domain:chowdeck.com)"
+      "WebFetch(domain:chowdeck.com)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

@@ -46,15 +46,15 @@ const SuperAdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo & Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-400 rounded-full mb-4">
-            <Shield size={48} className="text-purple-900" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-secondary-500 rounded-full mb-4 shadow-sm">
+            <Shield size={48} className="text-white" strokeWidth={2.5} />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">MetroWayz</h1>
-          <p className="text-purple-200 text-lg">Super Admin Portal</p>
+          <h1 className="text-4xl font-display font-bold text-gray-900 mb-2">MetroWayz</h1>
+          <p className="text-secondary-600 text-lg font-semibold">Super Admin Portal</p>
         </div>
 
         {/* Login Card */}
@@ -76,7 +76,7 @@ const SuperAdminLogin = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
                   placeholder="superadmin@metrowayz.com"
                   required
                 />
@@ -95,7 +95,7 @@ const SuperAdminLogin = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
                   placeholder="••••••••"
                   required
                 />
@@ -106,15 +106,15 @@ const SuperAdminLogin = () => {
             <button
               type="submit"
               disabled={mutation.isPending}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-secondary-500 text-white py-3 rounded-lg font-semibold hover:bg-secondary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               {mutation.isPending ? 'Logging in...' : 'Login as Super Admin'}
             </button>
           </form>
 
           {/* Info Note */}
-          <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-            <p className="text-xs text-purple-800 text-center">
+          <div className="mt-6 p-4 bg-secondary-50 border border-secondary-200 rounded-lg">
+            <p className="text-xs text-secondary-800 text-center font-medium">
               🔒 This is a secure area. Only authorized super administrators can access this portal.
             </p>
           </div>
@@ -131,7 +131,7 @@ const SuperAdminLogin = () => {
         <div className="text-center mt-6">
           <button
             onClick={() => navigate('/')}
-            className="text-purple-200 hover:text-white text-sm transition-colors"
+            className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
           >
             ← Back to Home
           </button>

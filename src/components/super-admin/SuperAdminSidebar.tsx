@@ -31,26 +31,26 @@ const SuperAdminSidebar = ({ isOpen, onClose }: SuperAdminSidebarProps) => {
   ];
 
   return (
-    <aside className={`fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-purple-900 via-indigo-900 to-purple-900 text-white flex flex-col shadow-xl z-40 transform transition-transform duration-300 lg:translate-x-0 ${
+    <aside className={`fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-40 transform transition-transform duration-300 lg:translate-x-0 ${
       isOpen ? 'translate-x-0' : '-translate-x-full'
     }`}>
       {/* Logo */}
-      <div className="p-6 border-b border-purple-700/50 flex items-center justify-between">
+      <div className="p-6 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl p-2 shadow-lg">
+          <div className="bg-secondary-500 rounded-xl p-2 shadow-sm">
             <Shield size={28} className="text-white" strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-xl font-display font-bold text-white">MetroWayz</h1>
-            <p className="text-xs text-yellow-400 font-semibold">Super Admin</p>
+            <h1 className="text-xl font-display font-bold text-gray-900">MetroWayz</h1>
+            <p className="text-xs text-secondary-600 font-semibold">Super Admin</p>
           </div>
         </div>
         {/* Close button for mobile */}
         <button
           onClick={onClose}
-          className="lg:hidden p-2 hover:bg-purple-800/50 rounded-lg"
+          className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
         >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -66,8 +66,8 @@ const SuperAdminSidebar = ({ isOpen, onClose }: SuperAdminSidebarProps) => {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 shadow-lg font-semibold'
-                      : 'text-purple-200 hover:bg-purple-800/50 hover:text-white'
+                      ? 'bg-secondary-500 text-white shadow-sm font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`
                 }
               >
@@ -84,10 +84,10 @@ const SuperAdminSidebar = ({ isOpen, onClose }: SuperAdminSidebarProps) => {
       </nav>
 
       {/* Logout Button */}
-      <div className="p-4 border-t border-purple-700/50">
+      <div className="p-4 border-t border-gray-100">
         <button
           onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-300 hover:bg-red-900/50 hover:text-white transition-all duration-200 w-full"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-all duration-200 w-full"
         >
           <LogOut size={20} />
           <span className="font-medium text-sm">Logout</span>

@@ -68,14 +68,14 @@ const SuperAdminDashboard = () => {
     <SuperAdminLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 -m-6 p-8 rounded-2xl mb-8 border border-purple-100">
+        <div className="bg-white border-b border-gray-100 -m-6 p-8 mb-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl p-2 shadow-lg">
+            <div className="bg-secondary-500 rounded-xl p-2 shadow-sm">
               <Activity size={32} className="text-white" strokeWidth={2.5} />
             </div>
             <div>
               <h1 className="text-4xl font-display font-bold text-gray-900">Platform Dashboard</h1>
-              <p className="text-purple-600 mt-1 text-lg font-semibold">Super Admin Control Center</p>
+              <p className="text-secondary-600 mt-1 text-lg font-semibold">Super Admin Control Center</p>
             </div>
           </div>
           <p className="text-gray-600 mt-3">Overview of MetroWayz platform metrics and performance</p>
@@ -98,7 +98,7 @@ const SuperAdminDashboard = () => {
                       <p className="text-3xl font-display font-bold text-gray-900 mt-3">{stat.value}</p>
                       <p className="text-sm text-gray-600 mt-3 font-medium">{stat.trend}</p>
                     </div>
-                    <div className={`${stat.color} rounded-2xl p-4 shadow-lg`}>
+                    <div className={`${stat.color} rounded-xl p-4 shadow-sm`}>
                       <stat.icon size={32} className="text-white" strokeWidth={2} />
                     </div>
                   </div>
@@ -111,7 +111,7 @@ const SuperAdminDashboard = () => {
               {/* Vendor Performance */}
               <div className="bg-white rounded-2xl shadow-card p-6 border border-gray-100">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-3 shadow-md">
+                  <div className="bg-blue-500 rounded-xl p-3 shadow-sm">
                     <TrendingUp size={24} className="text-white" strokeWidth={2} />
                   </div>
                   <h3 className="text-xl font-display font-bold text-gray-900">Vendor Performance</h3>
@@ -135,7 +135,7 @@ const SuperAdminDashboard = () => {
               {/* Recent Activity */}
               <div className="bg-white rounded-2xl shadow-card p-6 border border-gray-100">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl p-3 shadow-md">
+                  <div className="bg-secondary-500 rounded-xl p-3 shadow-sm">
                     <Activity size={24} className="text-white" strokeWidth={2} />
                   </div>
                   <h3 className="text-xl font-display font-bold text-gray-900">Platform Activity</h3>
@@ -161,52 +161,58 @@ const SuperAdminDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <a
                 href="/super-admin/cancellations"
-                className="bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-white border-2 border-red-200 rounded-2xl p-6 hover:shadow-card-hover transition-all duration-300 group"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold opacity-90">Pending Cancellations</p>
-                    <p className="text-4xl font-display font-bold mt-2">{stats?.pendingCancellations || 0}</p>
+                    <p className="text-sm font-semibold text-gray-600">Pending Cancellations</p>
+                    <p className="text-4xl font-display font-bold mt-2 text-red-600">{stats?.pendingCancellations || 0}</p>
                   </div>
-                  <XCircle size={36} className="opacity-90" strokeWidth={2} />
+                  <div className="bg-red-100 rounded-xl p-3 group-hover:scale-105 transition-transform">
+                    <XCircle size={36} className="text-red-600" strokeWidth={2} />
+                  </div>
                 </div>
-                <p className="text-sm mt-4 font-semibold opacity-90 flex items-center gap-2">
+                <p className="text-sm mt-4 font-semibold text-gray-700 flex items-center gap-2">
                   Review requests
-                  <span className="text-lg">→</span>
+                  <span className="text-lg text-red-600">→</span>
                 </p>
               </a>
 
               <a
                 href="/super-admin/events"
-                className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-white border-2 border-secondary-200 rounded-2xl p-6 hover:shadow-card-hover transition-all duration-300 group"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold opacity-90">Manage Events</p>
-                    <p className="text-4xl font-display font-bold mt-2">{stats?.upcomingEvents || 0}</p>
+                    <p className="text-sm font-semibold text-gray-600">Manage Events</p>
+                    <p className="text-4xl font-display font-bold mt-2 text-secondary-600">{stats?.upcomingEvents || 0}</p>
                   </div>
-                  <CalendarRange size={36} className="opacity-90" strokeWidth={2} />
+                  <div className="bg-secondary-100 rounded-xl p-3 group-hover:scale-105 transition-transform">
+                    <CalendarRange size={36} className="text-secondary-600" strokeWidth={2} />
+                  </div>
                 </div>
-                <p className="text-sm mt-4 font-semibold opacity-90 flex items-center gap-2">
+                <p className="text-sm mt-4 font-semibold text-gray-700 flex items-center gap-2">
                   Create new event
-                  <span className="text-lg">→</span>
+                  <span className="text-lg text-secondary-600">→</span>
                 </p>
               </a>
 
               <a
                 href="/super-admin/vendors"
-                className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-white border-2 border-primary-200 rounded-2xl p-6 hover:shadow-card-hover transition-all duration-300 group"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold opacity-90">View Vendors</p>
-                    <p className="text-4xl font-display font-bold mt-2">{stats?.totalVendors || 0}</p>
+                    <p className="text-sm font-semibold text-gray-600">View Vendors</p>
+                    <p className="text-4xl font-display font-bold mt-2 text-primary-600">{stats?.totalVendors || 0}</p>
                   </div>
-                  <Users size={36} className="opacity-90" strokeWidth={2} />
+                  <div className="bg-primary-100 rounded-xl p-3 group-hover:scale-105 transition-transform">
+                    <Users size={36} className="text-primary-600" strokeWidth={2} />
+                  </div>
                 </div>
-                <p className="text-sm mt-4 font-semibold opacity-90 flex items-center gap-2">
+                <p className="text-sm mt-4 font-semibold text-gray-700 flex items-center gap-2">
                   Manage vendors
-                  <span className="text-lg">→</span>
+                  <span className="text-lg text-primary-600">→</span>
                 </p>
               </a>
             </div>

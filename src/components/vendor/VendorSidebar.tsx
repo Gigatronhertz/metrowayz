@@ -65,7 +65,7 @@ const VendorSidebar = ({ isOpen, onClose }: VendorSidebarProps) => {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md'
+                      ? 'bg-primary-500 text-white shadow-sm'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`
                 }
@@ -86,14 +86,14 @@ const VendorSidebar = ({ isOpen, onClose }: VendorSidebarProps) => {
       <div className="p-4 border-t border-gray-100 space-y-2">
         <NavLink
           to="/super-admin/login"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-purple-600 hover:bg-purple-50 transition-all duration-200 w-full"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary-600 hover:bg-secondary-50 transition-all duration-200 w-full"
         >
           <Shield size={20} />
           <span className="font-medium text-sm">Super Admin</span>
         </NavLink>
         <button
           onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200 w-full"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-all duration-200 w-full"
         >
           <LogOut size={20} />
           <span className="font-medium text-sm">Logout</span>
