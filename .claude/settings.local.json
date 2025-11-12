@@ -13,7 +13,10 @@
       "WebSearch",
       "Bash(npm install:*)",
       "Bash(mkdir:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebFetch(domain:www.priceline.com)",
+      "WebFetch(domain:needachefng.com)",
+      "WebFetch(domain:priceline.github.io)"
     ],
     "deny": [],
     "ask": []

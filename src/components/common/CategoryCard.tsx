@@ -8,23 +8,31 @@ interface CategoryCardProps {
   onClick?: () => void
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ 
-  category, 
-  isSelected = false, 
-  onClick 
+const CategoryCard: React.FC<CategoryCardProps> = ({
+  category,
+  isSelected = false,
+  onClick
 }) => {
   return (
     <button
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200 min-w-[100px] h-24',
+        'flex flex-col items-center justify-center p-5 rounded-2xl transition-all duration-300 min-w-[110px] h-28 transform hover:scale-105 shadow-card',
         isSelected
-          ? 'border-secondary-500 bg-secondary-50 text-secondary-700'
-          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm text-gray-700'
+          ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg scale-105'
+          : 'bg-white hover:shadow-card-hover text-gray-700 hover:bg-gray-50'
       )}
     >
-      <div className="text-2xl mb-1">{category.icon}</div>
-      <span className="text-xs font-medium text-center leading-tight whitespace-pre-line">
+      <div className={cn(
+        "text-3xl mb-2 transition-transform duration-300",
+        isSelected ? "scale-110" : "group-hover:scale-110"
+      )}>
+        {category.icon}
+      </div>
+      <span className={cn(
+        "text-xs font-semibold text-center leading-tight whitespace-pre-line",
+        isSelected ? "text-white" : "text-gray-700"
+      )}>
         {category.name}
       </span>
     </button>

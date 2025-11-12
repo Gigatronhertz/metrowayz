@@ -90,51 +90,57 @@ const HomePage: React.FC = () => {
   const featuredServices = filteredServices.slice(0, 2)
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-20">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="container-padding py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
+      <div className="bg-white shadow-soft">
+        <div className="container-padding py-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
               <img
                 src="/logo.svg"
                 alt="MetroWayz Logo"
-                className="w-10 h-10"
+                className="w-12 h-12"
               />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Welcome! 👋</h1>
-                <p className="text-gray-600">Your lifestyle services in one place</p>
+                <h1 className="text-3xl font-display font-bold text-gray-900">Welcome! 👋</h1>
+                <p className="text-gray-600 text-sm mt-1">Your lifestyle services in one place</p>
               </div>
             </div>
             <button
               onClick={() => {/* Navigate to notifications */}}
-              className="p-2 bg-gray-100 rounded-full relative"
+              className="p-3 bg-gray-100 rounded-full relative hover:bg-gray-200 transition-colors"
             >
-              <Bell className="w-6 h-6 text-gray-600" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-secondary-500 rounded-full"></span>
+              <Bell className="w-6 h-6 text-gray-700" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary-500 rounded-full border-2 border-white"></span>
             </button>
           </div>
 
-          <SearchBar
-            placeholder="Search services..."
-            onFilterClick={() => navigate('/search')}
-          />
+          {/* Enhanced Search Bar */}
+          <div className="max-w-2xl">
+            <SearchBar
+              placeholder="Search for services, chefs, venues..."
+              onFilterClick={() => navigate('/search')}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="container-padding space-y-8 py-6">
+      <div className="container-padding space-y-10 py-8">
         {/* Categories */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Services</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-display font-bold text-gray-900">Explore Services</h2>
+              <p className="text-sm text-gray-600 mt-1">Discover what you need, when you need it</p>
+            </div>
             <button
               onClick={() => navigate('/search')}
-              className="text-secondary-500 font-semibold hover:text-secondary-600"
+              className="text-primary-600 font-semibold hover:text-primary-700 transition-colors text-sm"
             >
-              See all
+              See all →
             </button>
           </div>
-          <div className="flex space-x-3 overflow-x-auto pb-2">
+          <div className="flex space-x-4 overflow-x-auto pb-3 scrollbar-hide">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -186,13 +192,16 @@ const HomePage: React.FC = () => {
 
         {/* Explore Nearby */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Explore nearby</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-display font-bold text-gray-900">Popular Near You</h2>
+              <p className="text-sm text-gray-600 mt-1">Top-rated services in your area</p>
+            </div>
             <button
               onClick={() => navigate('/search')}
-              className="text-secondary-500 font-semibold hover:text-secondary-600"
+              className="text-primary-600 font-semibold hover:text-primary-700 transition-colors text-sm"
             >
-              See all
+              See all →
             </button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -233,13 +242,16 @@ const HomePage: React.FC = () => {
 
         {/* Featured Services */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Featured Services</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-display font-bold text-gray-900">Featured Services</h2>
+              <p className="text-sm text-gray-600 mt-1">Hand-picked selections just for you</p>
+            </div>
             <button
               onClick={() => navigate('/search')}
-              className="text-secondary-500 font-semibold hover:text-secondary-600"
+              className="text-primary-600 font-semibold hover:text-primary-700 transition-colors text-sm"
             >
-              See all
+              See all →
             </button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
