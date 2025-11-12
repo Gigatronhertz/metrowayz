@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import SuperAdminLayout from '../../components/super-admin/SuperAdminLayout';
 import superAdminApi from '../../services/super-admin/superAdminApi';
 import toast from 'react-hot-toast';
@@ -12,18 +13,32 @@ import {
   XCircle,
   CalendarRange,
   Activity,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 
 const SuperAdminDashboard = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [migrationResult, setMigrationResult] = useState<any>(null);
 
   // Fetch platform stats
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, isError, error } = useQuery({
     queryKey: ['super-admin-stats'],
     queryFn: superAdminApi.dashboard.getStats,
+    retry: false,
   });
+
+  // Redirect to super admin login if 403 error
+  useEffect(() => {
+    if (isError && error instanceof Error) {
+      const errorMessage = error.message || '';
+      if (errorMessage.includes('403') || errorMessage.includes('Forbidden') || errorMessage.includes('Super Admin access required')) {
+        toast.error('Super Admin access required. Please login as Super Admin.');
+        navigate('/super-admin/login');
+      }
+    }
+  }, [isError, error, navigate]);
 
   // Fix vendor roles mutation
   const fixVendorRolesMutation = useMutation({
@@ -101,7 +116,21 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        {isLoading ? (
+        {isError ? (
+          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center">
+            <AlertCircle size={48} className="mx-auto text-red-600 mb-4" />
+            <h3 className="text-xl font-bold text-red-900 mb-2">Access Denied</h3>
+            <p className="text-red-700 mb-4">
+              You need Super Admin privileges to access this page.
+            </p>
+            <button
+              onClick={() => navigate('/super-admin/login')}
+              className="px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+            >
+              Go to Super Admin Login
+            </button>
+          </div>
+        ) : isLoading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
             <p className="text-gray-500 mt-4 font-medium">Loading statistics...</p>
