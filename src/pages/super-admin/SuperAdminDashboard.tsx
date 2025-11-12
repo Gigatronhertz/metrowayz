@@ -66,32 +66,40 @@ const SuperAdminDashboard = () => {
 
   return (
     <SuperAdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Platform Dashboard</h1>
-          <p className="text-gray-500 mt-1">Overview of MetroWayz platform metrics</p>
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 -m-6 p-8 rounded-2xl mb-8 border border-purple-100">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl p-2 shadow-lg">
+              <Activity size={32} className="text-white" strokeWidth={2.5} />
+            </div>
+            <div>
+              <h1 className="text-4xl font-display font-bold text-gray-900">Platform Dashboard</h1>
+              <p className="text-purple-600 mt-1 text-lg font-semibold">Super Admin Control Center</p>
+            </div>
+          </div>
+          <p className="text-gray-600 mt-3">Overview of MetroWayz platform metrics and performance</p>
         </div>
 
         {/* Stats Cards */}
         {isLoading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-            <p className="text-gray-500 mt-4">Loading statistics...</p>
+            <p className="text-gray-500 mt-4 font-medium">Loading statistics...</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {statCards.map((stat, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                <div key={index} className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
-                      <p className="text-sm text-gray-500 mt-2">{stat.trend}</p>
+                      <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{stat.title}</p>
+                      <p className="text-3xl font-display font-bold text-gray-900 mt-3">{stat.value}</p>
+                      <p className="text-sm text-gray-600 mt-3 font-medium">{stat.trend}</p>
                     </div>
-                    <div className={`${stat.color} rounded-full p-4`}>
-                      <stat.icon size={28} className="text-white" />
+                    <div className={`${stat.color} rounded-2xl p-4 shadow-lg`}>
+                      <stat.icon size={32} className="text-white" strokeWidth={2} />
                     </div>
                   </div>
                 </div>
@@ -101,12 +109,12 @@ const SuperAdminDashboard = () => {
             {/* Quick Stats Summary */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Vendor Performance */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-blue-100 rounded-full p-2">
-                    <TrendingUp size={20} className="text-blue-600" />
+              <div className="bg-white rounded-2xl shadow-card p-6 border border-gray-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-3 shadow-md">
+                    <TrendingUp size={24} className="text-white" strokeWidth={2} />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">Vendor Performance</h3>
+                  <h3 className="text-xl font-display font-bold text-gray-900">Vendor Performance</h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b">
@@ -125,12 +133,12 @@ const SuperAdminDashboard = () => {
               </div>
 
               {/* Recent Activity */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-purple-100 rounded-full p-2">
-                    <Activity size={20} className="text-purple-600" />
+              <div className="bg-white rounded-2xl shadow-card p-6 border border-gray-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl p-3 shadow-md">
+                    <Activity size={24} className="text-white" strokeWidth={2} />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">Platform Activity</h3>
+                  <h3 className="text-xl font-display font-bold text-gray-900">Platform Activity</h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b">
@@ -150,47 +158,56 @@ const SuperAdminDashboard = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <a
                 href="/super-admin/cancellations"
-                className="bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg p-6 hover:shadow-lg transition-shadow"
+                className="bg-gradient-to-br from-red-500 to-pink-500 text-white rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm opacity-90">Pending Cancellations</p>
-                    <p className="text-3xl font-bold mt-1">{stats?.pendingCancellations || 0}</p>
+                    <p className="text-sm font-semibold opacity-90">Pending Cancellations</p>
+                    <p className="text-4xl font-display font-bold mt-2">{stats?.pendingCancellations || 0}</p>
                   </div>
-                  <XCircle size={32} className="opacity-80" />
+                  <XCircle size={36} className="opacity-90" strokeWidth={2} />
                 </div>
-                <p className="text-sm mt-3 opacity-90">→ Review requests</p>
+                <p className="text-sm mt-4 font-semibold opacity-90 flex items-center gap-2">
+                  Review requests
+                  <span className="text-lg">→</span>
+                </p>
               </a>
 
               <a
                 href="/super-admin/events"
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg p-6 hover:shadow-lg transition-shadow"
+                className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm opacity-90">Manage Events</p>
-                    <p className="text-3xl font-bold mt-1">{stats?.upcomingEvents || 0}</p>
+                    <p className="text-sm font-semibold opacity-90">Manage Events</p>
+                    <p className="text-4xl font-display font-bold mt-2">{stats?.upcomingEvents || 0}</p>
                   </div>
-                  <CalendarRange size={32} className="opacity-80" />
+                  <CalendarRange size={36} className="opacity-90" strokeWidth={2} />
                 </div>
-                <p className="text-sm mt-3 opacity-90">→ Create new event</p>
+                <p className="text-sm mt-4 font-semibold opacity-90 flex items-center gap-2">
+                  Create new event
+                  <span className="text-lg">→</span>
+                </p>
               </a>
 
               <a
                 href="/super-admin/vendors"
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg p-6 hover:shadow-lg transition-shadow"
+                className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm opacity-90">View Vendors</p>
-                    <p className="text-3xl font-bold mt-1">{stats?.totalVendors || 0}</p>
+                    <p className="text-sm font-semibold opacity-90">View Vendors</p>
+                    <p className="text-4xl font-display font-bold mt-2">{stats?.totalVendors || 0}</p>
                   </div>
-                  <Users size={32} className="opacity-80" />
+                  <Users size={36} className="opacity-90" strokeWidth={2} />
                 </div>
-                <p className="text-sm mt-3 opacity-90">→ Manage vendors</p>
+                <p className="text-sm mt-4 font-semibold opacity-90 flex items-center gap-2">
+                  Manage vendors
+                  <span className="text-lg">→</span>
+                </p>
               </a>
             </div>
           </>

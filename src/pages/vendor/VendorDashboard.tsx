@@ -71,30 +71,30 @@ const VendorDashboard = () => {
 
   return (
     <VendorLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">Welcome back! Here's what's happening with your business.</p>
+        <div className="bg-gradient-to-br from-primary-50 to-secondary-50 -m-6 p-8 rounded-2xl mb-8">
+          <h1 className="text-4xl font-display font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-2 text-lg">Welcome back! Here's what's happening with your business.</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((stat, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm p-6">
+            <div key={index} className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{stat.title}</p>
+                  <p className="text-3xl font-display font-bold text-gray-900 mt-3">{stat.value}</p>
                   {stat.trend && (
-                    <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                    <p className="text-sm text-green-600 mt-3 flex items-center gap-1.5 font-medium">
                       <TrendingUp size={16} />
                       {stat.trend} from last month
                     </p>
                   )}
                 </div>
-                <div className={`${stat.color} rounded-full p-3`}>
-                  <stat.icon size={24} className="text-white" />
+                <div className={`${stat.color} rounded-2xl p-4 shadow-lg`}>
+                  <stat.icon size={28} className="text-white" strokeWidth={2} />
                 </div>
               </div>
             </div>
@@ -102,10 +102,10 @@ const VendorDashboard = () => {
         </div>
 
         {/* Recent Bookings */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">Recent Bookings</h2>
-            <p className="text-sm text-gray-500 mt-1">Latest bookings for your services</p>
+        <div className="bg-white rounded-2xl shadow-card border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-2xl font-display font-bold text-gray-900">Recent Bookings</h2>
+            <p className="text-sm text-gray-600 mt-2">Latest bookings for your services</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -177,9 +177,10 @@ const VendorDashboard = () => {
             </table>
           </div>
 
-          <div className="p-4 border-t border-gray-200 text-center">
-            <a href="/vendor/bookings" className="text-primary-600 hover:text-primary-700 font-medium">
-              View All Bookings →
+          <div className="p-4 border-t border-gray-100 text-center bg-gray-50">
+            <a href="/vendor/bookings" className="text-secondary-600 hover:text-secondary-700 font-semibold transition-colors inline-flex items-center gap-2">
+              View All Bookings
+              <span>→</span>
             </a>
           </div>
         </div>
@@ -188,45 +189,45 @@ const VendorDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <a
             href="/vendor/services/new"
-            className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+            className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-gray-100 group"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-primary-100 rounded-full p-3">
-                <Package size={24} className="text-primary-600" />
+              <div className="bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl p-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+                <Package size={28} className="text-white" strokeWidth={2} />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Add New Service</h3>
-                <p className="text-sm text-gray-500">Create a new service listing</p>
+                <h3 className="font-display font-bold text-gray-900 text-lg">Add New Service</h3>
+                <p className="text-sm text-gray-600 mt-1">Create a new service listing</p>
               </div>
             </div>
           </a>
 
           <a
             href="/vendor/bookings?status=pending"
-            className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+            className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-gray-100 group"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-orange-100 rounded-full p-3">
-                <Clock size={24} className="text-orange-600" />
+              <div className="bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl p-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+                <Clock size={28} className="text-white" strokeWidth={2} />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Pending Requests</h3>
-                <p className="text-sm text-gray-500">{stats?.stats?.pendingBookings || 0} awaiting approval</p>
+                <h3 className="font-display font-bold text-gray-900 text-lg">Pending Requests</h3>
+                <p className="text-sm text-gray-600 mt-1">{stats?.stats?.pendingBookings || 0} awaiting approval</p>
               </div>
             </div>
           </a>
 
           <a
             href="/vendor/financial"
-            className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+            className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-gray-100 group"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-green-100 rounded-full p-3">
-                <DollarSign size={24} className="text-green-600" />
+              <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl p-4 shadow-md group-hover:scale-110 transition-transform duration-300">
+                <DollarSign size={28} className="text-white" strokeWidth={2} />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">View Earnings</h3>
-                <p className="text-sm text-gray-500">Check your financial reports</p>
+                <h3 className="font-display font-bold text-gray-900 text-lg">View Earnings</h3>
+                <p className="text-sm text-gray-600 mt-1">Check your financial reports</p>
               </div>
             </div>
           </a>
