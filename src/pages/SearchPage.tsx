@@ -31,7 +31,7 @@ const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all')
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'map'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'map'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState<SearchFilters>({})
   const [services, setServices] = useState<Service[]>([])
