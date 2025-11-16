@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell } from 'lucide-react'
+import { Bell, Calendar, MapPin } from 'lucide-react'
 import { categories, banners } from '../data/mockData'
-import { serviceAPI } from '../services/api'
+import { serviceAPI, eventsAPI } from '../services/api'
 import { formatPriceUnit } from '../utils/format'
 import { useAuth } from '../hooks/useAuth'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import CategoryCard from '../components/common/CategoryCard'
 import ServiceCard from '../components/common/ServiceCard'
 import SearchBar from '../components/common/SearchBar'
+import { format } from 'date-fns'
 
 interface Service {
   _id: string
@@ -33,6 +34,7 @@ const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('accommodation')
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
   const [services, setServices] = useState<Service[]>([])
+  const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [scrollPastServices, setScrollPastServices] = useState(false)
 
@@ -77,6 +79,25 @@ const HomePage: React.FC = () => {
     }
 
     fetchServices()
+  }, [])
+
+  // Fetch events from API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const eventsList = await eventsAPI.getPublicEvents({
+          limit: 20,
+          status: 'active'
+        })
+        console.log('Fetched events:', eventsList)
+        setEvents(eventsList || [])
+      } catch (error) {
+        console.error('Error fetching events:', error)
+        setEvents([])
+      }
+    }
+
+    fetchEvents()
   }, [])
 
   const filteredServices = services.filter(service => {
@@ -374,6 +395,79 @@ const HomePage: React.FC = () => {
             ))}
           </div>
         </section>
+
+        {/* Upcoming Events - Show when Entertainment is selected */}
+        {selectedCategory === 'entertainment' && events.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold text-gray-900">Upcoming Events</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events.map((event) => (
+                <div
+                  key={event._id}
+                  onClick={() => navigate(`/event/${event._id}`)}
+                  className="bg-white rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  {/* Event Image */}
+                  <div className="relative h-48 bg-gray-200">
+                    {(event.image || event.images?.[0]?.url) ? (
+                      <img
+                        src={event.image || event.images[0].url}
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        No Image
+                      </div>
+                    )}
+                    {event.featured && (
+                      <span className="absolute top-3 right-3 px-3 py-1 bg-yellow-400 text-yellow-900 rounded-full text-xs font-bold">
+                        ⭐ Featured
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Event Details */}
+                  <div className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-bold text-lg text-gray-900 line-clamp-1">{event.title}</h3>
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                        {event.category || 'Event'}
+                      </span>
+                    </div>
+
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">{event.description}</p>
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Calendar size={16} className="mr-2 flex-shrink-0" />
+                        {format(new Date(event.eventDate), 'MMM dd, yyyy')} at {event.eventTime}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <MapPin size={16} className="mr-2 flex-shrink-0" />
+                        <span className="truncate">{event.location}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div>
+                        <p className="text-xs text-gray-500">Ticket Price</p>
+                        <p className="font-bold text-lg text-primary-500">
+                          {event.ticketPrice === 0 ? 'Free' : `₦${event.ticketPrice.toLocaleString()}`}
+                        </p>
+                      </div>
+                      <button className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-semibold">
+                        View Event
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* More for You */}
         <section>

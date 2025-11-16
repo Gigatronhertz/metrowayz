@@ -387,6 +387,37 @@ export const paymentAPI = {
   },
 };
 
+// ============= EVENTS APIs =============
+
+export const eventsAPI = {
+  // Get all public events
+  getPublicEvents: async (params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    status?: string;
+    featured?: boolean;
+    search?: string;
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, String(value));
+        }
+      });
+    }
+    const response = await fetchWithAuth(`/api/events?${queryParams.toString()}`);
+    return response.data || [];
+  },
+
+  // Get single event by ID
+  getEventById: async (id: string) => {
+    const response = await fetchWithAuth(`/api/events/${id}`);
+    return response.data || null;
+  },
+};
+
 export default {
   service: serviceAPI,
   booking: bookingAPI,
@@ -394,4 +425,5 @@ export default {
   notification: notificationAPI,
   favorite: favoriteAPI,
   payment: paymentAPI,
+  events: eventsAPI,
 };
