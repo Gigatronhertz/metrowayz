@@ -2789,42 +2789,22 @@ app.post("/api/bookings/:id/cancel", authenticateJWT, async (req, res) => {
             });
         }
 
-        // Get cancellation policy
-        let policy;
-        if (booking.serviceId.cancellationPolicy) {
-            policy = await CancellationPolicy.findById(booking.serviceId.cancellationPolicy);
-        }
+        // Calculate estimated refund (final refund determined by super admin)
+        let estimatedRefund = {
+            refundPercentage: isProvider ? 100 : 80, // Provider cancellations = 100%, customer = 80%
+            totalRefund: booking.totalAmount,
+            refundAmount: isProvider ? booking.totalAmount : Math.round(booking.totalAmount * 0.8),
+            rule: isProvider ? 'provider_cancellation' : 'customer_cancellation',
+            description: isProvider ? 'Full refund due to provider cancellation' : 'Estimated refund pending super admin approval'
+        };
 
-        // Default to moderate policy if none set
-        if (!policy) {
-            policy = await CancellationPolicy.findOne({
-                name: 'moderate',
-                isDefault: true
-            });
-        }
-
-        // Calculate refund
-        const refundCalculation = policy.calculateRefund(booking);
-
-        // Provider cancellations = full refund
-        let finalRefund = refundCalculation;
-        if (isProvider) {
-            finalRefund = {
-                ...refundCalculation,
-                refundPercentage: 100,
-                totalRefund: booking.totalAmount,
-                refundAmount: booking.totalAmount,
-                serviceFeeRefund: 0,
-                cleaningFeeRefund: 0,
-                rule: 'provider_cancellation',
-                description: 'Full refund due to provider cancellation'
-            };
-        }
-
-        // Update booking
-        booking.status = 'cancelled';
-        booking.cancelledBy = isCustomer ? 'customer' : isProvider ? 'provider' : 'admin';
-        booking.cancelledAt = new Date();
+        // Create cancellation request instead of directly canceling
+        booking.cancellationRequest = {
+            status: 'pending',
+            requestedAt: new Date(),
+            requestedBy: isCustomer ? 'customer' : 'provider',
+            reason: reason || 'No reason provided'
+        };
         booking.cancellationReason = reason || 'No reason provided';
 
         await booking.save();
@@ -2834,17 +2814,17 @@ app.post("/api/bookings/:id/cancel", authenticateJWT, async (req, res) => {
         await createBookingNotification(
             notifyUserId,
             'cancellation',
-            'Booking Cancelled',
-            `Booking for ${booking.serviceName} has been cancelled by ${isCustomer ? 'customer' : 'provider'}`,
+            'Cancellation Request Submitted',
+            `A cancellation request for ${booking.serviceName} has been submitted by ${isCustomer ? 'customer' : 'provider'}. Pending Super Admin approval.`,
             booking._id
         );
 
         res.status(200).json({
             success: true,
-            message: "Booking cancelled successfully",
+            message: "Cancellation request submitted successfully. Pending Super Admin approval.",
             data: {
                 booking,
-                refund: finalRefund
+                refund: estimatedRefund
             }
         });
     } catch (error) {
@@ -4456,9 +4436,21 @@ app.get("/api/super-admin/vendors", authenticateJWT, requireSuperAdmin, async (r
 
         const total = await User.countDocuments(query);
 
+        // Get service counts for each vendor
+        const vendorsWithServiceCount = await Promise.all(
+            vendors.map(async (vendor) => {
+                const serviceCount = await Service.countDocuments({ createdBy: vendor._id });
+                return {
+                    ...vendor.toObject(),
+                    servicesCount: serviceCount
+                };
+            })
+        );
+
         res.status(200).json({
             success: true,
-            data: vendors,
+            vendors: vendorsWithServiceCount,
+            total,
             pagination: {
                 total,
                 page: parseInt(page),
@@ -4707,26 +4699,21 @@ app.get("/api/super-admin/cancellation-requests", authenticateJWT, requireSuperA
     try {
         const { status, type, page = 1, limit = 20 } = req.query;
 
-        const query = {};
+        // Default: only show bookings with cancellation requests
+        const query = {
+            'cancellationRequest.status': { $exists: true }
+        };
 
         // Find bookings with cancellation or reschedule requests
         if (status === 'pending') {
-            query.$or = [
-                { 'cancellationRequest.status': 'pending' },
-                { 'rescheduleRequest.status': 'pending' }
-            ];
+            query['cancellationRequest.status'] = 'pending';
         } else if (status === 'approved') {
-            query.$or = [
-                { 'cancellationRequest.status': 'approved' },
-                { 'rescheduleRequest.status': 'approved' }
-            ];
+            query['cancellationRequest.status'] = 'approved';
         } else if (status === 'rejected') {
-            query.$or = [
-                { 'cancellationRequest.status': 'rejected' },
-                { 'rescheduleRequest.status': 'rejected' }
-            ];
+            query['cancellationRequest.status'] = 'rejected';
         }
 
+        // Type filter (for future if we add reschedule requests)
         if (type === 'cancellation') {
             query.cancellationRequest = { $exists: true, $ne: null };
         } else if (type === 'reschedule') {
@@ -4738,15 +4725,40 @@ app.get("/api/super-admin/cancellation-requests", authenticateJWT, requireSuperA
         const requests = await Booking.find(query)
             .populate('serviceId', 'title category price')
             .populate('userId', 'name email phoneNumber')
-            .sort({ 'cancellationRequest.requestedAt': -1, 'rescheduleRequest.requestedAt': -1 })
+            .populate('providerId', 'name email businessName')
+            .sort({ 'cancellationRequest.requestedAt': -1 })
             .skip(skip)
             .limit(parseInt(limit));
 
         const total = await Booking.countDocuments(query);
 
+        // Add refundAmount to each request based on who requested cancellation
+        const requestsWithRefund = requests.map(booking => {
+            const bookingObj = booking.toObject();
+            // Provider cancellations = 100%, customer = 80%
+            const isProviderCancellation = booking.cancellationRequest?.requestedBy === 'provider';
+            bookingObj.refundAmount = isProviderCancellation
+                ? booking.totalAmount
+                : Math.round(booking.totalAmount * 0.8);
+            return bookingObj;
+        });
+
+        // Calculate stats
+        const approvedToday = await Booking.countDocuments({
+            'cancellationRequest.status': 'approved',
+            'cancellationRequest.processedAt': { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+        });
+
+        const totalRefundAmount = await Booking.aggregate([
+            { $match: { 'cancellationRequest.status': 'pending' } },
+            { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+        ]);
+
         res.status(200).json({
             success: true,
-            data: requests,
+            requests: requestsWithRefund,
+            approvedToday,
+            totalRefundAmount: totalRefundAmount[0]?.total || 0,
             pagination: {
                 total,
                 page: parseInt(page),
@@ -4788,12 +4800,29 @@ app.put("/api/super-admin/cancellation-requests/:bookingId/:action", authenticat
             });
         }
 
+        if (!booking.userId) {
+            return res.status(400).json({
+                success: false,
+                message: "Booking has no customer information"
+            });
+        }
+
+        if (!booking.serviceId) {
+            return res.status(400).json({
+                success: false,
+                message: "Booking has no service information"
+            });
+        }
+
         if (!booking.cancellationRequest) {
             return res.status(400).json({
                 success: false,
                 message: "No cancellation request found for this booking"
             });
         }
+
+        console.log('📝 Current cancellation request:', booking.cancellationRequest);
+        console.log('📝 Super admin ID:', req.superAdmin._id);
 
         // Update cancellation request
         booking.cancellationRequest.status = action === 'approve' ? 'approved' : 'rejected';
@@ -4804,19 +4833,42 @@ app.put("/api/super-admin/cancellation-requests/:bookingId/:action", authenticat
         // If approved, update booking status
         if (action === 'approve') {
             booking.status = 'cancelled';
+            booking.cancelledAt = new Date();
+            booking.cancelledBy = booking.cancellationRequest.requestedBy === 'customer' ? 'customer' : 'provider';
         }
 
-        await booking.save();
+        // Mark the nested object as modified so Mongoose saves it
+        booking.markModified('cancellationRequest');
 
-        // Create notification for user
+        console.log('💾 Saving booking...');
+        await booking.save();
+        console.log('✅ Booking saved successfully');
+
+        console.log('📧 Creating notification for customer:', booking.userId._id);
+        // Create notification for customer
         await Notification.create({
             userId: booking.userId._id,
-            type: 'booking_status',
+            type: 'cancellation',
             title: `Cancellation Request ${action === 'approve' ? 'Approved' : 'Rejected'}`,
             message: `Your cancellation request for "${booking.serviceId.title}" has been ${action === 'approve' ? 'approved' : 'rejected'}.`,
             relatedId: booking._id,
-            relatedModel: 'Booking'
+            relatedType: 'booking'
         });
+        console.log('✅ Customer notification created');
+
+        // Create notification for provider if different from customer
+        if (booking.providerId && booking.providerId.toString() !== booking.userId._id.toString()) {
+            console.log('📧 Creating notification for provider:', booking.providerId);
+            await Notification.create({
+                userId: booking.providerId,
+                type: 'cancellation',
+                title: `Cancellation Request ${action === 'approve' ? 'Approved' : 'Rejected'}`,
+                message: `A cancellation request for "${booking.serviceId.title}" has been ${action === 'approve' ? 'approved' : 'rejected'} by Super Admin.`,
+                relatedId: booking._id,
+                relatedType: 'booking'
+            });
+            console.log('✅ Provider notification created');
+        }
 
         res.status(200).json({
             success: true,
@@ -4836,32 +4888,88 @@ app.put("/api/super-admin/cancellation-requests/:bookingId/:action", authenticat
 // Get dashboard stats (super admin only)
 app.get("/api/super-admin/stats", authenticateJWT, requireSuperAdmin, async (req, res) => {
     try {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
         const [
             totalVendors,
+            newVendorsThisMonth,
             totalBookings,
+            pendingBookings,
+            todayBookings,
+            weekBookings,
+            monthBookings,
             totalServices,
+            activeServices,
             pendingCancellations,
-            totalRevenue
+            totalRevenue,
+            totalEvents,
+            upcomingEvents
         ] = await Promise.all([
             User.countDocuments({ role: 'vendor' }),
+            User.countDocuments({ role: 'vendor', createdAt: { $gte: startOfMonth } }),
             Booking.countDocuments(),
+            Booking.countDocuments({ status: 'pending' }),
+            Booking.countDocuments({ createdAt: { $gte: startOfDay } }),
+            Booking.countDocuments({ createdAt: { $gte: startOfWeek } }),
+            Booking.countDocuments({ createdAt: { $gte: startOfMonth } }),
             Service.countDocuments(),
+            Service.countDocuments({ status: 'active' }),
             Booking.countDocuments({ 'cancellationRequest.status': 'pending' }),
             Booking.aggregate([
                 { $match: { status: 'completed' } },
                 { $group: { _id: null, total: { $sum: '$totalAmount' } } }
-            ])
+            ]),
+            Event.countDocuments(),
+            Event.countDocuments({ eventDate: { $gte: now }, status: 'active' })
         ]);
+
+        // Get top vendor
+        const topVendorData = await Booking.aggregate([
+            { $match: { status: { $in: ['confirmed', 'completed'] } } },
+            { $group: { _id: '$providerId', bookingCount: { $sum: 1 }, revenue: { $sum: '$totalAmount' } } },
+            { $sort: { revenue: -1 } },
+            { $limit: 1 }
+        ]);
+
+        let topVendor = null;
+        if (topVendorData.length > 0) {
+            const vendorUser = await User.findById(topVendorData[0]._id);
+            topVendor = {
+                name: vendorUser?.name || 'N/A',
+                revenue: topVendorData[0].revenue
+            };
+        }
+
+        // Calculate completion rate
+        const completedBookings = await Booking.countDocuments({ status: 'completed' });
+        const completionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
+
+        // Calculate platform revenue (5% of total)
+        const platformRevenue = Math.round((totalRevenue[0]?.total || 0) * 0.05);
 
         res.status(200).json({
             success: true,
-            data: {
-                totalVendors,
-                totalBookings,
-                totalServices,
-                pendingCancellations,
-                totalRevenue: totalRevenue[0]?.total || 0
-            }
+            totalVendors,
+            newVendorsThisMonth,
+            totalBookings,
+            pendingBookings,
+            todayBookings,
+            weekBookings,
+            monthBookings,
+            totalServices,
+            activeServices,
+            pendingCancellations,
+            platformRevenue,
+            totalRevenue: totalRevenue[0]?.total || 0,
+            totalEvents,
+            upcomingEvents,
+            topVendor,
+            completionRate,
+            averageRating: 4.5 // TODO: Calculate from reviews
         });
     } catch (error) {
         console.error("Error fetching super admin stats:", error);
@@ -4971,10 +5079,10 @@ app.post("/api/super-admin/events", authenticateJWT, requireSuperAdmin, async (r
         } = req.body;
 
         // Validate required fields
-        if (!title || !eventDate || !eventTime || !location || ticketPrice === undefined || !image) {
+        if (!title || !eventDate || !eventTime || !location || ticketPrice === undefined) {
             return res.status(400).json({
                 success: false,
-                message: "Missing required fields: title, eventDate, eventTime, location, ticketPrice, image"
+                message: "Missing required fields: title, eventDate, eventTime, location, ticketPrice"
             });
         }
 
@@ -4989,13 +5097,15 @@ app.post("/api/super-admin/events", authenticateJWT, requireSuperAdmin, async (r
             longitude: longitude || 0,
             ticketPrice,
             price: ticketPrice, // Also set price for backward compatibility
-            image,
-            category,
+            image: image?.url || '',
+            images: image ? [image] : [],
+            category: category || 'General',
             capacity: capacity || 0,
             availableTickets: capacity || 0,
             tags: tags || [],
             featured: featured || false,
-            createdBy: req.superAdmin._id
+            createdBy: req.superAdmin._id,
+            status: 'active'
         });
 
         await event.save();
@@ -5059,7 +5169,10 @@ app.put("/api/super-admin/events/:id", authenticateJWT, requireSuperAdmin, async
             event.ticketPrice = ticketPrice;
             event.price = ticketPrice; // Also update price for backward compatibility
         }
-        if (image) event.image = image;
+        if (image) {
+            event.image = image.url || image;
+            event.images = [image];
+        }
         if (category) event.category = category;
         if (capacity !== undefined) {
             event.capacity = capacity;

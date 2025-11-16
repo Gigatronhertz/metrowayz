@@ -83,6 +83,35 @@ const bookingSchema = new mongoose.Schema({
         enum: ['customer', 'provider', 'admin']
     },
 
+    // Cancellation request (for super admin approval)
+    cancellationRequest: {
+        status: {
+            type: String,
+            enum: ['pending', 'approved', 'rejected'],
+            default: undefined
+        },
+        requestedAt: {
+            type: Date
+        },
+        requestedBy: {
+            type: String,
+            enum: ['customer', 'provider']
+        },
+        reason: {
+            type: String
+        },
+        processedAt: {
+            type: Date
+        },
+        processedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        adminNotes: {
+            type: String
+        }
+    },
+
     // Completion info
     completedAt: {
         type: Date
