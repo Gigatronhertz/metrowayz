@@ -149,13 +149,16 @@ const EventsManagement = () => {
     setUploading(true);
 
     try {
+      // Get Cloudinary signature - SAME AS VENDOR SERVICE FORM
       const signatureData = await vendorApi.service.getCloudinarySignature();
-      const { signature, timestamp, cloudName, apiKey } = signatureData;
+      const { signature, timestamp, cloudName, apiKey, folder } = signatureData.data;
+
+      console.log('📸 Cloudinary credentials:', { cloudName, apiKey, folder });
 
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('signature', signature);
-      uploadFormData.append('timestamp', timestamp);
+      uploadFormData.append('timestamp', timestamp.toString());
       uploadFormData.append('api_key', apiKey);
       uploadFormData.append('folder', 'metrowayz-events');
 
@@ -168,6 +171,16 @@ const EventsManagement = () => {
       );
 
       const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Cloudinary upload error:', data);
+        throw new Error(data.error?.message || 'Upload failed');
+      }
+
+      if (!data.secure_url || !data.public_id) {
+        console.error('Missing data from Cloudinary:', data);
+        throw new Error('Invalid response from Cloudinary');
+      }
 
       console.log('📸 Cloudinary upload response:', data);
 
@@ -186,7 +199,7 @@ const EventsManagement = () => {
       toast.success('Image uploaded successfully');
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload image');
+      toast.error(error instanceof Error ? error.message : 'Failed to upload image');
     } finally {
       setUploading(false);
     }
