@@ -377,13 +377,19 @@ app.get('/auth/whoami', authenticateJWT, async (req, res) => {
 app.post('/auth/super-admin/ensure-setup', async (req, res) => {
     try {
         const SUPER_ADMIN_EMAIL = 'superadmin@metrowayz.com';
+        const SUPER_ADMIN_GOOGLE_ID = 'super_admin_metrowayz_001';
 
-        // Find or create super admin user
+        console.log('🔧 ensure-setup: Looking for user with email:', SUPER_ADMIN_EMAIL);
+
+        // Find existing user
         let superAdmin = await User.findOne({ email: SUPER_ADMIN_EMAIL });
 
         if (!superAdmin) {
-            superAdmin = new User({
-                googleId: 'super_admin_metrowayz_001',
+            console.log('🔧 ensure-setup: User not found, creating new one');
+
+            // Use MongoDB native insert to bypass schema validation
+            const result = await User.collection.insertOne({
+                googleId: SUPER_ADMIN_GOOGLE_ID,
                 name: 'Super Admin',
                 email: SUPER_ADMIN_EMAIL,
                 role: 'super_admin',
@@ -391,33 +397,70 @@ app.post('/auth/super-admin/ensure-setup', async (req, res) => {
                 businessName: 'MetroWayz Administration',
                 businessType: 'Administration',
                 phoneNumber: '+1-000-000-0000',
-                about: 'Super Administrator with full system access'
+                about: 'Super Administrator with full system access',
+                createdAt: new Date(),
+                updatedAt: new Date()
             });
-            await superAdmin.save();
+
+            console.log('✅ ensure-setup: Created new super admin:', result.insertedId);
 
             return res.status(200).json({
                 success: true,
                 message: 'Super Admin user created successfully',
-                action: 'created'
+                action: 'created',
+                userId: result.insertedId
             });
         }
 
-        // Update existing user to have super_admin role
-        const hadRole = superAdmin.role;
-        superAdmin.role = 'super_admin';
-        superAdmin.isAdmin = true;
-        superAdmin.googleId = superAdmin.googleId || 'super_admin_metrowayz_001';
-        await superAdmin.save();
+        console.log('🔧 ensure-setup: Found existing user:', {
+            _id: superAdmin._id,
+            email: superAdmin.email,
+            currentRole: superAdmin.role,
+            currentGoogleId: superAdmin.googleId
+        });
+
+        // Update existing user using MongoDB native update to bypass schema validation
+        const previousRole = superAdmin.role;
+        const updateResult = await User.collection.updateOne(
+            { email: SUPER_ADMIN_EMAIL },
+            {
+                $set: {
+                    role: 'super_admin',
+                    isAdmin: true,
+                    googleId: SUPER_ADMIN_GOOGLE_ID,
+                    updatedAt: new Date()
+                }
+            }
+        );
+
+        console.log('✅ ensure-setup: Update result:', {
+            matched: updateResult.matchedCount,
+            modified: updateResult.modifiedCount
+        });
+
+        // Verify the update
+        const updatedUser = await User.findOne({ email: SUPER_ADMIN_EMAIL });
+        console.log('✅ ensure-setup: Verified updated user:', {
+            _id: updatedUser._id,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            googleId: updatedUser.googleId,
+            isAdmin: updatedUser.isAdmin
+        });
 
         return res.status(200).json({
             success: true,
             message: 'Super Admin user updated successfully',
             action: 'updated',
-            previousRole: hadRole,
-            currentRole: superAdmin.role
+            previousRole: previousRole,
+            currentRole: 'super_admin',
+            updateResult: {
+                matched: updateResult.matchedCount,
+                modified: updateResult.modifiedCount
+            }
         });
     } catch (error) {
-        console.error('Error ensuring super admin setup:', error);
+        console.error('❌ Error ensuring super admin setup:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error',
@@ -1827,25 +1870,13 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
         const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
         const totalAmount = service.price * Math.max(duration, 1);
 
-        // Determine initial booking status based on service settings
-        // Check if service has instant booking enabled
-        const instantBooking = service.bookingSettings?.instantBooking || false;
-        const requireApproval = service.bookingSettings?.requireApproval !== false; // Default true
-
-        let initialStatus = 'pending';
-        let customerNotificationTitle = 'Booking Request Sent';
-        let customerNotificationMessage = `Your booking request for ${service.title} is pending provider approval`;
-        let providerNotificationTitle = 'New Booking Request';
-        let providerNotificationMessage = `You have a new booking request for ${service.title}. Please review and approve.`;
-
-        // Auto-confirm if instant booking is enabled OR approval is not required
-        if (instantBooking || !requireApproval) {
-            initialStatus = 'confirmed';
-            customerNotificationTitle = 'Booking Confirmed';
-            customerNotificationMessage = `Your booking for ${service.title} has been confirmed`;
-            providerNotificationTitle = 'New Booking Received';
-            providerNotificationMessage = `You have a new booking for ${service.title}`;
-        }
+        // Auto-confirm all bookings after payment
+        // Since payment is completed before booking creation, no vendor approval is needed
+        const initialStatus = 'confirmed';
+        const customerNotificationTitle = 'Booking Confirmed';
+        const customerNotificationMessage = `Your booking for ${service.title} has been confirmed`;
+        const providerNotificationTitle = 'New Booking Received';
+        const providerNotificationMessage = `You have a new booking for ${service.title}`;
 
         // Create booking
         const booking = new Booking({

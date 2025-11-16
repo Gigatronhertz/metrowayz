@@ -37,6 +37,13 @@ const userSchema = new mongoose.Schema({
         default: false
     },
 
+    // User role (for super admin functionality)
+    role: {
+        type: String,
+        enum: ['user', 'admin', 'super_admin'],
+        default: 'user'
+    },
+
     // Provider/Business fields (only for providers)
     businessName: {
         type: String,
