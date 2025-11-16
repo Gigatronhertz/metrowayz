@@ -232,9 +232,9 @@ const EventsManagement = () => {
             <p className="text-2xl font-bold text-gray-900">{(eventsData as any)?.length || 0}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
-            <p className="text-sm text-gray-600">Upcoming</p>
+            <p className="text-sm text-gray-600">Active</p>
             <p className="text-2xl font-bold text-blue-600">
-              {(eventsData as any)?.filter((e: any) => e.status === 'upcoming').length || 0}
+              {(eventsData as any)?.filter((e: any) => e.status === 'active' || e.status === 'upcoming').length || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
@@ -263,9 +263,9 @@ const EventsManagement = () => {
               <div key={event._id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 {/* Event Image */}
                 <div className="relative h-48 bg-gray-200">
-                  {event.image?.url ? (
+                  {(event.image || event.images?.[0]?.url) ? (
                     <img
-                      src={event.image.url}
+                      src={event.image || event.images[0].url}
                       alt={event.title}
                       className="w-full h-full object-cover"
                     />

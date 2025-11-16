@@ -213,12 +213,16 @@ export const superAdminEventsAPI = {
         }
       });
     }
-    return fetchWithAuth(`/api/events?${queryParams.toString()}`);
+    const response = await fetchWithAuth(`/api/events?${queryParams.toString()}`);
+    // Return just the data array, not the whole response object
+    return response.data || [];
   },
 
   // Get single event
   getEventById: async (id: string) => {
-    return fetchWithAuth(`/api/events/${id}`);
+    const response = await fetchWithAuth(`/api/events/${id}`);
+    // Return just the data, not the whole response object
+    return response.data || null;
   },
 
   // Create event (Super Admin only)
