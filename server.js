@@ -5011,6 +5011,9 @@ app.get("/api/events", async (req, res) => {
 
         const total = await Event.countDocuments(query);
 
+        console.log('📸 Returning events, first event image:', events[0]?.image);
+        console.log('📸 Returning events, first event images array:', events[0]?.images);
+
         res.status(200).json({
             success: true,
             data: events,
@@ -5078,6 +5081,10 @@ app.post("/api/super-admin/events", authenticateJWT, requireSuperAdmin, async (r
             featured
         } = req.body;
 
+        console.log('📸 Received image data:', image);
+        console.log('📸 Image URL:', image?.url);
+        console.log('📸 Full request body:', req.body);
+
         // Validate required fields
         if (!title || !eventDate || !eventTime || !location || ticketPrice === undefined) {
             return res.status(400).json({
@@ -5085,6 +5092,12 @@ app.post("/api/super-admin/events", authenticateJWT, requireSuperAdmin, async (r
                 message: "Missing required fields: title, eventDate, eventTime, location, ticketPrice"
             });
         }
+
+        const eventImageUrl = image?.url || '';
+        const eventImages = image ? [image] : [];
+
+        console.log('📸 Setting event image URL:', eventImageUrl);
+        console.log('📸 Setting event images array:', eventImages);
 
         const event = new Event({
             title,
@@ -5097,8 +5110,8 @@ app.post("/api/super-admin/events", authenticateJWT, requireSuperAdmin, async (r
             longitude: longitude || 0,
             ticketPrice,
             price: ticketPrice, // Also set price for backward compatibility
-            image: image?.url || '',
-            images: image ? [image] : [],
+            image: eventImageUrl,
+            images: eventImages,
             category: category || 'General',
             capacity: capacity || 0,
             availableTickets: capacity || 0,
@@ -5109,6 +5122,10 @@ app.post("/api/super-admin/events", authenticateJWT, requireSuperAdmin, async (r
         });
 
         await event.save();
+
+        console.log('✅ Event saved successfully');
+        console.log('📸 Saved event image:', event.image);
+        console.log('📸 Saved event images array:', event.images);
 
         res.status(201).json({
             success: true,

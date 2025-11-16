@@ -89,7 +89,9 @@ const HomePage: React.FC = () => {
           limit: 20,
           status: 'active'
         })
-        console.log('Fetched events:', eventsList)
+        console.log('📸 Fetched events:', eventsList)
+        console.log('📸 First event image:', eventsList[0]?.image)
+        console.log('📸 First event images array:', eventsList[0]?.images)
         setEvents(eventsList || [])
       } catch (error) {
         console.error('Error fetching events:', error)
@@ -412,11 +414,17 @@ const HomePage: React.FC = () => {
                   {/* Event Image */}
                   <div className="relative h-48 bg-gray-200">
                     {(event.image || event.images?.[0]?.url) ? (
-                      <img
-                        src={event.image || event.images[0].url}
-                        alt={event.title}
-                        className="w-full h-full object-cover"
-                      />
+                      <>
+                        <img
+                          src={event.image || event.images[0].url}
+                          alt={event.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            console.error('📸 Image failed to load:', event.image || event.images[0].url);
+                            console.error('📸 Event data:', event);
+                          }}
+                        />
+                      </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400">
                         No Image

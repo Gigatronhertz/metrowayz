@@ -35,7 +35,13 @@ const EventsManagement = () => {
   // Fetch events
   const { data: eventsData, isLoading } = useQuery({
     queryKey: ['super-admin-events'],
-    queryFn: () => superAdminApi.events.getAllEvents(),
+    queryFn: async () => {
+      const events = await superAdminApi.events.getAllEvents();
+      console.log('📸 Fetched events in super admin:', events);
+      console.log('📸 First event image:', events[0]?.image);
+      console.log('📸 First event images array:', events[0]?.images);
+      return events;
+    },
   });
 
   // Create event mutation
@@ -163,12 +169,18 @@ const EventsManagement = () => {
 
       const data = await response.json();
 
+      console.log('📸 Cloudinary upload response:', data);
+
+      const imageData = {
+        url: data.secure_url,
+        publicId: data.public_id,
+      };
+
+      console.log('📸 Setting image data:', imageData);
+
       setFormData(prev => ({
         ...prev,
-        image: {
-          url: data.secure_url,
-          publicId: data.public_id,
-        }
+        image: imageData
       }));
 
       toast.success('Image uploaded successfully');
@@ -193,6 +205,9 @@ const EventsManagement = () => {
       ticketPrice: parseFloat(formData.ticketPrice) || 0,
       capacity: parseInt(formData.capacity) || 0,
     };
+
+    console.log('🎯 Submitting event data:', eventData);
+    console.log('🎯 Image data being sent:', eventData.image);
 
     if (editingEvent) {
       updateMutation.mutate({ id: editingEvent._id, data: eventData });
@@ -268,6 +283,10 @@ const EventsManagement = () => {
                       src={event.image || event.images[0].url}
                       alt={event.title}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error('📸 Super admin - Image failed to load:', event.image || event.images[0].url);
+                        console.error('📸 Super admin - Event data:', event);
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
