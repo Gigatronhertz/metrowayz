@@ -151,9 +151,13 @@ const EventsManagement = () => {
     try {
       // Get Cloudinary signature - SAME AS VENDOR SERVICE FORM
       const signatureData = await vendorApi.service.getCloudinarySignature();
+
+      console.log('📸 Full signature response:', signatureData);
+      console.log('📸 Signature data:', signatureData.data);
+
       const { signature, timestamp, cloudName, apiKey, folder } = signatureData.data;
 
-      console.log('📸 Cloudinary credentials:', { cloudName, apiKey, folder });
+      console.log('📸 Extracted credentials:', { signature, timestamp, cloudName, apiKey, folder });
 
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
@@ -296,7 +300,7 @@ const EventsManagement = () => {
                       src={event.image || event.images[0].url}
                       alt={event.title}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
+                      onError={() => {
                         console.error('📸 Super admin - Image failed to load:', event.image || event.images[0].url);
                         console.error('📸 Super admin - Event data:', event);
                       }}

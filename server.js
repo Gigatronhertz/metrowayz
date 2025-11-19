@@ -1024,6 +1024,11 @@ app.get("/dashboard-analytics", authenticateJWT, async (req, res) => {
 // Get Cloudinary upload signature (for secure frontend uploads)
 app.get("/cloudinary-signature", authenticateJWT, async (req, res) => {
     try {
+        console.log('📸 Cloudinary signature requested');
+        console.log('📸 CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'NOT SET');
+        console.log('📸 CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET');
+        console.log('📸 CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET');
+
         const timestamp = Math.round(new Date().getTime() / 1000);
         const folder = 'services';
 
@@ -1036,15 +1041,25 @@ app.get("/cloudinary-signature", authenticateJWT, async (req, res) => {
             process.env.CLOUDINARY_API_SECRET
         );
 
+        const responseData = {
+            signature,
+            timestamp,
+            cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+            apiKey: process.env.CLOUDINARY_API_KEY,
+            folder
+        };
+
+        console.log('📸 Returning cloudinary data:', {
+            hasSignature: !!responseData.signature,
+            timestamp: responseData.timestamp,
+            cloudName: responseData.cloudName,
+            apiKey: responseData.apiKey ? 'SET' : 'NOT SET',
+            folder: responseData.folder
+        });
+
         res.status(200).json({
             success: true,
-            data: {
-                signature,
-                timestamp,
-                cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-                apiKey: process.env.CLOUDINARY_API_KEY,
-                folder
-            }
+            data: responseData
         });
     } catch (error) {
         console.error("Error generating Cloudinary signature:", error);

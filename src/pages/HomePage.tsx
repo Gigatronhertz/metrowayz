@@ -419,7 +419,7 @@ const HomePage: React.FC = () => {
                           src={event.image || event.images[0].url}
                           alt={event.title}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
+                          onError={() => {
                             console.error('📸 Image failed to load:', event.image || event.images[0].url);
                             console.error('📸 Event data:', event);
                           }}

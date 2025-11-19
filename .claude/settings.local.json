@@ -21,7 +21,11 @@
       "Bash(find:*)",
       "Bash(lsof:*)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(if [ -f C:UsersrichmondDesktopmetrowayz.env ])",
+      "Bash(then grep -i CLOUDINARY C:UsersrichmondDesktopmetrowayz.env)",
+      "Bash(else echo \".env file not found\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []
