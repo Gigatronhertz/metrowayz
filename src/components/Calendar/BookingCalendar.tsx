@@ -305,7 +305,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
           {price && (
             <div className="summary-total">
               <span>Total</span>
-              <span className="summary-price">${totalPrice.toFixed(2)}</span>
+              <span className="summary-price">₦{totalPrice.toFixed(2)}</span>
             </div>
           )}
         </div>

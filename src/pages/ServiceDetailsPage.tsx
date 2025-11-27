@@ -117,43 +117,98 @@ const ServiceDetailsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Image Gallery */}
-      <div className="relative h-80">
-        <img
-          src={imageUrls[currentImageIndex] || '/placeholder.jpg'}
-          alt={service.title}
-          className="w-full h-full object-cover"
-        />
-
-        {/* Header Overlay */}
-        <div className="absolute top-0 left-0 right-0">
-          <Header showBack />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="absolute top-16 right-4 flex space-x-2">
-          <button
-            onClick={handleToggleFavorite}
-            className="p-3 bg-white/90 rounded-full shadow-lg"
-          >
-            <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-          </button>
-          <button className="p-3 bg-white/90 rounded-full shadow-lg">
-            <Share2 className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-
-        {/* Image Indicators */}
-        {imageUrls.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {imageUrls.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`w-2 h-2 rounded-full ${
-                  index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                }`}
-              />
+      <div className="relative">
+        {/* Main Image Display */}
+        <div className="relative h-80 overflow-hidden">
+          <div className="flex transition-transform duration-300 ease-in-out h-full" 
+               style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
+            {imageUrls.map((url, index) => (
+              <div key={index} className="w-full h-full flex-shrink-0">
+                <img
+                  src={url || '/placeholder.jpg'}
+                  alt={`${service.title} - Image ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             ))}
+          </div>
+
+          {/* Header Overlay */}
+          <div className="absolute top-0 left-0 right-0">
+            <Header showBack />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="absolute top-16 right-4 flex space-x-2">
+            <button
+              onClick={handleToggleFavorite}
+              className="p-3 bg-white/90 rounded-full shadow-lg"
+            >
+              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+            </button>
+            <button className="p-3 bg-white/90 rounded-full shadow-lg">
+              <Share2 className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+
+          {/* Navigation Arrows */}
+          {imageUrls.length > 1 && (
+            <>
+              <button
+                onClick={() => setCurrentImageIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length)}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-white/90 rounded-full shadow-lg"
+              >
+                <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setCurrentImageIndex((prev) => (prev + 1) % imageUrls.length)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-white/90 rounded-full shadow-lg"
+              >
+                <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Image Indicators */}
+          {imageUrls.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {imageUrls.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Thumbnail Gallery - Visible on larger screens */}
+        {imageUrls.length > 1 && (
+          <div className="hidden lg:block px-6 py-4 bg-gray-50">
+            <div className="flex space-x-2 overflow-x-auto">
+              {imageUrls.map((url, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                    index === currentImageIndex ? 'border-primary-500' : 'border-transparent'
+                  }`}
+                >
+                  <img
+                    src={url || '/placeholder.jpg'}
+                    alt={`${service.title} - Thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
