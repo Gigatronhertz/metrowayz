@@ -981,7 +981,7 @@ app.get("/dashboard-analytics", authenticateJWT, async (req, res) => {
         bookings.forEach(booking => {
             const date = new Date(booking.createdAt);
             const monthKey = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-            if (bookingsByMonth.hasOwnProperty(monthKey)) {
+            if (Object.prototype.hasOwnProperty.call(bookingsByMonth, monthKey)) {
                 bookingsByMonth[monthKey]++;
                 if (booking.status === 'confirmed' || booking.status === 'completed') {
                     revenueByMonth[monthKey] += booking.totalAmount || 0;
@@ -2107,7 +2107,7 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
         // Send email to vendor about pending booking
         const vendorEmail = service.createdBy.email;
         const vendorName = service.createdBy.name;
-        await sendBookingPendingEmail(vendorEmail, vendorName, {
+         sendBookingPendingEmail(vendorEmail, vendorName, {
             serviceName: service.title,
             checkInDate: booking.checkInDate,
             checkOutDate: booking.checkOutDate,
@@ -2420,7 +2420,7 @@ app.put("/api/provider/bookings/:id/approve", authenticateJWT, async (req, res) 
         );
 
         // Send approval email to customer
-        await sendBookingApprovedEmail(booking.userId.email, booking.userId.name, {
+         sendBookingApprovedEmail(booking.userId.email, booking.userId.name, {
             serviceName: booking.serviceName,
             checkInDate: booking.checkInDate,
             checkOutDate: booking.checkOutDate
@@ -2495,7 +2495,7 @@ app.put("/api/provider/bookings/:id/reject", authenticateJWT, async (req, res) =
         );
 
         // Send rejection email to customer
-        await sendBookingRejectedEmail(booking.userId.email, booking.userId.name, {
+         sendBookingRejectedEmail(booking.userId.email, booking.userId.name, {
             serviceName: booking.serviceName,
             checkInDate: booking.checkInDate,
             checkOutDate: booking.checkOutDate,
