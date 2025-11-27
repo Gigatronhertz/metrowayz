@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Calendar, MessageSquare } from 'lucide-react'
 import { serviceAPI, bookingAPI } from '../services/api'
 import { formatCurrency, formatPriceUnit, getPluralPriceUnit } from '../utils/format'
-import { CANCELLATION_POLICIES } from '../utils/cancellationPolicy'
+
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'

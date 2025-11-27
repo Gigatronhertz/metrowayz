@@ -17,7 +17,7 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
   disabled = false
 }) => {
   const [isLoading, setIsLoading] = useState(false)
-  const { loginWithGoogle } = useAuth()
+  const { loginWithGoogle, user } = useAuth()
   const navigate = useNavigate()
 
   const handleGoogleSignIn = async () => {
@@ -36,13 +36,20 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
       localStorage.removeItem('redirectAfterAuth')
       localStorage.removeItem('loginIntent')
 
-      // Redirect based on intent
+// Redirect based on intent or user role
       if (redirectPath) {
         navigate(redirectPath, { replace: true })
       } else if (loginIntent === 'vendor') {
         navigate('/vendor/dashboard', { replace: true })
       } else {
-        navigate('/home', { replace: true })
+        // Role-based redirect
+        let defaultRedirect = "/home"
+        if (user?.role === 'seller') {
+          defaultRedirect = "/vendor/dashboard"
+        } else if (user?.role === 'admin') {
+          defaultRedirect = "/super-admin/dashboard"
+        }
+        navigate(defaultRedirect, { replace: true })
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Authentication failed'

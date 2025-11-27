@@ -72,7 +72,7 @@ const PaymentPage: React.FC = () => {
         return
       }
 
-      // console.log('✅ Dates available, creating booking...')
+      //console.log('✅ Dates available, creating booking...')
 // 
       // Create booking with payment reference
       const bookingResponse = await bookingAPI.createBooking({
@@ -83,7 +83,7 @@ const PaymentPage: React.FC = () => {
         specialRequests: bookingData.specialRequests || '',
       })
 
-      // console.log('✅ Booking created successfully!', bookingResponse)
+      console.log('✅ Booking created successfully!', bookingResponse)
 
       // Clear pending booking data
       localStorage.removeItem('pendingBooking')
@@ -102,14 +102,14 @@ const PaymentPage: React.FC = () => {
     if (!paymentReference && bookingData) {
       const ref = generatePaymentReference()
       setPaymentReference(ref)
-      // console.log('Generated payment reference:', ref)
+      console.log('Generated payment reference:', ref)
     }
   }, [bookingData, paymentReference])
 
   // Paystack success handler
   const handlePaystackSuccess = async (reference: any) => {
-    console.log('🎉 Payment successful! Reference:', reference)
-    console.log('Full reference object:', JSON.stringify(reference))
+    // console.log('🎉 Payment successful! Reference:', reference)
+    // console.log('Full reference object:', JSON.stringify(reference))
 
     try {
       setIsProcessing(true)

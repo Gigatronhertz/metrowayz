@@ -141,9 +141,10 @@ export const isCancellationAllowed = (checkInDate: Date, cancellationPolicy: str
   const checkIn = new Date(checkInDate);
   const hoursUntilCheckIn = (checkIn.getTime() - now.getTime()) / (1000 * 60 * 60);
   
-  // Allow cancellation up to 1 hour before check-in for all policies
-  return hoursUntilCheckIn > 1;
+  const policy = CANCELLATION_POLICIES[cancellationPolicy] || CANCELLATION_POLICIES['24_hours'];
+  return hoursUntilCheckIn >= policy.hoursRequired;
 };
+
 
 // Get cancellation deadline
 export const getCancellationDeadline = (checkInDate: Date, cancellationPolicy: string = '24_hours'): Date => {

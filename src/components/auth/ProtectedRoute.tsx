@@ -13,7 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAuth = true,
   redirectTo
 }) => {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, user } = useAuth()
   const location = useLocation()
 
   if (isLoading) {
@@ -45,8 +45,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       return <Navigate to={redirectPath} replace />
     }
 
-    // Default redirect for authenticated users on login page
-    return <Navigate to={redirectTo || "/home"} replace />
+// Default redirect for authenticated users on login page
+    // Check user role to determine correct redirect
+    let defaultRedirect = "/home"
+    if (user?.role === 'seller') {
+      defaultRedirect = "/vendor/dashboard"
+    } else if (user?.role === 'admin') {
+      defaultRedirect = "/super-admin/dashboard"
+    }
+    
+    return <Navigate to={redirectTo || defaultRedirect} replace />
   }
 
   return <>{children}</>

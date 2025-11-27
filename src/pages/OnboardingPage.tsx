@@ -20,7 +20,7 @@ interface SignUpForm extends LoginForm {
 
 const OnboardingPage: React.FC = () => {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
   const [isVendorMode, setIsVendorMode] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -29,7 +29,7 @@ const OnboardingPage: React.FC = () => {
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm<SignUpForm>()
 
-  // Redirect if already authenticated
+// Redirect if already authenticated
   React.useEffect(() => {
     if (isAuthenticated) {
       // Check if there's a stored redirect path
@@ -39,10 +39,17 @@ const OnboardingPage: React.FC = () => {
         localStorage.removeItem('redirectAfterAuth')
         navigate(redirectPath, { replace: true })
       } else {
-        navigate('/home', { replace: true })
+        // Role-based redirect
+        let defaultRedirect = "/home"
+        if (user?.role === 'seller') {
+          defaultRedirect = "/vendor/dashboard"
+        } else if (user?.role === 'admin') {
+          defaultRedirect = "/super-admin/dashboard"
+        }
+        navigate(defaultRedirect, { replace: true })
       }
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, user, navigate])
 
   const onSubmit = async (_data: SignUpForm) => {
     setIsLoading(true)
