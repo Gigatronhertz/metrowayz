@@ -1992,15 +1992,34 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             checkInDate,
             checkOutDate,
             guests,
-            specialRequests
+            specialRequests,
+            serviceType,
+            timeSlot
         } = req.body;
 
         // Validate required fields
-        if (!serviceId || !checkInDate || !checkOutDate) {
+        if (!serviceId) {
             return res.status(400).json({
                 success: false,
-                message: "Missing required fields"
+                message: "Service ID is required"
             });
+        }
+
+        // Validate based on service type
+        if (serviceType === 'time_based') {
+            if (!timeSlot || !timeSlot.date || !timeSlot.startTime || !timeSlot.endTime) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Time slot information is required for time-based bookings"
+                });
+            }
+        } else {
+            if (!checkInDate || !checkOutDate) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Check-in and check-out dates are required for date-based bookings"
+                });
+            }
         }
 
         // Get service details
@@ -2013,11 +2032,21 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             });
         }
 
-        // Calculate total amount (even though payment is free for now)
-        const checkIn = new Date(checkInDate);
-        const checkOut = new Date(checkOutDate);
-        const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-        const totalAmount = service.price * Math.max(duration, 1);
+        // Calculate total amount based on service type
+        let totalAmount, checkIn, checkOut;
+        
+        if (serviceType === 'time_based') {
+            // For time-based services, use the service price directly
+            totalAmount = service.price;
+            checkIn = new Date(timeSlot.date);
+            checkOut = new Date(timeSlot.date); // Same day for time-based services
+        } else {
+            // For date-based services, calculate based on duration
+            checkIn = new Date(checkInDate);
+            checkOut = new Date(checkOutDate);
+            const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+            totalAmount = service.price * Math.max(duration, 1);
+        }
 
         // Require vendor approval after payment
         // Booking starts as pending and needs vendor confirmation
@@ -2028,7 +2057,7 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
         const providerNotificationMessage = `You have a new booking for ${service.title} that requires your approval`;
 
         // Create booking
-        const booking = new Booking({
+        const bookingData = {
             serviceId: service._id,
             userId: user._id,
             providerId: service.createdBy._id,
@@ -2040,8 +2069,20 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             guests: guests || 1,
             totalAmount,
             specialRequests: specialRequests || '',
-            status: initialStatus
-        });
+            status: initialStatus,
+            serviceType: serviceType || 'date_based'
+        };
+
+        // Add time slot information for time-based services
+        if (serviceType === 'time_based') {
+            bookingData.timeSlot = {
+                date: new Date(timeSlot.date),
+                startTime: timeSlot.startTime,
+                endTime: timeSlot.endTime
+            };
+        }
+
+        const booking = new Booking(bookingData);
 
         await booking.save();
 
@@ -2875,31 +2916,22 @@ app.get("/api/bookings/:id/cancellation-preview", authenticateJWT, async (req, r
             });
         }
 
-        // Get cancellation policy
-        let policy;
-        if (booking.serviceId.cancellationPolicy) {
-            policy = await CancellationPolicy.findById(booking.serviceId.cancellationPolicy);
-        }
-
-        if (!policy) {
-            policy = await CancellationPolicy.findOne({
-                name: 'moderate',
-                isDefault: true
-            });
-        }
-
-        // Calculate refund
-        const refundCalculation = policy.calculateRefund(booking);
+        // Calculate refund using the booking's own method
+        const refundCalculation = booking.calculateRefund();
 
         res.status(200).json({
             success: true,
             data: {
-                policy: {
-                    name: policy.displayName,
-                    description: policy.description
+                booking: {
+                    id: booking._id,
+                    serviceName: booking.serviceName,
+                    serviceType: booking.serviceType,
+                    cancellationPolicy: booking.cancellationPolicy,
+                    totalAmount: booking.totalAmount,
+                    checkInDate: booking.checkInDate,
+                    timeSlot: booking.timeSlot
                 },
-                refund: refundCalculation,
-                policyText: policy.getDisplayText()
+                refund: refundCalculation
             }
         });
     } catch (error) {
@@ -2952,13 +2984,17 @@ app.post("/api/bookings/:id/cancel", authenticateJWT, async (req, res) => {
             });
         }
 
-        // Calculate estimated refund (final refund determined by super admin)
+        // Calculate estimated refund using the booking's method (final refund determined by super admin)
+        const refundCalculation = booking.calculateRefund();
         let estimatedRefund = {
-            refundPercentage: isProvider ? 100 : 80, // Provider cancellations = 100%, customer = 80%
+            refundPercentage: isProvider ? 100 : refundCalculation.refundPercentage, // Provider cancellations = 100%
             totalRefund: booking.totalAmount,
-            refundAmount: isProvider ? booking.totalAmount : Math.round(booking.totalAmount * 0.8),
+            refundAmount: isProvider ? booking.totalAmount : refundCalculation.refundAmount,
             rule: isProvider ? 'provider_cancellation' : 'customer_cancellation',
-            description: isProvider ? 'Full refund due to provider cancellation' : 'Estimated refund pending super admin approval'
+            description: isProvider ? 'Full refund due to provider cancellation' : `Estimated refund (${refundCalculation.refundPercentage}%) pending super admin approval`,
+            policyName: refundCalculation.policyName,
+            hoursUntilService: refundCalculation.hoursUntilService,
+            serviceType: refundCalculation.serviceType
         };
 
         // Create cancellation request instead of directly canceling

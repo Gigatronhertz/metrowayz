@@ -161,25 +161,27 @@ const BookingPage: React.FC = () => {
           />
         </Card>
 
-        {/* Cancellation Policy */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Cancellation Policy</h3>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-blue-600 font-semibold text-sm">24h</span>
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-blue-900 mb-1">24-hour cancellation policy</h4>
-                <p className="text-sm text-blue-800">
-                  Full refund if you cancel at least 24 hours before your check-in time. 
-                  No refund for cancellations made less than 24 hours before check-in.
-                </p>
+        {/* Cancellation Policy - Hidden for Private Chef */}
+        {service?.category?.toLowerCase() !== 'private chef' && (
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Cancellation Policy</h3>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-blue-600 font-semibold text-sm">24h</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-blue-900 mb-1">24-hour cancellation policy</h4>
+                  <p className="text-sm text-blue-800">
+                    Full refund if you cancel at least 24 hours before your check-in time. 
+                    No refund for cancellations made less than 24 hours before check-in.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        )}
 
         {/* Special Requests */}
         <Card className="p-6">

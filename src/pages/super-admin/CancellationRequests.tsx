@@ -108,7 +108,14 @@ const CancellationRequests = () => {
           </div>
         ) : (requestsData as any)?.requests?.length > 0 ? (
           <div className="space-y-4">
-            {(requestsData as any).requests.map((request: any) => (
+            {(requestsData as any).requests
+              .filter((request: any) => {
+                // Filter out private chef bookings since they don't support cancellation
+                const serviceCategory = request.serviceCategory || 
+                  (typeof request.serviceId === 'object' ? request.serviceId.category : null);
+                return serviceCategory?.toLowerCase() !== 'private chef';
+              })
+              .map((request: any) => (
               <div
                 key={request._id}
                 className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"

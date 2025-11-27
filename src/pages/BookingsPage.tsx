@@ -10,7 +10,7 @@ import RescheduleBookingModal from '../components/booking/RescheduleBookingModal
 
 interface Booking {
   _id: string
-  serviceId: { _id: string; price?: number; priceUnit?: string } | string
+  serviceId: { _id: string; price?: number; priceUnit?: string; category?: string } | string
   serviceName: string
   serviceLocation: string
   serviceImages: string[]
@@ -19,6 +19,7 @@ interface Booking {
   guests: number
   totalAmount: number
   status: string
+  serviceCategory?: string
 }
 
 const BookingsPage: React.FC = () => {
@@ -240,19 +241,27 @@ const BookingsPage: React.FC = () => {
                   <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
                     {booking.status !== 'cancelled' && booking.status !== 'completed' && (
                       <>
-                        <button
-                          onClick={() => handleRescheduleClick(booking)}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary-50 text-secondary-600 font-semibold rounded-xl hover:bg-secondary-100 transition-colors"
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                          <span>Reschedule</span>
-                        </button>
-                        <button
-                          onClick={() => handleCancelClick(booking)}
-                          className="flex-1 px-4 py-2.5 bg-red-50 text-red-600 font-semibold rounded-xl hover:bg-red-100 transition-colors"
-                        >
-                          Cancel
-                        </button>
+                        {/* Show reschedule for all services except private chef */}
+                        {(booking.serviceCategory?.toLowerCase() !== 'private chef' && 
+                          (typeof booking.serviceId === 'object' ? booking.serviceId.category?.toLowerCase() !== 'private chef' : true)) && (
+                          <button
+                            onClick={() => handleRescheduleClick(booking)}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary-50 text-secondary-600 font-semibold rounded-xl hover:bg-secondary-100 transition-colors"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                            <span>Reschedule</span>
+                          </button>
+                        )}
+                        {/* Show cancel button for all services except private chef */}
+                        {(booking.serviceCategory?.toLowerCase() !== 'private chef' && 
+                          (typeof booking.serviceId === 'object' ? booking.serviceId.category?.toLowerCase() !== 'private chef' : true)) && (
+                          <button
+                            onClick={() => handleCancelClick(booking)}
+                            className="flex-1 px-4 py-2.5 bg-red-50 text-red-600 font-semibold rounded-xl hover:bg-red-100 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        )}
                       </>
                     )}
                     <button className="flex-1 px-4 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl transition-colors">
@@ -281,7 +290,8 @@ const BookingsPage: React.FC = () => {
             bookingDetails={{
               serviceName: selectedBooking.serviceName,
               checkInDate: selectedBooking.checkInDate,
-              totalAmount: selectedBooking.totalAmount
+              totalAmount: selectedBooking.totalAmount,
+              serviceCategory: selectedBooking.serviceCategory || (typeof selectedBooking.serviceId === 'object' ? selectedBooking.serviceId.category : undefined)
             }}
             onSuccess={handleRefreshBookings}
           />
