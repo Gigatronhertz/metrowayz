@@ -15,6 +15,7 @@ interface Service {
   location: string
   price: number
   priceUnit: string
+  category: string
   images: Array<{ url: string } | string>
 }
 
@@ -156,6 +157,7 @@ const BookingPage: React.FC = () => {
             selectedCheckIn={checkInDate}
             selectedCheckOut={checkOutDate}
             price={service?.price}
+            category={service?.category}
           />
         </Card>
 

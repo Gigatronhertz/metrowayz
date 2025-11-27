@@ -1340,9 +1340,11 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
         }
 
         let query = {};
+        let createdByFilter = null;
 
         // Filter by user's services only (unless admin or user not found)
         if (user && !user.isAdmin) {
+            createdByFilter = user._id;
             query.createdBy = user._id;
             console.log('🔍 GET /services - Query filter (createdBy):', user._id);
         } else {
@@ -1351,11 +1353,24 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
 
         // Add search functionality
         if (search && search.trim()) {
-            query.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } },
-                { category: { $regex: search, $options: 'i' } }
-            ];
+            const searchQuery = {
+                $or: [
+                    { title: { $regex: search, $options: 'i' } },
+                    { description: { $regex: search, $options: 'i' } },
+                    { category: { $regex: search, $options: 'i' } }
+                ]
+            };
+            // Combine createdByFilter with search using $and
+            if (createdByFilter) {
+                query = {
+                    $and: [
+                        { createdBy: createdByFilter },
+                        searchQuery
+                    ]
+                };
+            } else {
+                query = { ...query, ...searchQuery };
+            }
         }
 
         // Filter by category with new mapping

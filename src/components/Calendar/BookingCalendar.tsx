@@ -11,6 +11,7 @@ interface BookingCalendarProps {
   selectedCheckOut?: string
   minNights?: number
   price?: number
+  category?: string
 }
 
 const BookingCalendar: React.FC<BookingCalendarProps> = ({
@@ -19,7 +20,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
   onDateSelect,
   selectedCheckIn,
   selectedCheckOut,
-  price
+  price,
+  category
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectingCheckIn, setSelectingCheckIn] = useState(true)
@@ -29,6 +31,9 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  // Check if service is private chef
+  const isPrivateChef = category?.toLowerCase().includes('chef') || category?.toLowerCase().includes('private chef')
 
   // Debug: Log booked dates
   useEffect(() => {
@@ -234,8 +239,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
       {/* Instructions */}
       <div className="calendar-instructions">
         {selectingCheckIn || !tempCheckIn
-          ? 'Select your start service date'
-          : 'Now select your end service date'}
+          ? `Select your ${isPrivateChef ? 'start' : 'check-in'} date`
+          : `Now select your ${isPrivateChef ? 'end' : 'check-out'} date`}
       </div>
 
       {/* Day Names */}
@@ -290,11 +295,11 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
         <div className="calendar-summary">
           <div className="summary-dates">
             <div className="summary-item">
-              <span className="summary-label">Start Service</span>
+              <span className="summary-label">{isPrivateChef ? 'Start Date' : 'Check-in'}</span>
               <span className="summary-value">{new Date(tempCheckIn).toLocaleDateString()}</span>
             </div>
             <div className="summary-item">
-              <span className="summary-label">End Service</span>
+              <span className="summary-label">{isPrivateChef ? 'End Date' : 'Check-out'}</span>
               <span className="summary-value">{new Date(tempCheckOut).toLocaleDateString()}</span>
             </div>
             <div className="summary-item">
