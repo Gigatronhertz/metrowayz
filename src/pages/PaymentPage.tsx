@@ -23,7 +23,14 @@ const PaymentPage: React.FC = () => {
   // Check if Paystack is configured
   const paystackConfigured = isPaystackConfigured()
 
-
+  // Debug logging
+  useEffect(() => {
+    // console.log('=== PAYSTACK CONFIG DEBUG ===')
+    // console.log('Public Key from env:', import.meta.env.VITE_PAYSTACK_PUBLIC_KEY)
+    // console.log('Is Configured:', paystackConfigured)
+    // console.log('Public Key:', getPaystackPublicKey())
+    // console.log('============================')
+  }, [])
 
   // Load booking data from localStorage
   useEffect(() => {
@@ -38,6 +45,8 @@ const PaymentPage: React.FC = () => {
 
   // Create booking after payment
   const createBookingAfterPayment = async (reference: string) => {
+    // console.log('📝 Starting booking creation with reference:', reference)
+
     if (!bookingData) {
       console.error('❌ No booking data available')
       return
@@ -46,12 +55,15 @@ const PaymentPage: React.FC = () => {
     setIsProcessing(true)
 
     try {
+      // console.log('🔍 Checking availability...')
       // First, check if dates are still available
       const availabilityCheck = await bookingAPI.checkAvailability(
         bookingData.serviceId,
         bookingData.checkInDate,
         bookingData.checkOutDate
       )
+
+      // console.log('Availability response:', availabilityCheck)
 
       if (!availabilityCheck.data) {
         console.error('❌ Dates not available')
@@ -60,6 +72,8 @@ const PaymentPage: React.FC = () => {
         return
       }
 
+      //console.log('✅ Dates available, creating booking...')
+// 
       // Create booking with payment reference
       const bookingResponse = await bookingAPI.createBooking({
         serviceId: bookingData.serviceId,
@@ -68,6 +82,8 @@ const PaymentPage: React.FC = () => {
         guests: bookingData.guests || 1,
         specialRequests: bookingData.specialRequests || '',
       })
+
+      console.log('✅ Booking created successfully!', bookingResponse)
 
       // Clear pending booking data
       localStorage.removeItem('pendingBooking')
@@ -86,11 +102,15 @@ const PaymentPage: React.FC = () => {
     if (!paymentReference && bookingData) {
       const ref = generatePaymentReference()
       setPaymentReference(ref)
+      //console.log('Generated payment reference:', ref)
     }
   }, [bookingData, paymentReference])
 
   // Paystack success handler
   const handlePaystackSuccess = async (reference: any) => {
+    // console.log('🎉 Payment successful! Reference:', reference)
+    // console.log('Full reference object:', JSON.stringify(reference))
+
     try {
       setIsProcessing(true)
 
@@ -104,6 +124,7 @@ const PaymentPage: React.FC = () => {
 
   // Paystack close handler
   const handlePaystackClose = () => {
+    console.log('Payment popup closed')
     setIsProcessing(false)
   }
 
@@ -166,15 +187,20 @@ const PaymentPage: React.FC = () => {
       return
     }
 
+    // console.log('Initiating payment with reference:', paymentReference)
+    // console.log('Payment config:', paystackConfig)
+
     // Initiate Paystack payment
     setIsProcessing(true)
 
     // Pass callbacks as a single object parameter
     initializePayment({
       onSuccess: (reference: any) => {
+        console.log('✅ onSuccess callback triggered!', reference)
         handlePaystackSuccess(reference)
       },
       onClose: () => {
+        console.log('❌ onClose callback triggered!')
         handlePaystackClose()
       }
     } as any)
