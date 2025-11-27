@@ -178,6 +178,11 @@ export const bookingAPI = {
     return fetchWithAuth(`/api/bookings/${id}/cancellation-preview`);
   },
 
+  // Check cancellation eligibility
+  checkCancellationEligibility: async (id: string) => {
+    return fetchWithAuth(`/api/bookings/${id}/cancellation-eligibility`);
+  },
+
   // Request to reschedule booking
   rescheduleBooking: async (id: string, data: {
     newCheckInDate: string;

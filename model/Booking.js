@@ -71,6 +71,13 @@ const bookingSchema = new mongoose.Schema({
         default: 'confirmed' // Auto-confirm since no payment needed
     },
 
+    // Cancellation policy
+    cancellationPolicy: {
+        type: String,
+        enum: ['24_hours', '48_hours', '72_hours', 'flexible', 'strict'],
+        default: '24_hours'
+    },
+
     // Cancellation info
     cancelledAt: {
         type: Date
@@ -81,6 +88,14 @@ const bookingSchema = new mongoose.Schema({
     cancelledBy: {
         type: String,
         enum: ['customer', 'provider', 'admin']
+    },
+    refundAmount: {
+        type: Number,
+        default: 0
+    },
+    refundPercentage: {
+        type: Number,
+        default: 0
     },
 
     // Cancellation request (for super admin approval)
@@ -133,13 +148,102 @@ bookingSchema.pre('save', function(next) {
     next();
 });
 
-// Method to cancel booking
+// Method to cancel booking with refund calculation
 bookingSchema.methods.cancel = function(cancelledBy, reason) {
     this.status = 'cancelled';
     this.cancelledAt = new Date();
     this.cancelledBy = cancelledBy;
     this.cancellationReason = reason || '';
+    
+    // Calculate refund based on cancellation policy
+    const refundInfo = this.calculateRefund();
+    this.refundAmount = refundInfo.refundAmount;
+    this.refundPercentage = refundInfo.refundPercentage;
+    
     return this.save();
+};
+
+// Method to calculate refund based on cancellation policy
+bookingSchema.methods.calculateRefund = function() {
+    const now = new Date();
+    const checkInDate = new Date(this.checkInDate);
+    const hoursUntilCheckIn = (checkInDate - now) / (1000 * 60 * 60);
+    
+    let refundPercentage = 0;
+    let policyName = '';
+    
+    switch (this.cancellationPolicy) {
+        case '24_hours':
+            policyName = '24-hour cancellation policy';
+            if (hoursUntilCheckIn >= 24) {
+                refundPercentage = 100;
+            } else {
+                refundPercentage = 0;
+            }
+            break;
+        case '48_hours':
+            policyName = '48-hour cancellation policy';
+            if (hoursUntilCheckIn >= 48) {
+                refundPercentage = 100;
+            } else {
+                refundPercentage = 0;
+            }
+            break;
+        case '72_hours':
+            policyName = '72-hour cancellation policy';
+            if (hoursUntilCheckIn >= 72) {
+                refundPercentage = 100;
+            } else {
+                refundPercentage = 0;
+            }
+            break;
+        case 'flexible':
+            policyName = 'Flexible cancellation policy';
+            if (hoursUntilCheckIn >= 24) {
+                refundPercentage = 100;
+            } else if (hoursUntilCheckIn >= 12) {
+                refundPercentage = 50;
+            } else {
+                refundPercentage = 0;
+            }
+            break;
+        case 'strict':
+            policyName = 'Strict cancellation policy';
+            if (hoursUntilCheckIn >= 72) {
+                refundPercentage = 50;
+            } else {
+                refundPercentage = 0;
+            }
+            break;
+        default:
+            policyName = '24-hour cancellation policy';
+            if (hoursUntilCheckIn >= 24) {
+                refundPercentage = 100;
+            } else {
+                refundPercentage = 0;
+            }
+    }
+    
+    const refundAmount = (this.totalAmount * refundPercentage) / 100;
+    
+    return {
+        refundAmount,
+        refundPercentage,
+        policyName,
+        hoursUntilCheckIn: Math.max(0, hoursUntilCheckIn),
+        description: this.getRefundDescription(refundPercentage, hoursUntilCheckIn, policyName)
+    };
+};
+
+// Method to get refund description
+bookingSchema.methods.getRefundDescription = function(refundPercentage, hoursUntilCheckIn, policyName) {
+    if (refundPercentage === 100) {
+        return `Full refund (${refundPercentage}%) - Cancellation made more than 24 hours before check-in.`;
+    } else if (refundPercentage === 50) {
+        return `Partial refund (${refundPercentage}%) - Cancellation made within the policy timeframe.`;
+    } else {
+        return `No refund - Cancellation made less than 24 hours before check-in.`;
+    }
 };
 
 // Method to complete booking

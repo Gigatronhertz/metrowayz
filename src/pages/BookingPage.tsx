@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Calendar, MessageSquare } from 'lucide-react'
 import { serviceAPI, bookingAPI } from '../services/api'
 import { formatCurrency, formatPriceUnit, getPluralPriceUnit } from '../utils/format'
+import { CANCELLATION_POLICIES } from '../utils/cancellationPolicy'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -156,6 +157,26 @@ const BookingPage: React.FC = () => {
             selectedCheckOut={checkOutDate}
             price={service?.price}
           />
+        </Card>
+
+        {/* Cancellation Policy */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Cancellation Policy</h3>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 font-semibold text-sm">24h</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-blue-900 mb-1">24-hour cancellation policy</h4>
+                <p className="text-sm text-blue-800">
+                  Full refund if you cancel at least 24 hours before your check-in time. 
+                  No refund for cancellations made less than 24 hours before check-in.
+                </p>
+              </div>
+            </div>
+          </div>
         </Card>
 
         {/* Special Requests */}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { X, AlertCircle, DollarSign } from 'lucide-react'
+import { X, AlertCircle, DollarSign, Clock } from 'lucide-react'
 import { bookingAPI } from '../../services/api'
+import { calculateRefund, formatHoursUntilCheckIn } from '../../utils/cancellationPolicy'
 import Button from '../ui/Button'
 
 interface CancelBookingModalProps {
@@ -95,9 +96,10 @@ const CancelBookingModal: React.FC<CancelBookingModalProps> = ({
           <div className="flex items-start space-x-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <h3 className="font-semibold text-amber-900 mb-1">Before you cancel</h3>
+              <h3 className="font-semibold text-amber-900 mb-1">24-hour cancellation policy</h3>
               <p className="text-sm text-amber-800">
-                Make sure you understand the cancellation policy and refund terms below.
+                Full refund if cancelled at least 24 hours before check-in. 
+                No refund for cancellations made less than 24 hours before check-in.
               </p>
             </div>
           </div>
@@ -125,6 +127,19 @@ const CancelBookingModal: React.FC<CancelBookingModalProps> = ({
             </div>
           </div>
 
+          {/* Time Until Check-in */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center space-x-2 mb-2">
+              <Clock className="w-5 h-5 text-gray-600" />
+              <h3 className="font-semibold text-gray-900">Time Until Check-in</h3>
+            </div>
+            <p className="text-sm text-gray-700">
+              {formatHoursUntilCheckIn(
+                (new Date(bookingDetails.checkInDate).getTime() - new Date().getTime()) / (1000 * 60 * 60)
+              )}
+            </p>
+          </div>
+
           {/* Refund Preview */}
           {loadingPreview ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -140,16 +155,16 @@ const CancelBookingModal: React.FC<CancelBookingModalProps> = ({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-blue-800">Cancellation Policy:</span>
-                  <span className="font-medium text-blue-900">{preview.policy?.name}</span>
+                  <span className="font-medium text-blue-900">24-hour policy</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-800">Refund Percentage:</span>
-                  <span className="font-medium text-blue-900">{preview.refund?.refundPercentage}%</span>
+                  <span className="font-medium text-blue-900">{preview.refund?.refundPercentage || 0}%</span>
                 </div>
                 <div className="flex justify-between text-base font-semibold">
                   <span className="text-blue-900">Total Refund:</span>
                   <span className="text-blue-900">
-                    ₦{preview.refund?.totalRefund?.toLocaleString()}
+                    ₦{(preview.refund?.totalRefund || 0).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -158,7 +173,39 @@ const CancelBookingModal: React.FC<CancelBookingModalProps> = ({
                 <p className="text-xs text-blue-700 mt-2">{preview.refund.description}</p>
               )}
             </div>
-          ) : null}
+          ) : (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <DollarSign className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-blue-900">Refund Information</h3>
+              </div>
+              
+              <div className="mt-3">
+                {(() => {
+                  const refundCalc = calculateRefund(
+                    bookingDetails.totalAmount,
+                    bookingDetails.checkInDate,
+                    '24_hours'
+                  );
+                  return (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-blue-800">Refund Percentage:</span>
+                        <span className="font-medium text-blue-900">{refundCalc.refundPercentage}%</span>
+                      </div>
+                      <div className="flex justify-between text-base font-semibold">
+                        <span className="text-blue-900">Total Refund:</span>
+                        <span className="text-blue-900">
+                          ₦{refundCalc.refundAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-700 mt-2">{refundCalc.description}</p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
 
           {/* Reason Category */}
           <div className="space-y-2">
