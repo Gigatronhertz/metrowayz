@@ -1656,6 +1656,125 @@ const createBookingNotification = async (userId, type, title, message, bookingId
     }
 };
 
+// Helper function to send email to vendor about pending booking
+const sendBookingPendingEmail = async (vendorEmail, vendorName, bookingData) => {
+    try {
+        const { serviceName, checkInDate, checkOutDate, guestName, bookingId } = bookingData;
+        
+        const mailOptions = {
+            from: process.env.MAIL_USER,
+            to: vendorEmail,
+            subject: `New Booking Awaiting Your Approval - ${serviceName}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>Hello ${vendorName},</h2>
+                    <p>You have received a new booking that requires your approval.</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3>${serviceName}</h3>
+                        <p><strong>Guest Name:</strong> ${guestName}</p>
+                        <p><strong>Check-in:</strong> ${new Date(checkInDate).toLocaleDateString()}</p>
+                        <p><strong>Check-out:</strong> ${new Date(checkOutDate).toLocaleDateString()}</p>
+                        <p style="margin: 20px 0;">
+                            <a href="https://metrowayz-frontend.vercel.app/vendor/bookings" 
+                               style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                                Review Booking
+                            </a>
+                        </p>
+                    </div>
+                    
+                    <p>Please log in to your vendor dashboard to approve or reject this booking.</p>
+                    <p>Best regards,<br>MetroWayz Team</p>
+                </div>
+            `
+        };
+        
+        await transporter.sendMail(mailOptions);
+        console.log(`Booking notification email sent to ${vendorEmail}`);
+    } catch (error) {
+        console.error("Error sending booking notification email:", error);
+    }
+};
+
+// Helper function to send email to customer when booking is approved
+const sendBookingApprovedEmail = async (customerEmail, customerName, bookingData) => {
+    try {
+        const { serviceName, checkInDate, checkOutDate } = bookingData;
+        
+        const mailOptions = {
+            from: process.env.MAIL_USER,
+            to: customerEmail,
+            subject: `Your Booking Approved - ${serviceName}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>Hello ${customerName},</h2>
+                    <p>Great news! Your booking has been approved by the service provider.</p>
+                    
+                    <div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
+                        <h3>${serviceName}</h3>
+                        <p><strong>Check-in:</strong> ${new Date(checkInDate).toLocaleDateString()}</p>
+                        <p><strong>Check-out:</strong> ${new Date(checkOutDate).toLocaleDateString()}</p>
+                        <p style="margin: 20px 0;">
+                            <a href="https://metrowayz-frontend.vercel.app/bookings" 
+                               style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                                View Booking
+                            </a>
+                        </p>
+                    </div>
+                    
+                    <p>You're all set! The provider is ready to welcome you. If you have any questions, please contact the provider through the platform.</p>
+                    <p>Best regards,<br>MetroWayz Team</p>
+                </div>
+            `
+        };
+        
+        await transporter.sendMail(mailOptions);
+        console.log(`Booking approval email sent to ${customerEmail}`);
+    } catch (error) {
+        console.error("Error sending booking approval email:", error);
+    }
+};
+
+// Helper function to send email to customer when booking is rejected
+const sendBookingRejectedEmail = async (customerEmail, customerName, bookingData) => {
+    try {
+        const { serviceName, checkInDate, checkOutDate, reason } = bookingData;
+        
+        const mailOptions = {
+            from: process.env.MAIL_USER,
+            to: customerEmail,
+            subject: `Booking Declined - ${serviceName}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>Hello ${customerName},</h2>
+                    <p>Unfortunately, your booking request has been declined by the service provider.</p>
+                    
+                    <div style="background-color: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
+                        <h3>${serviceName}</h3>
+                        <p><strong>Check-in:</strong> ${new Date(checkInDate).toLocaleDateString()}</p>
+                        <p><strong>Check-out:</strong> ${new Date(checkOutDate).toLocaleDateString()}</p>
+                        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+                        <p style="margin: 20px 0;">
+                            <a href="https://metrowayz-frontend.vercel.app/search" 
+                               style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                                Find Similar Services
+                            </a>
+                        </p>
+                    </div>
+                    
+                    <p>Your payment has been refunded to your original payment method. We encourage you to explore other services on our platform.</p>
+                    <p>Best regards,<br>MetroWayz Team</p>
+                </div>
+            `
+        };
+        
+        await transporter.sendMail(mailOptions);
+        console.log(`Booking rejection email sent to ${customerEmail}`);
+    } catch (error) {
+        console.error("Error sending booking rejection email:", error);
+    }
+};
+
 // ============= CALENDAR API ENDPOINTS =============
 
 // Get all booked dates for a service (for customer calendar view)
@@ -1885,13 +2004,13 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
         const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
         const totalAmount = service.price * Math.max(duration, 1);
 
-        // Auto-confirm all bookings after payment
-        // Since payment is completed before booking creation, no vendor approval is needed
-        const initialStatus = 'confirmed';
-        const customerNotificationTitle = 'Booking Confirmed';
-        const customerNotificationMessage = `Your booking for ${service.title} has been confirmed`;
-        const providerNotificationTitle = 'New Booking Received';
-        const providerNotificationMessage = `You have a new booking for ${service.title}`;
+        // Require vendor approval after payment
+        // Booking starts as pending and needs vendor confirmation
+        const initialStatus = 'pending';
+        const customerNotificationTitle = 'Booking Pending Confirmation';
+        const customerNotificationMessage = `Your booking for ${service.title} is pending vendor confirmation`;
+        const providerNotificationTitle = 'New Booking Awaiting Your Approval';
+        const providerNotificationMessage = `You have a new booking for ${service.title} that requires your approval`;
 
         // Create booking
         const booking = new Booking({
@@ -1911,18 +2030,6 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
 
         await booking.save();
 
-        // Only increment bookings count if confirmed
-        if (initialStatus === 'confirmed') {
-            service.bookings += 1;
-            await service.save();
-
-            // Update user total bookings using direct database update (bypass validation)
-            await User.collection.updateOne(
-                { _id: user._id },
-                { $inc: { totalBookings: 1 } }
-            );
-        }
-
         // Create notification for customer
         await createBookingNotification(
             user._id,
@@ -1941,9 +2048,20 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             booking._id
         );
 
+        // Send email to vendor about pending booking
+        const vendorEmail = service.createdBy.email;
+        const vendorName = service.createdBy.name;
+        await sendBookingPendingEmail(vendorEmail, vendorName, {
+            serviceName: service.title,
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            guestName: user.name,
+            bookingId: booking._id
+        });
+
         res.status(201).json({
             success: true,
-            message: "Booking created successfully",
+            message: "Booking created successfully. Pending vendor confirmation.",
             data: booking
         });
     } catch (error) {
@@ -2245,6 +2363,13 @@ app.put("/api/provider/bookings/:id/approve", authenticateJWT, async (req, res) 
             booking._id
         );
 
+        // Send approval email to customer
+        await sendBookingApprovedEmail(booking.userId.email, booking.userId.name, {
+            serviceName: booking.serviceName,
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate
+        });
+
         res.status(200).json({
             success: true,
             message: "Booking approved successfully",
@@ -2312,6 +2437,14 @@ app.put("/api/provider/bookings/:id/reject", authenticateJWT, async (req, res) =
                 : `Your booking for ${booking.serviceName} was declined by the provider`,
             booking._id
         );
+
+        // Send rejection email to customer
+        await sendBookingRejectedEmail(booking.userId.email, booking.userId.name, {
+            serviceName: booking.serviceName,
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            reason: reason || null
+        });
 
         res.status(200).json({
             success: true,

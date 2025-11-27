@@ -221,7 +221,7 @@ const PaymentPage: React.FC = () => {
           
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
           <p className="text-gray-600 mb-6">
-            Your booking has been confirmed. You will receive a confirmation email shortly.
+            Your booking is pending vendor confirmation. You will receive an email once the vendor approves or rejects your booking.
           </p>
           
           <Button onClick={handleSuccessClose} className="w-full">
