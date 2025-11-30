@@ -84,20 +84,22 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
         </div>
       </div>
 
-      // Single Image for Mobile (existing behavior)
+      {/* Grid for Mobile */}
       <div className="lg:hidden">
-        <div className="relative h-80 overflow-hidden">
-          <img
-            src={images[0] || '/placeholder.jpg'}
-            alt={`${title} - Main Image`}
-            className="w-full h-full object-cover"
-            onClick={() => openModal(0)}
-          />
-          {images.length > 1 && (
-            <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
-              +{images.length - 1} more
+        <div className="grid grid-cols-2 gap-1 p-2">
+          {images.map((url, index) => (
+            <div
+              key={index}
+              className="relative aspect-square overflow-hidden rounded cursor-pointer"
+              onClick={() => openModal(index)}
+            >
+              <img
+                src={url || '/placeholder.jpg'}
+                alt={`${title} - Image ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
             </div>
-          )}
+          ))}
         </div>
       </div>
 
