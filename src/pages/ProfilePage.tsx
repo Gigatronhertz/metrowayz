@@ -71,7 +71,7 @@ const ProfilePage: React.FC = () => {
           
           <div className="flex items-center justify-center">
             <Star className="w-4 h-4 text-accent-500 mr-1" />
-            <span className="text-sm font-semibold">4.8 User Rating</span>
+            <span className="text-sm font-semibold">Member since {new Date(user?.createdAt || Date.now()).toLocaleDateString()}</span>
           </div>
         </Card>
 
@@ -79,28 +79,28 @@ const ProfilePage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-primary-500 mb-1">
-              1,250
+              {(user?.loyaltyPoints ?? 0).toLocaleString()}
             </div>
             <div className="text-sm text-gray-600">Loyalty Points</div>
           </Card>
           
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-primary-500 mb-1">
-              12
+              {user?.totalBookings ?? 0}
             </div>
             <div className="text-sm text-gray-600">Total Bookings</div>
           </Card>
           
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-accent-500 mb-1">
-              Gold
+              {user?.membershipTier ?? 'Bronze'}
             </div>
             <div className="text-sm text-gray-600">Member Status</div>
           </Card>
           
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-primary-500 mb-1">
-              3
+              {user?.referrals ?? 0}
             </div>
             <div className="text-sm text-gray-600">Referrals</div>
           </Card>

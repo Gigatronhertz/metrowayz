@@ -7,6 +7,11 @@ export interface User {
   profilePicture?: string
   role: 'user' | 'seller' | 'admin'
   onboarded?: boolean
+  loyaltyPoints?: number
+  membershipTier?: 'Bronze' | 'Silver' | 'Gold' | 'Platinum'
+  totalBookings?: number
+  referrals?: number
+  createdAt?: Date | string
 }
 
 export interface AuthResponse {
