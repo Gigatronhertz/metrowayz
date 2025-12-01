@@ -50,54 +50,53 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
     }
   }
 
-  const getHorizontalSizeClasses = (size: 'large' | 'medium' | 'small') => {
-    switch (size) {
-      case 'large':
-        return 'h-96'
-      case 'medium':
-        return 'h-64'
-      case 'small':
-        return 'h-48'
-    }
-  }
-
   return (
     <>
-      {/* Horizontal Single-Row Collage for Desktop */}
+      {/* Justified Horizontal Collage for Desktop - Fills all space */}
       <div className="hidden lg:block">
-        <div className="flex gap-2 p-4 bg-gray-100 overflow-hidden">
-          {horizontalImages.map((item) => (
-            <div
-              key={item.index}
-              className={`${getHorizontalSizeClasses(item.size)} flex-shrink-0 relative overflow-hidden rounded-lg cursor-pointer group transition-transform duration-300`}
-              onClick={() => openModal(item.index)}
-            >
-              <img
-                src={item.url || '/placeholder.jpg'}
-                alt={`${title} - Image ${item.index + 1}`}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-            </div>
-          ))}
+        <div className="h-96 bg-gray-100 overflow-hidden">
+          <div className="flex h-full gap-1 p-1">
+            {horizontalImages.map((item) => (
+              <div
+                key={item.index}
+                className="relative overflow-hidden rounded-lg cursor-pointer group transition-all duration-300"
+                style={{
+                  flex: item.size === 'large' ? '1.5' : item.size === 'medium' ? '1' : '0.6'
+                }}
+                onClick={() => openModal(item.index)}
+              >
+                <img
+                  src={item.url || '/placeholder.jpg'}
+                  alt={`${title} - Image ${item.index + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Simple Stacked View for Mobile - No Grid */}
+      {/* Horizontal Scrollable Single-Frame View for Mobile */}
       <div className="lg:hidden bg-gray-100">
-        {images.map((url, index) => (
-          <div
-            key={index}
-            className="relative w-full aspect-video overflow-hidden cursor-pointer"
-            onClick={() => openModal(index)}
-          >
-            <img
-              src={url || '/placeholder.jpg'}
-              alt={`${title} - Image ${index + 1}`}
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            />
-          </div>
-        ))}
+        <div className="overflow-x-auto snap-x snap-mandatory flex h-96">
+          {images.map((url, index) => (
+            <div
+              key={index}
+              className="w-full h-full flex-shrink-0 snap-center relative overflow-hidden cursor-pointer"
+              onClick={() => openModal(index)}
+            >
+              <img
+                src={url || '/placeholder.jpg'}
+                alt={`${title} - Image ${index + 1}`}
+                className="w-full h-full object-cover transition-transform duration-300 active:scale-105"
+              />
+              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+                {index + 1} / {images.length}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Modal */}
