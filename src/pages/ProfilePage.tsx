@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { User, CreditCard, Star, Users, HelpCircle, Shield, FileText, LogOut, FileEdit as Edit, Gift } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { bookingAPI } from '../services/api'
 import Header from '../components/layout/Header'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
@@ -10,6 +11,28 @@ import Button from '../components/ui/Button'
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate()
   const { user, logout, isLoading } = useAuth()
+  const [bookingCount, setBookingCount] = useState(0)
+  const [bookingStatsLoading, setBookingStatsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchBookingStats = async () => {
+      try {
+        setBookingStatsLoading(true)
+        const response = await bookingAPI.getUserBookings({ limit: 1000 })
+        const bookings = response.data || []
+        setBookingCount(bookings.length)
+      } catch (error) {
+        console.error('Error fetching booking stats:', error)
+        setBookingCount(0)
+      } finally {
+        setBookingStatsLoading(false)
+      }
+    }
+
+    if (!isLoading && user) {
+      fetchBookingStats()
+    }
+  }, [isLoading, user])
 
   if (!user && !isLoading) {
     return <Navigate to="/" replace />
@@ -27,7 +50,7 @@ const ProfilePage: React.FC = () => {
   }
 
   const menuItems = [
-    { icon: Edit, label: 'Edit Profile', action: () => {} },
+    { icon: Edit, label: 'Edit Profile', action: () => navigate('/edit-profile') },
     { icon: CreditCard, label: 'Payment Methods', action: () => {} },
     { icon: Gift, label: 'Loyalty & Rewards', action: () => {} },
     { icon: Users, label: 'Invite Friends', action: () => {} },
@@ -84,9 +107,9 @@ const ProfilePage: React.FC = () => {
             <div className="text-sm text-gray-600">Loyalty Points</div>
           </Card>
           
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary-500 mb-1">
-              {user?.totalBookings ?? 0}
+          <Card className="p-4 text-center" onClick={() => navigate('/bookings')}>
+            <div className="text-2xl font-bold text-primary-500 mb-1 cursor-pointer hover:text-primary-600">
+              {bookingStatsLoading ? '-' : bookingCount}
             </div>
             <div className="text-sm text-gray-600">Total Bookings</div>
           </Card>
