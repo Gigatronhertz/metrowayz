@@ -15,8 +15,7 @@ interface ImageItem {
 const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null)
 
-  // Create a masonry-style layout with different sized images
-  const createMasonryLayout = (): ImageItem[] => {
+  const createHorizontalLayout = (): ImageItem[] => {
     const layout: ImageItem[] = []
     const sizePattern = ['large', 'medium', 'small', 'medium', 'large', 'small', 'medium', 'large']
     
@@ -31,7 +30,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
     return layout
   }
 
-  const masonryImages = createMasonryLayout()
+  const horizontalImages = createHorizontalLayout()
 
   const openModal = (index: number) => {
     setSelectedImageIndex(index)
@@ -51,26 +50,26 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
     }
   }
 
-  const getSizeClasses = (size: 'large' | 'medium' | 'small') => {
+  const getHorizontalSizeClasses = (size: 'large' | 'medium' | 'small') => {
     switch (size) {
       case 'large':
-        return 'col-span-2 row-span-2'
+        return 'h-96'
       case 'medium':
-        return 'col-span-1 row-span-2'
+        return 'h-64'
       case 'small':
-        return 'col-span-1 row-span-1'
+        return 'h-48'
     }
   }
 
   return (
     <>
-      {/* Masonry Grid for Desktop */}
+      {/* Horizontal Single-Row Collage for Desktop */}
       <div className="hidden lg:block">
-        <div className="grid grid-cols-4 gap-2 auto-rows-[100px] p-4">
-          {masonryImages.map((item) => (
+        <div className="flex gap-2 p-4 bg-gray-100 overflow-hidden">
+          {horizontalImages.map((item) => (
             <div
               key={item.index}
-              className={`${getSizeClasses(item.size)} relative overflow-hidden rounded-lg cursor-pointer group`}
+              className={`${getHorizontalSizeClasses(item.size)} flex-shrink-0 relative overflow-hidden rounded-lg cursor-pointer group transition-transform duration-300`}
               onClick={() => openModal(item.index)}
             >
               <img
@@ -84,23 +83,21 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
         </div>
       </div>
 
-      {/* Grid for Mobile */}
-      <div className="lg:hidden">
-        <div className="grid grid-cols-2 gap-1 p-2">
-          {images.map((url, index) => (
-            <div
-              key={index}
-              className="relative aspect-square overflow-hidden rounded cursor-pointer"
-              onClick={() => openModal(index)}
-            >
-              <img
-                src={url || '/placeholder.jpg'}
-                alt={`${title} - Image ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
+      {/* Simple Stacked View for Mobile - No Grid */}
+      <div className="lg:hidden bg-gray-100">
+        {images.map((url, index) => (
+          <div
+            key={index}
+            className="relative w-full aspect-video overflow-hidden cursor-pointer"
+            onClick={() => openModal(index)}
+          >
+            <img
+              src={url || '/placeholder.jpg'}
+              alt={`${title} - Image ${index + 1}`}
+              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            />
+          </div>
+        ))}
       </div>
 
       {/* Modal */}
