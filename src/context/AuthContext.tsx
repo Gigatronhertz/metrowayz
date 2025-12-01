@@ -9,6 +9,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   loginWithGoogle: () => Promise<void>
+  loginWithEmail: (email: string, password: string, name?: string, isSignUp?: boolean) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -116,6 +117,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }
 
+  const loginWithEmail = async (email: string, password: string, name?: string, isSignUp?: boolean) => {
+    setIsLoading(true)
+    try {
+      let response
+      
+      if (isSignUp && name) {
+        response = await authService.signupWithEmail(email, password, name)
+      } else {
+        response = await authService.loginWithEmail(email, password)
+      }
+
+      if (response.success && response.user) {
+        setUser(response.user)
+      } else {
+        throw new Error(response.message || 'Authentication failed')
+      }
+    } catch (error) {
+      console.error('Email authentication failed:', error)
+      tokenManager.removeToken()
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
     const initializeAuth = async () => {
       if (tokenManager.isAuthenticated()) {
@@ -140,7 +166,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     login,
     logout,
     refreshUser,
-    loginWithGoogle
+    loginWithGoogle,
+    loginWithEmail
   }
 
   return (

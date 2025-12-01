@@ -193,5 +193,67 @@ export const authService = {
         reject(error instanceof Error ? error : new Error('Authentication failed'))
       }
     })
+  },
+
+  loginWithEmail: async (email: string, password: string): Promise<AuthResponse> => {
+    const url = `${API_BASE_URL}/auth/login`
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    }
+
+    const response = await fetch(url, requestOptions)
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Login failed')
+    }
+
+    const data = await response.json()
+    
+    if (data.token) {
+      tokenManager.setToken(data.token)
+    }
+
+    return {
+      success: true,
+      user: data.user,
+      token: data.token,
+      message: 'Login successful'
+    }
+  },
+
+  signupWithEmail: async (email: string, password: string, name: string): Promise<AuthResponse> => {
+    const url = `${API_BASE_URL}/auth/signup`
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password, name })
+    }
+
+    const response = await fetch(url, requestOptions)
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Signup failed')
+    }
+
+    const data = await response.json()
+    
+    if (data.token) {
+      tokenManager.setToken(data.token)
+    }
+
+    return {
+      success: true,
+      user: data.user,
+      token: data.token,
+      message: 'Signup successful'
+    }
   }
 }
