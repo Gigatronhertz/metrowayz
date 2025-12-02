@@ -1393,6 +1393,35 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
         // Log for debugging
         console.log('🆕 CREATE SERVICE - Images count:', images.length);
         console.log('🆕 CREATE SERVICE - Service title:', req.body.title);
+        console.log('🆕 CREATE SERVICE - Is Chef Service:', req.body.isChefService);
+
+        // Validation for chef services
+        if (req.body.isChefService) {
+            console.log('🆕 CREATE SERVICE - Validating chef service fields...');
+            
+            if (!req.body.pricing || !req.body.pricing.model) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Chef service requires pricing model (fixed or range)"
+                });
+            }
+
+            if (!req.body.availability || !req.body.availability.availableDays || req.body.availability.availableDays.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Chef service requires at least one available day"
+                });
+            }
+
+            if (!req.body.availability.timeSlots || req.body.availability.timeSlots.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Chef service requires at least one time slot"
+                });
+            }
+
+            console.log('🆕 CREATE SERVICE - Chef service validation passed');
+        }
 
         // Add creator info to service
         const serviceData = {
@@ -1656,6 +1685,34 @@ app.put("/services/:id", authenticateJWT, async (req, res) => {
                 console.log(`Removing ${removedImages.length} old image(s) from service ${serviceId}`);
                 await deleteMediaFiles(removedImages);
             }
+        }
+
+        // Validation for chef services
+        if (req.body.isChefService) {
+            console.log('🔄 UPDATE SERVICE - Validating chef service fields...');
+            
+            if (!req.body.pricing || !req.body.pricing.model) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Chef service requires pricing model (fixed or range)"
+                });
+            }
+
+            if (!req.body.availability || !req.body.availability.availableDays || req.body.availability.availableDays.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Chef service requires at least one available day"
+                });
+            }
+
+            if (!req.body.availability.timeSlots || req.body.availability.timeSlots.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Chef service requires at least one time slot"
+                });
+            }
+
+            console.log('🔄 UPDATE SERVICE - Chef service validation passed');
         }
 
         // Update service fields
