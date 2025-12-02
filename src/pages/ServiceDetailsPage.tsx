@@ -58,7 +58,7 @@ const ServiceDetailsPage: React.FC = () => {
   const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState<any[]>([])
-  const [selectedMenuOptions, setSelectedMenuOptions] = useState<{ [key: string]: any }>({})
+  const [selectedMenuOptions, setSelectedMenuOptions] = useState<{ [key: string]: string | string[] }>({})
   const [selectedAddons, setSelectedAddons] = useState<string[]>([])
   const [guestCount, setGuestCount] = useState(2)
 
@@ -136,7 +136,9 @@ const ServiceDetailsPage: React.FC = () => {
       service.menuParameters.forEach((param) => {
         const selected = selectedMenuOptions[param.name]
         if (selected) {
-          const option = param.options.find((opt: any) => opt.value === selected)
+          const option = param.options.find(
+            (opt: { label: string; value: string; priceEffect: number }) => opt.value === selected
+          )
           if (option) {
             menuPrice += option.priceEffect || 0
           }
@@ -147,7 +149,9 @@ const ServiceDetailsPage: React.FC = () => {
     let addonPrice = 0
     if (service.addons) {
       selectedAddons.forEach((addonLabel) => {
-        const addon = service.addons?.find((a: any) => a.label === addonLabel)
+        const addon = service.addons?.find(
+          (a: { label: string; price: number }) => a.label === addonLabel
+        )
         if (addon) {
           addonPrice += addon.price
         }
