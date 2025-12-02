@@ -26,6 +26,7 @@ interface Service {
   latitude?: number
   longitude?: number
   isAvailable: boolean
+  isChefService?: boolean
 }
 
 const HomePage: React.FC = () => {
@@ -37,6 +38,10 @@ const HomePage: React.FC = () => {
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [scrollPastServices, setScrollPastServices] = useState(false)
+
+  const getPriceUnitDisplay = (service: Service) => {
+    return service.isChefService ? 'per service' : formatPriceUnit(service.priceUnit, 'short');
+  };
 
   // Auto-scroll banners
   useEffect(() => {
@@ -363,7 +368,7 @@ const HomePage: React.FC = () => {
                     <p className="text-xs opacity-90 truncate mb-2">{service.location}</p>
                     <div className="text-sm font-bold">
                       ₦{service.price.toLocaleString()}
-                      <span className="text-xs font-normal opacity-90"> {formatPriceUnit(service.priceUnit, 'short')}</span>
+                      <span className="text-xs font-normal opacity-90"> {getPriceUnitDisplay(service)}</span>
                     </div>
                   </div>
                 </div>
@@ -519,7 +524,7 @@ const HomePage: React.FC = () => {
                       <p className="text-xs text-gray-500 truncate mb-2">{service.location}</p>
                       <div className="text-sm font-bold text-primary-500">
                         ₦{service.price.toLocaleString()}
-                        <span className="text-xs font-normal text-gray-500"> {formatPriceUnit(service.priceUnit, 'short')}</span>
+                        <span className="text-xs font-normal text-gray-500"> {getPriceUnitDisplay(service)}</span>
                       </div>
                     </div>
                   </div>

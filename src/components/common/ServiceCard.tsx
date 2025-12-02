@@ -26,6 +26,10 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
     ? getImageUrl(service.images[0])
     : '/placeholder.jpg';
 
+  const getPriceUnitDisplay = () => {
+    return service.isChefService ? 'per service' : formatPriceUnit(service.priceUnit, 'long');
+  };
+
   if (variant === 'compact') {
     return (
       <Card
@@ -56,7 +60,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
             <div className="font-bold text-primary-500 text-sm">
               {formatCurrency(service.price)}
             </div>
-            <div className="text-xs text-gray-500">{formatPriceUnit(service.priceUnit, 'short')}</div>
+            <div className="text-xs text-gray-500">{service.isChefService ? 'per service' : formatPriceUnit(service.priceUnit, 'short')}</div>
           </div>
         </div>
       </Card>
@@ -82,7 +86,6 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
             className="absolute top-2 right-2 lg:top-4 lg:right-4 p-1.5 lg:p-2.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 shadow-lg hover:scale-110"
             onClick={(e) => {
               e.stopPropagation();
-              // Add to favorites logic here
             }}
           >
             <Heart className="w-3.5 h-3.5 lg:w-5 lg:h-5 text-gray-700 hover:text-red-500 transition-colors" />
@@ -119,7 +122,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, variant = 'default' 
               <div className="text-base lg:text-2xl font-display font-bold text-primary-600 truncate">
                 {formatCurrency(service.price)}
               </div>
-              <div className="text-[10px] lg:text-sm text-gray-500 mt-0.5 truncate">{formatPriceUnit(service.priceUnit, 'long')}</div>
+              <div className="text-[10px] lg:text-sm text-gray-500 mt-0.5 truncate">{getPriceUnitDisplay()}</div>
             </div>
             <button className="hidden lg:block px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-lg transition-colors duration-200 whitespace-nowrap ml-2">
               Book Now

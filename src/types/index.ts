@@ -19,6 +19,7 @@ export interface Service {
   latitude: number
   longitude: number
   isAvailable: boolean
+  isChefService?: boolean
 }
 
 export interface User {

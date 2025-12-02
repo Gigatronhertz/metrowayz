@@ -10,7 +10,7 @@ import RescheduleBookingModal from '../components/booking/RescheduleBookingModal
 
 interface Booking {
   _id: string
-  serviceId: { _id: string; price?: number; priceUnit?: string; category?: string } | string
+  serviceId: { _id: string; price?: number; priceUnit?: string; category?: string; isChefService?: boolean } | string
   serviceName: string
   serviceLocation: string
   serviceImages: string[]
@@ -205,9 +205,9 @@ const BookingsPage: React.FC = () => {
                       <div className="text-2xl font-display font-bold">
                         {formatCurrency(booking.totalAmount)}
                       </div>
-                      {typeof booking.serviceId === 'object' && booking.serviceId.price && booking.serviceId.priceUnit && (
+                      {typeof booking.serviceId === 'object' && booking.serviceId.price && (
                         <div className="text-sm opacity-90">
-                          {formatCurrency(booking.serviceId.price)} {formatPriceUnit(booking.serviceId.priceUnit, 'long')}
+                          {formatCurrency(booking.serviceId.price)} {booking.serviceId.isChefService ? 'per service' : formatPriceUnit(booking.serviceId.priceUnit || '', 'long')}
                         </div>
                       )}
                     </div>
