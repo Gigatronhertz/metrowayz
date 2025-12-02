@@ -95,7 +95,6 @@ const VendorServiceForm = () => {
 
   const [uploading, setUploading] = useState(false);
 
-  // Fetch service data if editing
   const { data: serviceData } = useQuery({
     queryKey: ['service-edit', id],
     queryFn: async () => {
@@ -147,7 +146,6 @@ const VendorServiceForm = () => {
     }
   }, [serviceData]);
 
-  // Create/Update mutation
   const mutation = useMutation({
     mutationFn: (data: any) => {
       if (isEditing) {
@@ -354,25 +352,24 @@ const VendorServiceForm = () => {
     setUploading(true);
 
     try {
-      // Get Cloudinary signature
       const signatureData = await vendorApi.service.getCloudinarySignature();
       const { signature, timestamp, cloudName, apiKey, folder } = signatureData.data;
 
       const uploadedImages: Array<{ url: string; publicId: string; resourceType: string }> = [];
 
       for (const file of Array.from(files)) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('signature', signature);
-        formData.append('timestamp', timestamp.toString());
-        formData.append('api_key', apiKey);
-        formData.append('folder', folder);
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        formDataUpload.append('signature', signature);
+        formDataUpload.append('timestamp', timestamp.toString());
+        formDataUpload.append('api_key', apiKey);
+        formDataUpload.append('folder', folder);
 
         const response = await fetch(
           `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
           {
             method: 'POST',
-            body: formData,
+            body: formDataUpload,
           }
         );
 
@@ -394,8 +391,6 @@ const VendorServiceForm = () => {
           resourceType: 'image'
         });
       }
-
-      console.log('Uploaded images:', uploadedImages);
 
       setFormData(prev => ({
         ...prev,
@@ -429,7 +424,6 @@ const VendorServiceForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
     if (!formData.title || !formData.category || !formData.description || !formData.location) {
       toast.error('Please fill in all required fields');
       return;
@@ -440,7 +434,6 @@ const VendorServiceForm = () => {
       return;
     }
 
-    // Chef service specific validation
     if (formData.isChefService) {
       if (!formData.pricing.model) {
         toast.error('Please select a pricing model');
@@ -469,7 +462,6 @@ const VendorServiceForm = () => {
         return;
       }
     } else {
-      // Regular service validation
       if (!formData.price) {
         toast.error('Please enter a price');
         return;
@@ -502,14 +494,12 @@ const VendorServiceForm = () => {
       availability: formData.isChefService ? formData.availability : undefined
     };
 
-    console.log('Submitting service data:', submitData);
     mutation.mutate(submitData);
   };
 
   return (
     <VendorLayout>
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
             {isEditing ? 'Edit Service' : 'Create New Service'}
@@ -518,230 +508,284 @@ const VendorServiceForm = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Basic Information</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Service Title *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Luxury 2-Bedroom Apartment"
-                  required
-                />
+          {/* Step 1: Category Selection */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Step 1: Select Service Type</h2>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Service Category *
+            </label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-base"
+              required
+            >
+              <option value="">Choose a category...</option>
+              {CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            {formData.isChefService && (
+              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded text-sm text-green-700 font-medium">
+                ✓ Private Chef form activated
               </div>
+            )}
+          </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category *
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="">Select category</option>
-                    {CATEGORIES.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
+          {!formData.category && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center text-yellow-700">
+              <p>Please select a category to continue</p>
+            </div>
+          )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location *
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          {/* REGULAR SERVICE FORM */}
+          {!formData.isChefService && formData.category && (
+            <>
+              {/* Basic Information */}
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Basic Information</h2>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Service Title *
+                    </label>
                     <input
                       type="text"
-                      name="location"
-                      value={formData.location}
+                      name="title"
+                      value={formData.title}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., Lagos, Nigeria"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., Luxury 2-Bedroom Apartment"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Location *
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                      <input
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleInputChange}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., Lagos, Nigeria"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description *
+                    </label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      rows={4}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Describe your service in detail..."
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Price *
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2 text-gray-500">₦</span>
+                        <input
+                          type="number"
+                          name="price"
+                          value={formData.price}
+                          onChange={handleInputChange}
+                          className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="e.g., 50000"
+                          min="0"
+                          step="0.01"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Price Unit *
+                      </label>
+                      <select
+                        name="priceUnit"
+                        value={formData.priceUnit}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      >
+                        {PRICE_UNITS.map(unit => (
+                          <option key={unit} value={unit}>per {unit}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description *
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Describe your service in detail..."
-                  required
-                />
-              </div>
+              {/* Amenities */}
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Amenities</h2>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Price *
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Price Unit *
-                  </label>
-                  <select
-                    name="priceUnit"
-                    value={formData.priceUnit}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    {PRICE_UNITS.map(unit => (
-                      <option key={unit} value={unit}>per {unit}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Images */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Images</h2>
-
-            <div className="space-y-4">
-              {/* Image Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload Images * (Max 10)
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <Upload className="mx-auto text-gray-400 mb-2" size={48} />
-                  <p className="text-sm text-gray-600 mb-4">
-                    Click to upload or drag and drop
-                  </p>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                    disabled={uploading || formData.images.length >= 10}
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className={`inline-block px-4 py-2 rounded-lg cursor-pointer transition-colors ${
-                      uploading || formData.images.length >= 10
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    {uploading ? 'Uploading...' : 'Choose Files'}
-                  </label>
-                </div>
-              </div>
-
-              {/* Image Preview */}
-              {formData.images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {formData.images.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={image.url}
-                        alt={`Service ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {AMENITIES.map(amenity => (
+                    <label
+                      key={amenity}
+                      className={`flex items-center gap-2 px-4 py-3 border rounded-lg cursor-pointer transition-colors ${
+                        formData.amenities.includes(amenity)
+                          ? 'border-blue-600 bg-blue-50'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.amenities.includes(amenity)}
+                        onChange={() => handleAmenityToggle(amenity)}
+                        className="rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
                       />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
+                      <span className="text-sm font-medium">{amenity}</span>
+                    </label>
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Amenities - Not for Chef Services */}
-          {!formData.isChefService && (
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Amenities</h2>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {AMENITIES.map(amenity => (
-                  <label
-                    key={amenity}
-                    className={`flex items-center gap-2 px-4 py-3 border rounded-lg cursor-pointer transition-colors ${
-                      formData.amenities.includes(amenity)
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.amenities.includes(amenity)}
-                      onChange={() => handleAmenityToggle(amenity)}
-                      className="rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <span className="text-sm font-medium">{amenity}</span>
-                  </label>
-                ))}
               </div>
-            </div>
+            </>
           )}
 
-          {/* Chef Service Specific Sections */}
+          {/* CHEF SERVICE FORM */}
           {formData.isChefService && (
             <>
+              {/* Chef Service Details */}
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Chef Service Details</h2>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Service Title *
+                    </label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., Private Fine Dining Experience, BBQ Grill Service"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Service Type
+                    </label>
+                    <select
+                      name="serviceType"
+                      value={formData.serviceType}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select service type...</option>
+                      <option value="private_dining">Private Fine Dining</option>
+                      <option value="outdoor_grill">Outdoor Grill Experience</option>
+                      <option value="meal_prep">Meal Prep Service</option>
+                      <option value="breakfast">Breakfast Menu</option>
+                      <option value="continental">Continental Dinner</option>
+                      <option value="dessert">Dessert Menu</option>
+                      <option value="corporate">Corporate Lunch</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Short Description
+                    </label>
+                    <input
+                      type="text"
+                      name="shortDescription"
+                      value={formData.shortDescription}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., Exquisite 3-course meal with wine pairing (max 100 chars)"
+                      maxLength={100}
+                    />
+                    <p className="mt-1 text-xs text-gray-500">{formData.shortDescription.length}/100 characters</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Description *
+                    </label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      rows={5}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Describe your chef service in detail. Example: 'I offer exquisite African-continental fusion cuisine. My 3-course menu includes appetizers, main course with your choice of protein, and decadent desserts. I prepare meals in your kitchen and can handle events for 4-20 guests. Over 8 years experience with corporate events and intimate gatherings.'"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Service Location *
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                      <input
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleInputChange}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., Lagos, Nigeria or 'I travel to client locations'"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Pricing Model */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Pricing Model</h2>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Pricing Model *
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Choose Pricing Type *
                     </label>
                     <div className="flex gap-4">
-                      {['fixed', 'range'].map(model => (
-                        <label key={model} className="flex items-center gap-2 cursor-pointer">
+                      {[
+                        { value: 'fixed', label: 'Fixed Price', desc: 'Same price for all bookings (e.g., ₦50,000 per event)' },
+                        { value: 'range', label: 'Price Range', desc: 'Price varies based on selections (e.g., ₦50,000 - ₦120,000)' }
+                      ].map(model => (
+                        <label key={model.value} className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50" style={{ borderColor: formData.pricing.model === model.value ? '#3b82f6' : '#d1d5db', backgroundColor: formData.pricing.model === model.value ? '#eff6ff' : 'transparent' }}>
                           <input
                             type="radio"
                             name="pricingModel"
-                            value={model}
-                            checked={formData.pricing.model === model}
-                            onChange={() => handleNestedChange('pricing', 'model', model)}
+                            value={model.value}
+                            checked={formData.pricing.model === model.value}
+                            onChange={() => handleNestedChange('pricing', 'model', model.value)}
                             className="text-blue-600"
                           />
-                          <span className="text-sm font-medium capitalize">{model} Price</span>
+                          <div>
+                            <div className="font-medium text-gray-900">{model.label}</div>
+                            <div className="text-xs text-gray-500">{model.desc}</div>
+                          </div>
                         </label>
                       ))}
                     </div>
@@ -761,10 +805,11 @@ const VendorServiceForm = () => {
                             basePrice: e.target.value
                           })}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          placeholder="50000"
+                          placeholder="e.g., 50000"
                           min="0"
                           step="0.01"
                         />
+                        <p className="mt-1 text-xs text-gray-500">Example: Enter 50000 for ₦50,000</p>
                       </div>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -776,7 +821,7 @@ const VendorServiceForm = () => {
                           })}
                           className="text-blue-600"
                         />
-                        <span className="text-sm font-medium">Price per person</span>
+                        <span className="text-sm font-medium text-gray-700">Price per person (multiply by number of guests)</span>
                       </label>
                     </div>
                   ) : (
@@ -793,10 +838,11 @@ const VendorServiceForm = () => {
                             minPrice: e.target.value
                           })}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          placeholder="50000"
+                          placeholder="e.g., 50000"
                           min="0"
                           step="0.01"
                         />
+                        <p className="mt-1 text-xs text-gray-500">Example: 50000</p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -810,10 +856,11 @@ const VendorServiceForm = () => {
                             maxPrice: e.target.value
                           })}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          placeholder="120000"
+                          placeholder="e.g., 120000"
                           min="0"
                           step="0.01"
                         />
+                        <p className="mt-1 text-xs text-gray-500">Example: 120000</p>
                       </div>
                     </div>
                   )}
@@ -824,43 +871,52 @@ const VendorServiceForm = () => {
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Guest Rules</h2>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Base Guest Limit
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.guestRules.baseGuestLimit}
-                      onChange={(e) => handleNestedChange('guestRules', 'baseGuestLimit', parseInt(e.target.value))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      min="1"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Max Guests Allowed
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.guestRules.maxGuestsAllowed}
-                      onChange={(e) => handleNestedChange('guestRules', 'maxGuestsAllowed', parseInt(e.target.value))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      min="1"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Extra Guest Fee (₦)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.guestRules.extraGuestFee}
-                      onChange={(e) => handleNestedChange('guestRules', 'extraGuestFee', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      min="0"
-                      step="0.01"
-                    />
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">Define how many guests your chef service can accommodate and pricing for additional guests</p>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Base Guest Limit
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.guestRules.baseGuestLimit}
+                        onChange={(e) => handleNestedChange('guestRules', 'baseGuestLimit', parseInt(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., 2"
+                        min="1"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">Example: 2 (guests included in base price)</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Max Guests Allowed
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.guestRules.maxGuestsAllowed}
+                        onChange={(e) => handleNestedChange('guestRules', 'maxGuestsAllowed', parseInt(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., 20"
+                        min="1"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">Example: 20 (maximum total guests)</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Extra Guest Fee (₦)
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.guestRules.extraGuestFee}
+                        onChange={(e) => handleNestedChange('guestRules', 'extraGuestFee', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., 5000"
+                        min="0"
+                        step="0.01"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">Example: 5000 (per extra guest)</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -874,9 +930,10 @@ const VendorServiceForm = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Available Days *
                     </label>
+                    <p className="text-sm text-gray-600 mb-3">Select which days of the week you're available for services</p>
                     <div className="grid grid-cols-4 gap-2">
                       {DAYS_OF_WEEK.map(day => (
-                        <label key={day} className="flex items-center gap-2 cursor-pointer">
+                        <label key={day} className="flex items-center gap-2 cursor-pointer p-2 border rounded hover:bg-gray-50">
                           <input
                             type="checkbox"
                             checked={formData.availability.availableDays.includes(day)}
@@ -892,7 +949,7 @@ const VendorServiceForm = () => {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-sm font-medium text-gray-700">
-                        Time Slots *
+                        Time Slots * (Working Hours)
                       </label>
                       <button
                         type="button"
@@ -902,36 +959,41 @@ const VendorServiceForm = () => {
                         <Plus size={16} /> Add Slot
                       </button>
                     </div>
+                    <p className="text-sm text-gray-600 mb-3">Example: Morning slot 10:00-14:00, Evening slot 18:00-22:00</p>
                     <div className="space-y-2">
-                      {formData.availability.timeSlots.map((slot, index) => (
-                        <div key={index} className="flex gap-2 items-end">
-                          <div className="flex-1">
-                            <label className="block text-xs text-gray-600 mb-1">From</label>
-                            <input
-                              type="time"
-                              value={slot.start}
-                              onChange={(e) => handleTimeSlotChange(index, 'start', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                            />
+                      {formData.availability.timeSlots.length === 0 ? (
+                        <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded">No time slots added yet. Click "Add Slot" to add your working hours.</p>
+                      ) : (
+                        formData.availability.timeSlots.map((slot, index) => (
+                          <div key={index} className="flex gap-2 items-end">
+                            <div className="flex-1">
+                              <label className="block text-xs text-gray-600 mb-1">From</label>
+                              <input
+                                type="time"
+                                value={slot.start}
+                                onChange={(e) => handleTimeSlotChange(index, 'start', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-xs text-gray-600 mb-1">To</label>
+                              <input
+                                type="time"
+                                value={slot.end}
+                                onChange={(e) => handleTimeSlotChange(index, 'end', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTimeSlot(index)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
-                          <div className="flex-1">
-                            <label className="block text-xs text-gray-600 mb-1">To</label>
-                            <input
-                              type="time"
-                              value={slot.end}
-                              onChange={(e) => handleTimeSlotChange(index, 'end', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveTimeSlot(index)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
@@ -940,7 +1002,7 @@ const VendorServiceForm = () => {
               {/* Menu Parameters */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">Menu Parameters</h2>
+                  <h2 className="text-xl font-bold text-gray-900">Menu Parameters & Options</h2>
                   <button
                     type="button"
                     onClick={handleAddMenuParameter}
@@ -949,117 +1011,122 @@ const VendorServiceForm = () => {
                     <Plus size={16} /> Add Parameter
                   </button>
                 </div>
+                <p className="text-sm text-gray-600 mb-4">Example: Menu Type (Basic/Premium/Luxury), Cuisine (African/Continental), or Table Setup. Each option can have a different price.</p>
 
                 <div className="space-y-4">
-                  {formData.menuParameters.map((param, paramIndex) => (
-                    <div key={paramIndex} className="border border-gray-300 rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1 grid grid-cols-2 gap-3 mr-2">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Parameter Name
-                            </label>
-                            <input
-                              type="text"
-                              value={param.name}
-                              onChange={(e) => handleMenuParameterChange(paramIndex, 'name', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                              placeholder="e.g., menu_type"
-                            />
+                  {formData.menuParameters.length === 0 ? (
+                    <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded">No parameters added yet. Examples: Menu Type, Cuisine Choice, Table Setup</p>
+                  ) : (
+                    formData.menuParameters.map((param, paramIndex) => (
+                      <div key={paramIndex} className="border border-gray-300 rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1 grid grid-cols-2 gap-3 mr-2">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Parameter Name (e.g., "menu_type")
+                              </label>
+                              <input
+                                type="text"
+                                value={param.name}
+                                onChange={(e) => handleMenuParameterChange(paramIndex, 'name', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                                placeholder="menu_type"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Display Label (e.g., "Menu Type")
+                              </label>
+                              <input
+                                type="text"
+                                value={param.label}
+                                onChange={(e) => handleMenuParameterChange(paramIndex, 'label', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                                placeholder="Menu Type"
+                              />
+                            </div>
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Display Label
-                            </label>
-                            <input
-                              type="text"
-                              value={param.label}
-                              onChange={(e) => handleMenuParameterChange(paramIndex, 'label', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                              placeholder="e.g., Menu Type"
-                            />
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMenuParameter(paramIndex)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg mt-6"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveMenuParameter(paramIndex)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg mt-6"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
 
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Type
-                        </label>
-                        <select
-                          value={param.type}
-                          onChange={(e) => handleMenuParameterChange(paramIndex, 'type', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="single_select">Single Select</option>
-                          <option value="multi_select">Multi Select</option>
-                          <option value="boolean">Yes/No</option>
-                        </select>
-                      </div>
+                        <div className="mb-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Type
+                          </label>
+                          <select
+                            value={param.type}
+                            onChange={(e) => handleMenuParameterChange(paramIndex, 'type', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="single_select">Single Select (pick one)</option>
+                            <option value="multi_select">Multi Select (pick multiple)</option>
+                            <option value="boolean">Yes/No</option>
+                          </select>
+                        </div>
 
-                      {param.type !== 'boolean' && (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium text-gray-700">Options</label>
-                            <button
-                              type="button"
-                              onClick={() => handleAddParameterOption(paramIndex)}
-                              className="text-xs text-blue-600 hover:text-blue-700"
-                            >
-                              + Add Option
-                            </button>
-                          </div>
-                          {param.options.map((option: any, optionIndex: number) => (
-                            <div key={optionIndex} className="flex gap-2 items-end bg-gray-50 p-2 rounded">
-                              <input
-                                type="text"
-                                value={option.label}
-                                onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'label', e.target.value)}
-                                className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
-                                placeholder="Label"
-                              />
-                              <input
-                                type="text"
-                                value={option.value}
-                                onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'value', e.target.value)}
-                                className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
-                                placeholder="Value"
-                              />
-                              <input
-                                type="number"
-                                value={option.priceEffect}
-                                onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'priceEffect', parseFloat(e.target.value))}
-                                className="w-20 px-2 py-1 border border-gray-300 rounded text-xs"
-                                placeholder="Price"
-                                step="0.01"
-                              />
+                        {param.type !== 'boolean' && (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="text-sm font-medium text-gray-700">Options (example: Basic ₦0, Premium +₦15,000)</label>
                               <button
                                 type="button"
-                                onClick={() => handleRemoveParameterOption(paramIndex, optionIndex)}
-                                className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                onClick={() => handleAddParameterOption(paramIndex)}
+                                className="text-xs text-blue-600 hover:text-blue-700"
                               >
-                                <Trash2 size={14} />
+                                + Add Option
                               </button>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                            {param.options.map((option: any, optionIndex: number) => (
+                              <div key={optionIndex} className="flex gap-2 items-end bg-gray-50 p-2 rounded">
+                                <input
+                                  type="text"
+                                  value={option.label}
+                                  onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'label', e.target.value)}
+                                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
+                                  placeholder="e.g., Premium"
+                                />
+                                <input
+                                  type="text"
+                                  value={option.value}
+                                  onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'value', e.target.value)}
+                                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
+                                  placeholder="e.g., premium"
+                                />
+                                <input
+                                  type="number"
+                                  value={option.priceEffect}
+                                  onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'priceEffect', parseFloat(e.target.value))}
+                                  className="w-24 px-2 py-1 border border-gray-300 rounded text-xs"
+                                  placeholder="e.g., 15000"
+                                  step="0.01"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveParameterOption(paramIndex, optionIndex)}
+                                  className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
               {/* Add-ons */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">Add-ons</h2>
+                  <h2 className="text-xl font-bold text-gray-900">Add-ons (Optional)</h2>
                   <button
                     type="button"
                     onClick={handleAddAddon}
@@ -1068,98 +1135,167 @@ const VendorServiceForm = () => {
                     <Plus size={16} /> Add Add-on
                   </button>
                 </div>
+                <p className="text-sm text-gray-600 mb-4">Examples: Cocktail Mixing (₦25,000), Waiters (₦15,000), Dessert Platter (₦10,000)</p>
 
                 <div className="space-y-2">
-                  {formData.addons.map((addon, index) => (
-                    <div key={index} className="flex gap-2 items-end">
-                      <input
-                        type="text"
-                        value={addon.label}
-                        onChange={(e) => handleAddonChange(index, 'label', e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                        placeholder="e.g., Cocktail Mixing"
-                      />
-                      <input
-                        type="number"
-                        value={addon.price}
-                        onChange={(e) => handleAddonChange(index, 'price', e.target.value)}
-                        className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                        placeholder="Price"
-                        min="0"
-                        step="0.01"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveAddon(index)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))}
+                  {formData.addons.length === 0 ? (
+                    <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded">No add-ons yet. Optional services that customers can add for extra cost.</p>
+                  ) : (
+                    formData.addons.map((addon, index) => (
+                      <div key={index} className="flex gap-2 items-end">
+                        <input
+                          type="text"
+                          value={addon.label}
+                          onChange={(e) => handleAddonChange(index, 'label', e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g., Cocktail Mixing"
+                        />
+                        <input
+                          type="number"
+                          value={addon.price}
+                          onChange={(e) => handleAddonChange(index, 'price', e.target.value)}
+                          className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g., 25000"
+                          min="0"
+                          step="0.01"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAddon(index)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </>
           )}
 
-          {/* Map Location Picker */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Service Location</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Click on the map to set the exact location of your service. This will help customers find you easily.
-            </p>
+          {/* Shared Sections: Images and Location */}
+          {formData.category && (
+            <>
+              {/* Images */}
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Service Images</h2>
 
-            <MapPicker
-              latitude={formData.latitude}
-              longitude={formData.longitude}
-              onLocationChange={handleLocationChange}
-            />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Upload Images * (Max 10)
+                    </label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                      <Upload className="mx-auto text-gray-400 mb-2" size={48} />
+                      <p className="text-sm text-gray-600 mb-4">
+                        Click to upload or drag and drop
+                      </p>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
+                        disabled={uploading || formData.images.length >= 10}
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className={`inline-block px-4 py-2 rounded-lg cursor-pointer transition-colors ${
+                          uploading || formData.images.length >= 10
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                      >
+                        {uploading ? 'Uploading...' : 'Choose Files'}
+                      </label>
+                    </div>
+                  </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Latitude
-                </label>
-                <input
-                  type="number"
-                  value={formData.latitude}
-                  readOnly
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                  step="any"
-                />
+                  {formData.images.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {formData.images.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={image.url}
+                            alt={`Service ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Longitude
-                </label>
-                <input
-                  type="number"
-                  value={formData.longitude}
-                  readOnly
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                  step="any"
-                />
-              </div>
-            </div>
-          </div>
 
-          {/* Submit Buttons */}
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => navigate('/vendor/services')}
-              className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={mutation.isPending || uploading}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {mutation.isPending ? 'Saving...' : isEditing ? 'Update Service' : 'Create Service'}
-            </button>
-          </div>
+              {/* Location */}
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Service Location</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Click on the map to set the exact location of your service.
+                </p>
+
+                <MapPicker
+                  latitude={formData.latitude}
+                  longitude={formData.longitude}
+                  onLocationChange={handleLocationChange}
+                />
+
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Latitude
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.latitude}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                      step="any"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Longitude
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.longitude}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                      step="any"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => navigate('/vendor/services')}
+                  className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={mutation.isPending || uploading}
+                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {mutation.isPending ? 'Saving...' : isEditing ? 'Update Service' : 'Create Service'}
+                </button>
+              </div>
+            </>
+          )}
         </form>
       </div>
     </VendorLayout>
