@@ -189,9 +189,25 @@ const ServiceDetailsPage: React.FC = () => {
   }
 
   const handleBookNow = () => {
-    // Store the intended booking destination
-    localStorage.setItem('redirectAfterAuth', `/booking/${service._id}`)
-    navigate(`/booking/${service._id}`)
+    if (service?.isChefService) {
+      const chefBookingData = {
+        serviceId: service._id,
+        serviceName: service.title,
+        serviceLocation: service.location,
+        isChefService: true,
+        totalAmount: calculateChefServicePrice(),
+        selectedMenuOptions,
+        selectedAddons,
+        guestCount,
+        pricing: service.pricing,
+        guestRules: service.guestRules
+      }
+      localStorage.setItem('pendingBooking', JSON.stringify(chefBookingData))
+      navigate('/payment')
+    } else {
+      localStorage.setItem('redirectAfterAuth', `/booking/${service._id}`)
+      navigate(`/booking/${service._id}`)
+    }
   }
 
   const imageUrls = service.images.map(img => typeof img === 'string' ? img : img.url)

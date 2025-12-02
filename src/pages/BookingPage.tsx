@@ -17,6 +17,7 @@ interface Service {
   priceUnit: string
   category: string
   images: Array<{ url: string } | string>
+  isChefService?: boolean
 }
 
 const BookingPage: React.FC = () => {
@@ -53,6 +54,13 @@ const BookingPage: React.FC = () => {
 
     fetchData()
   }, [serviceId])
+
+  // Redirect chef services away from booking page
+  useEffect(() => {
+    if (service?.isChefService) {
+      navigate(`/service/${serviceId}`)
+    }
+  }, [service, serviceId, navigate])
 
   // Handle date selection from calendar
   const handleDateSelect = (checkIn: string, checkOut: string) => {

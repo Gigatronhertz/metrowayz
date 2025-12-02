@@ -45,8 +45,6 @@ const PaymentPage: React.FC = () => {
 
   // Create booking after payment
   const createBookingAfterPayment = async (reference: string) => {
-    // console.log('📝 Starting booking creation with reference:', reference)
-
     if (!bookingData) {
       console.error('❌ No booking data available')
       return
@@ -55,39 +53,45 @@ const PaymentPage: React.FC = () => {
     setIsProcessing(true)
 
     try {
-      // console.log('🔍 Checking availability...')
-      // First, check if dates are still available
-      const availabilityCheck = await bookingAPI.checkAvailability(
-        bookingData.serviceId,
-        bookingData.checkInDate,
-        bookingData.checkOutDate
-      )
+      if (bookingData.isChefService) {
+        // For chef services, skip availability check (no dates)
+        const bookingResponse = await bookingAPI.createBooking({
+          serviceId: bookingData.serviceId,
+          isChefService: true,
+          selectedMenuOptions: bookingData.selectedMenuOptions,
+          selectedAddons: bookingData.selectedAddons,
+          guestCount: bookingData.guestCount,
+          specialRequests: bookingData.specialRequests || ''
+        })
 
-      // console.log('Availability response:', availabilityCheck)
+        console.log('✅ Chef booking created successfully!', bookingResponse)
+      } else {
+        // For regular services, check availability
+        const availabilityCheck = await bookingAPI.checkAvailability(
+          bookingData.serviceId,
+          bookingData.checkInDate,
+          bookingData.checkOutDate
+        )
 
-      if (!availabilityCheck.data) {
-        console.error('❌ Dates not available')
-        alert('Sorry, these dates are no longer available. Your payment will be refunded.')
-        setIsProcessing(false)
-        return
+        if (!availabilityCheck.data) {
+          console.error('❌ Dates not available')
+          alert('Sorry, these dates are no longer available. Your payment will be refunded.')
+          setIsProcessing(false)
+          return
+        }
+
+        const bookingResponse = await bookingAPI.createBooking({
+          serviceId: bookingData.serviceId,
+          checkInDate: bookingData.checkInDate,
+          checkOutDate: bookingData.checkOutDate,
+          guests: bookingData.guests || 1,
+          specialRequests: bookingData.specialRequests || ''
+        })
+
+        console.log('✅ Booking created successfully!', bookingResponse)
       }
 
-      //console.log('✅ Dates available, creating booking...')
-// 
-      // Create booking with payment reference
-      const bookingResponse = await bookingAPI.createBooking({
-        serviceId: bookingData.serviceId,
-        checkInDate: bookingData.checkInDate,
-        checkOutDate: bookingData.checkOutDate,
-        guests: bookingData.guests || 1,
-        specialRequests: bookingData.specialRequests || '',
-      })
-
-      console.log('✅ Booking created successfully!', bookingResponse)
-
-      // Clear pending booking data
       localStorage.removeItem('pendingBooking')
-
       setShowSuccess(true)
     } catch (error) {
       console.error('❌ Error creating booking:', error)
@@ -240,14 +244,16 @@ const PaymentPage: React.FC = () => {
     )
   }
 
-  const duration = Math.ceil(
+  const isChefService = bookingData?.isChefService
+
+  const duration = !isChefService ? Math.ceil(
     (new Date(bookingData.checkOutDate).getTime() - new Date(bookingData.checkInDate).getTime()) /
     (1000 * 60 * 60 * 24)
-  )
+  ) : 0
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Confirm Booking" showBack />
+      <Header title={isChefService ? "Chef Service Booking" : "Confirm Booking"} showBack />
 
       <div className="container-padding py-6 space-y-6">
         {/* Payment Summary */}
@@ -259,14 +265,41 @@ const PaymentPage: React.FC = () => {
               <span className="text-gray-600">Service:</span>
               <span className="font-semibold">{bookingData.serviceName}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Duration:</span>
-              <span className="font-semibold">{duration} {bookingData.servicePriceUnit}(s)</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Guests:</span>
-              <span className="font-semibold">{bookingData.guests}</span>
-            </div>
+            
+            {!isChefService && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Duration:</span>
+                  <span className="font-semibold">{duration} {bookingData.servicePriceUnit}(s)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Guests:</span>
+                  <span className="font-semibold">{bookingData.guests}</span>
+                </div>
+              </>
+            )}
+
+            {isChefService && bookingData.guestCount && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Number of Guests:</span>
+                <span className="font-semibold">{bookingData.guestCount}</span>
+              </div>
+            )}
+
+            {isChefService && bookingData.selectedMenuOptions && Object.keys(bookingData.selectedMenuOptions).length > 0 && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Menu Selections:</span>
+                <span className="font-semibold text-right">{Object.keys(bookingData.selectedMenuOptions).length} option(s)</span>
+              </div>
+            )}
+
+            {isChefService && bookingData.selectedAddons && bookingData.selectedAddons.length > 0 && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Add-ons:</span>
+                <span className="font-semibold text-right">{bookingData.selectedAddons.length} selected</span>
+              </div>
+            )}
+
             <div className="border-t pt-3 flex justify-between">
               <span className="text-lg font-bold">Total Amount:</span>
               <span className="text-lg font-bold text-primary-500">

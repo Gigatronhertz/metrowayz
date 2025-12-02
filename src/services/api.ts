@@ -107,10 +107,14 @@ export const bookingAPI = {
   // Create a new booking
   createBooking: async (data: {
     serviceId: string;
-    checkInDate: string;
-    checkOutDate: string;
-    guests: number;
+    checkInDate?: string;
+    checkOutDate?: string;
+    guests?: number;
     specialRequests?: string;
+    isChefService?: boolean;
+    selectedMenuOptions?: Record<string, string | string[] | undefined>;
+    selectedAddons?: string[];
+    guestCount?: number;
   }) => {
     return fetchWithAuth('/api/bookings', {
       method: 'POST',
