@@ -20,7 +20,7 @@ interface SignUpForm extends LoginForm {
 
 const OnboardingPage: React.FC = () => {
   const navigate = useNavigate()
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated, user, loginWithEmail } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
   const [isVendorMode, setIsVendorMode] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -29,17 +29,14 @@ const OnboardingPage: React.FC = () => {
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm<SignUpForm>()
 
-// Redirect if already authenticated
   React.useEffect(() => {
     if (isAuthenticated) {
-      // Check if there's a stored redirect path
       const redirectPath = localStorage.getItem('redirectAfterAuth')
 
       if (redirectPath && redirectPath !== '/') {
         localStorage.removeItem('redirectAfterAuth')
         navigate(redirectPath, { replace: true })
       } else {
-        // Role-based redirect
         let defaultRedirect = "/home"
         if (user?.role === 'seller') {
           defaultRedirect = "/vendor/dashboard"
@@ -51,17 +48,27 @@ const OnboardingPage: React.FC = () => {
     }
   }, [isAuthenticated, user, navigate])
 
-  const onSubmit = async (_data: SignUpForm) => {
+  const onSubmit = async (data: SignUpForm) => {
     setIsLoading(true)
     setError(null)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    setIsLoading(false)
-    navigate('/home')
+    try {
+      await loginWithEmail(data.email, data.password, data.name, !isLogin)
+      
+      if (isVendorMode) {
+        navigate('/vendor/dashboard')
+      } else {
+        navigate('/home')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Authentication failed'
+      setError(errorMessage)
+      toast.error(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleGoogleSuccess = () => {
-    // Set redirect based on vendor mode
     if (isVendorMode) {
       localStorage.setItem('redirectAfterAuth', '/vendor/dashboard')
       localStorage.setItem('loginIntent', 'vendor')
