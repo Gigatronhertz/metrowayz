@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, Heart, Share2 } from 'lucide-react'
+import { MapPin, Heart, Share2, ChefHat, Users, Calendar } from 'lucide-react'
 import { serviceAPI, favoriteAPI, reviewAPI } from '../services/api'
 import { formatCurrency, formatPriceUnit } from '../utils/format'
 import Header from '../components/layout/Header'
@@ -14,6 +14,8 @@ interface Service {
   title: string
   category: string
   description: string
+  shortDescription?: string
+  serviceType?: string
   location: string
   price: number
   priceUnit: string
@@ -24,6 +26,29 @@ interface Service {
   latitude: number
   longitude: number
   isAvailable: boolean
+  isChefService?: boolean
+  pricing?: {
+    model: string
+    fixed?: { basePrice: number; pricePerPerson: boolean }
+    range?: { minPrice: number; maxPrice: number }
+  }
+  guestRules?: {
+    baseGuestLimit: number
+    maxGuestsAllowed: number
+    extraGuestFee: number
+  }
+  menuParameters?: Array<{
+    name: string
+    label: string
+    type: string
+    options: Array<{ label: string; value: string; priceEffect: number }>
+  }>
+  addons?: Array<{ label: string; price: number }>
+  availability?: {
+    availableDays: string[]
+    timeSlots: Array<{ start: string; end: string }>
+    blockedDates: string[]
+  }
 }
 
 const ServiceDetailsPage: React.FC = () => {
@@ -33,6 +58,9 @@ const ServiceDetailsPage: React.FC = () => {
   const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState<any[]>([])
+  const [selectedMenuOptions, setSelectedMenuOptions] = useState<{ [key: string]: any }>({})
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([])
+  const [guestCount, setGuestCount] = useState(2)
 
   // Fetch service details
   useEffect(() => {
@@ -43,6 +71,10 @@ const ServiceDetailsPage: React.FC = () => {
         setLoading(true)
         const response = await serviceAPI.getServiceById(id)
         setService(response.data)
+
+        if (response.data.guestRules) {
+          setGuestCount(response.data.guestRules.baseGuestLimit)
+        }
 
         // Check if favorited
         try {
@@ -85,6 +117,52 @@ const ServiceDetailsPage: React.FC = () => {
     }
   }
 
+  const calculateChefServicePrice = () => {
+    if (!service?.pricing) return 0
+
+    let basePrice = 0
+
+    if (service.pricing.model === 'fixed') {
+      basePrice = service.pricing.fixed?.basePrice || 0
+      if (service.pricing.fixed?.pricePerPerson) {
+        basePrice = basePrice * guestCount
+      }
+    } else {
+      basePrice = service.pricing.range?.minPrice || 0
+    }
+
+    let menuPrice = 0
+    if (service.menuParameters) {
+      service.menuParameters.forEach((param) => {
+        const selected = selectedMenuOptions[param.name]
+        if (selected) {
+          const option = param.options.find((opt: any) => opt.value === selected)
+          if (option) {
+            menuPrice += option.priceEffect || 0
+          }
+        }
+      })
+    }
+
+    let addonPrice = 0
+    if (service.addons) {
+      selectedAddons.forEach((addonLabel) => {
+        const addon = service.addons?.find((a: any) => a.label === addonLabel)
+        if (addon) {
+          addonPrice += addon.price
+        }
+      })
+    }
+
+    let guestFee = 0
+    if (service.guestRules && guestCount > service.guestRules.baseGuestLimit) {
+      const extraGuests = guestCount - service.guestRules.baseGuestLimit
+      guestFee = extraGuests * (service.guestRules.extraGuestFee || 0)
+    }
+
+    return basePrice + menuPrice + addonPrice + guestFee
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -113,6 +191,7 @@ const ServiceDetailsPage: React.FC = () => {
   }
 
   const imageUrls = service.images.map(img => typeof img === 'string' ? img : img.url)
+  const finalPrice = service.isChefService ? calculateChefServicePrice() : service.price
 
   return (
     <div className="min-h-screen bg-white">
@@ -144,14 +223,24 @@ const ServiceDetailsPage: React.FC = () => {
         {/* Header Info */}
         <div>
           <div className="flex items-start justify-between mb-2">
-            <h1 className="text-2xl font-bold text-gray-900 flex-1 mr-4">
-              {service.title}
-            </h1>
+            <div className="flex-1 mr-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                {service.title}
+              </h1>
+              {service.isChefService && service.serviceType && (
+                <div className="flex items-center gap-2 text-sm text-primary-600 font-medium">
+                  <ChefHat size={16} />
+                  {service.serviceType.replace(/_/g, ' ').charAt(0).toUpperCase() + service.serviceType.replace(/_/g, ' ').slice(1)}
+                </div>
+              )}
+            </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-primary-500">
-                {formatCurrency(service.price)}
+                {formatCurrency(finalPrice)}
               </div>
-              <div className="text-sm text-gray-500">{formatPriceUnit(service.priceUnit, 'long')}</div>
+              {!service.isChefService && (
+                <div className="text-sm text-gray-500">{formatPriceUnit(service.priceUnit, 'long')}</div>
+              )}
             </div>
           </div>
 
@@ -168,26 +257,225 @@ const ServiceDetailsPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Short Description for Chef Services */}
+        {service.isChefService && service.shortDescription && (
+          <div className="bg-primary-50 rounded-lg p-4 border border-primary-200">
+            <p className="text-gray-700 font-medium">{service.shortDescription}</p>
+          </div>
+        )}
+
         {/* Description */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
           <p className="text-gray-600 leading-relaxed">{service.description}</p>
         </div>
 
-        {/* Amenities */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Amenities</h2>
-          <div className="flex flex-wrap gap-2">
-            {service.amenities.map((amenity, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-sm font-medium"
-              >
-                {amenity}
-              </span>
-            ))}
+        {/* Chef Service Details */}
+        {service.isChefService && (
+          <>
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Pricing & Booking Details</h2>
+              
+              {service.pricing?.model === 'range' && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    Base price: {formatCurrency(service.pricing.range?.minPrice || 0)} - {formatCurrency(service.pricing.range?.maxPrice || 0)}
+                  </p>
+                </div>
+              )}
+
+              {service.guestRules && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <div className="flex items-center gap-2">
+                      <Users size={16} />
+                      Number of Guests
+                    </div>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      -
+                    </button>
+                    <span className="text-center min-w-12 font-semibold">{guestCount}</span>
+                    <button
+                      onClick={() => setGuestCount(Math.min(service.guestRules!.maxGuestsAllowed, guestCount + 1))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs text-gray-500">
+                      (Base: {service.guestRules.baseGuestLimit}, Max: {service.guestRules.maxGuestsAllowed})
+                    </span>
+                  </div>
+                  {guestCount > service.guestRules.baseGuestLimit && service.guestRules.extraGuestFee > 0 && (
+                    <p className="text-xs text-gray-600 mt-2">
+                      +{formatCurrency(service.guestRules.extraGuestFee)} per extra guest
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {service.menuParameters && service.menuParameters.length > 0 && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Menu Options</h2>
+                <div className="space-y-4">
+                  {service.menuParameters.map((param, idx) => (
+                    <div key={idx}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {param.label}
+                      </label>
+                      {param.type === 'boolean' ? (
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedMenuOptions[param.name] === 'true'}
+                            onChange={(e) => 
+                              setSelectedMenuOptions({
+                                ...selectedMenuOptions,
+                                [param.name]: e.target.checked ? 'true' : undefined
+                              })
+                            }
+                            className="rounded"
+                          />
+                          <span className="text-sm text-gray-600">{param.label}</span>
+                        </label>
+                      ) : param.type === 'multi_select' ? (
+                        <div className="space-y-2">
+                          {param.options.map((option: any, optIdx: number) => (
+                            <label key={optIdx} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={(selectedMenuOptions[param.name] || []).includes(option.value)}
+                                onChange={(e) => {
+                                  const current = selectedMenuOptions[param.name] || []
+                                  const updated = e.target.checked
+                                    ? [...current, option.value]
+                                    : current.filter((v: string) => v !== option.value)
+                                  setSelectedMenuOptions({
+                                    ...selectedMenuOptions,
+                                    [param.name]: updated
+                                  })
+                                }}
+                                className="rounded"
+                              />
+                              <span className="text-sm text-gray-600">
+                                {option.label}
+                                {option.priceEffect > 0 && (
+                                  <span className="text-primary-600 font-medium ml-1">
+                                    +{formatCurrency(option.priceEffect)}
+                                  </span>
+                                )}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <select
+                          value={selectedMenuOptions[param.name] || ''}
+                          onChange={(e) => 
+                            setSelectedMenuOptions({
+                              ...selectedMenuOptions,
+                              [param.name]: e.target.value
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                        >
+                          <option value="">Select an option...</option>
+                          {param.options.map((option: any, optIdx: number) => (
+                            <option key={optIdx} value={option.value}>
+                              {option.label}
+                              {option.priceEffect > 0 && ` (+${formatCurrency(option.priceEffect)})`}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {service.addons && service.addons.length > 0 && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Premium Add-ons</h2>
+                <div className="space-y-3">
+                  {service.addons.map((addon, idx) => (
+                    <label key={idx} className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={selectedAddons.includes(addon.label)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedAddons([...selectedAddons, addon.label])
+                          } else {
+                            setSelectedAddons(selectedAddons.filter(a => a !== addon.label))
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span className="flex-1 font-medium text-gray-900">{addon.label}</span>
+                      <span className="font-semibold text-primary-600">{formatCurrency(addon.price)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {service.availability && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Availability</h2>
+                <div className="space-y-3">
+                  {service.availability.availableDays && service.availability.availableDays.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-2">Available Days</p>
+                      <div className="flex flex-wrap gap-2">
+                        {service.availability.availableDays.map((day, idx) => (
+                          <span key={idx} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                            {day.charAt(0).toUpperCase() + day.slice(1)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {service.availability.timeSlots && service.availability.timeSlots.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-2">Time Slots</p>
+                      <div className="space-y-2">
+                        {service.availability.timeSlots.map((slot, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-sm text-gray-600">
+                            <Calendar size={14} />
+                            {slot.start} - {slot.end}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Amenities (for non-chef services) */}
+        {!service.isChefService && service.amenities && service.amenities.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Amenities</h2>
+            <div className="flex flex-wrap gap-2">
+              {service.amenities.map((amenity, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-sm font-medium"
+                >
+                  {amenity}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Location */}
         <div>
@@ -257,9 +545,11 @@ const ServiceDetailsPage: React.FC = () => {
         <div className="flex items-center justify-between mb-3">
           <div>
             <div className="text-xl font-bold text-primary-500">
-              {formatCurrency(service.price)}
+              {formatCurrency(finalPrice)}
             </div>
-            <div className="text-sm text-gray-500">{formatPriceUnit(service.priceUnit, 'long')}</div>
+            {!service.isChefService && (
+              <div className="text-sm text-gray-500">{formatPriceUnit(service.priceUnit, 'long')}</div>
+            )}
           </div>
           <Button onClick={handleBookNow} className="px-8">
             Book Now
