@@ -9,9 +9,17 @@ const serviceSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    serviceType: {
+        type: String,
+        default: ''
+    },
     description: {
         type: String,
         required: true
+    },
+    shortDescription: {
+        type: String,
+        default: ''
     },
     location: {
         type: String,
@@ -43,6 +51,11 @@ const serviceSchema = new mongoose.Schema({
         }
     }],
 
+    video: {
+        type: String,
+        default: ''
+    },
+
     amenities: [{
         type: String
     }],
@@ -68,6 +81,94 @@ const serviceSchema = new mongoose.Schema({
         type: String,
         enum: ['active', 'inactive', 'pending'],
         default: 'active'
+    },
+
+    // Chef Service Specific Fields
+    isChefService: {
+        type: Boolean,
+        default: false
+    },
+
+    // Pricing Model for Chef Services
+    pricing: {
+        model: {
+            type: String,
+            enum: ['fixed', 'range'],
+            default: 'fixed'
+        },
+        fixed: {
+            basePrice: {
+                type: Number,
+                default: 0
+            },
+            pricePerPerson: {
+                type: Boolean,
+                default: false
+            }
+        },
+        range: {
+            minPrice: {
+                type: Number,
+                default: 0
+            },
+            maxPrice: {
+                type: Number,
+                default: 0
+            }
+        }
+    },
+
+    // Guest Rules
+    guestRules: {
+        baseGuestLimit: {
+            type: Number,
+            default: 2
+        },
+        maxGuestsAllowed: {
+            type: Number,
+            default: 20
+        },
+        extraGuestFee: {
+            type: Number,
+            default: 0
+        }
+    },
+
+    // Menu Parameters (for chefs)
+    menuParameters: [{
+        name: String,
+        label: String,
+        type: {
+            type: String,
+            enum: ['single_select', 'multi_select', 'boolean']
+        },
+        options: [{
+            label: String,
+            value: String,
+            priceEffect: {
+                type: Number,
+                default: 0
+            }
+        }]
+    }],
+
+    // Add-ons
+    addons: [{
+        label: String,
+        price: {
+            type: Number,
+            default: 0
+        }
+    }],
+
+    // Availability for Chef Services
+    availability: {
+        availableDays: [String],
+        timeSlots: [{
+            start: String,
+            end: String
+        }],
+        blockedDates: [String]
     },
 
     // Creator information

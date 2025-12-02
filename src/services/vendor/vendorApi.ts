@@ -107,6 +107,8 @@ export const vendorServiceAPI = {
   createService: async (data: {
     title: string;
     category: string;
+    serviceType?: string;
+    shortDescription?: string;
     description: string;
     location: string;
     price: number;
@@ -117,6 +119,29 @@ export const vendorServiceAPI = {
     longitude?: number;
     isAvailable?: boolean;
     status?: string;
+    isChefService?: boolean;
+    pricing?: {
+      model: string;
+      fixed?: { basePrice: number; pricePerPerson: boolean };
+      range?: { minPrice: number; maxPrice: number };
+    };
+    guestRules?: {
+      baseGuestLimit: number;
+      maxGuestsAllowed: number;
+      extraGuestFee: number;
+    };
+    menuParameters?: Array<{
+      name: string;
+      label: string;
+      type: string;
+      options: Array<{ label: string; value: string; priceEffect: number }>;
+    }>;
+    addons?: Array<{ label: string; price: number }>;
+    availability?: {
+      availableDays: string[];
+      timeSlots: Array<{ start: string; end: string }>;
+      blockedDates: string[];
+    };
   }) => {
     return fetchWithAuth('/create-service', {
       method: 'POST',
