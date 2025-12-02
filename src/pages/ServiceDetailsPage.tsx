@@ -71,6 +71,8 @@ const ServiceDetailsPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [paymentReference, setPaymentReference] = useState<string>('')
+  const [serviceDate, setServiceDate] = useState<string>('')
+  const [serviceTime, setServiceTime] = useState<string>('')
 
   // Fetch service details
   useEffect(() => {
@@ -217,12 +219,19 @@ const ServiceDetailsPage: React.FC = () => {
   const createChefBooking = async (reference: string) => {
     if (!service) return
 
+    if (!serviceDate || !serviceTime) {
+      alert('Please select both date and time for the service')
+      return
+    }
+
     setIsProcessing(true)
 
     try {
       const bookingResponse = await bookingAPI.createBooking({
         serviceId: service._id,
         isChefService: true,
+        serviceDate,
+        serviceTime,
         selectedMenuOptions,
         selectedAddons,
         guestCount,
@@ -309,6 +318,8 @@ const ServiceDetailsPage: React.FC = () => {
 
   const closeModal = () => {
     setShowBookingModal(false)
+    setServiceDate('')
+    setServiceTime('')
   }
 
   const handleSuccessClose = () => {
@@ -727,6 +738,63 @@ const ServiceDetailsPage: React.FC = () => {
 
             {/* Modal Content */}
             <div className="p-6 space-y-6 pb-24">
+              {/* Date and Time Selection */}
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Calendar className="w-5 h-5 mr-2" />
+                  Select Date & Time
+                </h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Service Date
+                    </label>
+                    <input
+                      type="date"
+                      value={serviceDate}
+                      onChange={(e) => setServiceDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {serviceDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Service Time
+                      </label>
+                      {service?.availability?.timeSlots && service.availability.timeSlots.length > 0 ? (
+                        <div className="space-y-2">
+                          {service.availability.timeSlots.map((slot, idx) => (
+                            <label key={idx} className="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                              <input
+                                type="radio"
+                                name="timeSlot"
+                                value={slot.start}
+                                checked={serviceTime === slot.start}
+                                onChange={(e) => setServiceTime(e.target.value)}
+                                className="rounded"
+                              />
+                              <span className="text-sm text-gray-700">
+                                {slot.start} - {slot.end}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type="time"
+                          value={serviceTime}
+                          onChange={(e) => setServiceTime(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
+
               {/* Booking Summary */}
               <Card className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
@@ -736,6 +804,20 @@ const ServiceDetailsPage: React.FC = () => {
                     <span className="text-gray-600">Service:</span>
                     <span className="font-semibold">{service?.title}</span>
                   </div>
+
+                  {serviceDate && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Service Date:</span>
+                      <span className="font-semibold">{new Date(serviceDate).toLocaleDateString()}</span>
+                    </div>
+                  )}
+
+                  {serviceTime && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Service Time:</span>
+                      <span className="font-semibold">{serviceTime}</span>
+                    </div>
+                  )}
 
                   <div className="flex justify-between">
                     <span className="text-gray-600">Number of Guests:</span>

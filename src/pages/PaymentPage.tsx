@@ -54,10 +54,12 @@ const PaymentPage: React.FC = () => {
 
     try {
       if (bookingData.isChefService) {
-        // For chef services, skip availability check (no dates)
+        // For chef services, skip availability check (has specific date/time)
         const bookingResponse = await bookingAPI.createBooking({
           serviceId: bookingData.serviceId,
           isChefService: true,
+          serviceDate: bookingData.serviceDate,
+          serviceTime: bookingData.serviceTime,
           selectedMenuOptions: bookingData.selectedMenuOptions,
           selectedAddons: bookingData.selectedAddons,
           guestCount: bookingData.guestCount,
@@ -277,6 +279,20 @@ const PaymentPage: React.FC = () => {
                   <span className="font-semibold">{bookingData.guests}</span>
                 </div>
               </>
+            )}
+
+            {isChefService && bookingData.serviceDate && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Service Date:</span>
+                <span className="font-semibold">{new Date(bookingData.serviceDate).toLocaleDateString()}</span>
+              </div>
+            )}
+
+            {isChefService && bookingData.serviceTime && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Service Time:</span>
+                <span className="font-semibold">{bookingData.serviceTime}</span>
+              </div>
             )}
 
             {isChefService && bookingData.guestCount && (

@@ -115,6 +115,8 @@ export const bookingAPI = {
     selectedMenuOptions?: Record<string, string | string[] | undefined>;
     selectedAddons?: string[];
     guestCount?: number;
+    serviceDate?: string;
+    serviceTime?: string;
   }) => {
     return fetchWithAuth('/api/bookings', {
       method: 'POST',
