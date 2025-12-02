@@ -58,7 +58,7 @@ const ServiceDetailsPage: React.FC = () => {
   const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState<any[]>([])
-  const [selectedMenuOptions, setSelectedMenuOptions] = useState<{ [key: string]: string | string[] }>({})
+  const [selectedMenuOptions, setSelectedMenuOptions] = useState<{ [key: string]: string | string[] | undefined }>({})
   const [selectedAddons, setSelectedAddons] = useState<string[]>([])
   const [guestCount, setGuestCount] = useState(2)
 
@@ -337,12 +337,15 @@ const ServiceDetailsPage: React.FC = () => {
                           <input
                             type="checkbox"
                             checked={selectedMenuOptions[param.name] === 'true'}
-                            onChange={(e) => 
-                              setSelectedMenuOptions({
-                                ...selectedMenuOptions,
-                                [param.name]: e.target.checked ? 'true' : undefined
-                              })
-                            }
+                            onChange={(e) => {
+                              const updated = { ...selectedMenuOptions }
+                              if (e.target.checked) {
+                                updated[param.name] = 'true'
+                              } else {
+                                delete updated[param.name]
+                              }
+                              setSelectedMenuOptions(updated)
+                            }}
                             className="rounded"
                           />
                           <span className="text-sm text-gray-600">{param.label}</span>
@@ -355,7 +358,7 @@ const ServiceDetailsPage: React.FC = () => {
                                 type="checkbox"
                                 checked={(selectedMenuOptions[param.name] || []).includes(option.value)}
                                 onChange={(e) => {
-                                  const current = selectedMenuOptions[param.name] || []
+                                  const current = (selectedMenuOptions[param.name] as string[]) || []
                                   const updated = e.target.checked
                                     ? [...current, option.value]
                                     : current.filter((v: string) => v !== option.value)
