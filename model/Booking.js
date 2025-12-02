@@ -72,6 +72,29 @@ const bookingSchema = new mongoose.Schema({
         min: 1
     },
 
+    // Chef Service Specific Fields
+    isChefService: {
+        type: Boolean,
+        default: false
+    },
+    guestCount: {
+        type: Number,
+        default: null
+    },
+    selectedMenuOptions: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+    },
+    selectedAddons: [{
+        type: String
+    }],
+    serviceDate: {
+        type: Date
+    },
+    serviceTime: {
+        type: String // Format: "HH:mm"
+    },
+
     // Pricing (no payment for now, but keep for future)
     totalAmount: {
         type: Number,

@@ -2166,7 +2166,13 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             guests,
             specialRequests,
             serviceType,
-            timeSlot
+            timeSlot,
+            isChefService,
+            guestCount,
+            selectedMenuOptions,
+            selectedAddons,
+            serviceDate,
+            serviceTime
         } = req.body;
 
         // Validate required fields
@@ -2178,7 +2184,14 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
         }
 
         // Validate based on service type
-        if (serviceType === 'time_based') {
+        if (isChefService) {
+            if (!serviceDate || !serviceTime) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Service date and time are required for chef service bookings"
+                });
+            }
+        } else if (serviceType === 'time_based') {
             if (!timeSlot || !timeSlot.date || !timeSlot.startTime || !timeSlot.endTime) {
                 return res.status(400).json({
                     success: false,
@@ -2207,7 +2220,52 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
         // Calculate total amount based on service type
         let totalAmount, checkIn, checkOut;
         
-        if (serviceType === 'time_based') {
+        if (isChefService) {
+            // For chef services, calculate total with menu options and add-ons
+            let basePrice = 0;
+            
+            if (service.pricing.model === 'fixed') {
+                basePrice = service.pricing.fixed?.basePrice || 0;
+                if (service.pricing.fixed?.pricePerPerson) {
+                    basePrice = basePrice * (guestCount || 1);
+                }
+            } else {
+                basePrice = service.pricing.range?.minPrice || 0;
+            }
+            
+            let menuPrice = 0;
+            if (service.menuParameters && selectedMenuOptions) {
+                service.menuParameters.forEach((param) => {
+                    const selected = selectedMenuOptions[param.name];
+                    if (selected) {
+                        const option = param.options.find(opt => opt.value === selected);
+                        if (option) {
+                            menuPrice += option.priceEffect || 0;
+                        }
+                    }
+                });
+            }
+            
+            let addonPrice = 0;
+            if (service.addons && selectedAddons && Array.isArray(selectedAddons)) {
+                selectedAddons.forEach((addonLabel) => {
+                    const addon = service.addons.find(a => a.label === addonLabel);
+                    if (addon) {
+                        addonPrice += addon.price;
+                    }
+                });
+            }
+            
+            let guestFee = 0;
+            if (service.guestRules && guestCount > service.guestRules.baseGuestLimit) {
+                const extraGuests = guestCount - service.guestRules.baseGuestLimit;
+                guestFee = extraGuests * (service.guestRules.extraGuestFee || 0);
+            }
+            
+            totalAmount = basePrice + menuPrice + addonPrice + guestFee;
+            checkIn = new Date(serviceDate);
+            checkOut = new Date(serviceDate);
+        } else if (serviceType === 'time_based') {
             // For time-based services, use the service price directly
             totalAmount = service.price;
             checkIn = new Date(timeSlot.date);
@@ -2238,12 +2296,23 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             serviceImages: service.images.map(img => img.url || img),
             checkInDate: checkIn,
             checkOutDate: checkOut,
-            guests: guests || 1,
+            guests: guests || guestCount || 1,
             totalAmount,
             specialRequests: specialRequests || '',
             status: initialStatus,
-            serviceType: serviceType || 'date_based'
+            serviceType: serviceType || 'date_based',
+            isChefService: isChefService || false
         };
+
+        // Add chef service specific information
+        if (isChefService) {
+            bookingData.guestCount = guestCount;
+            bookingData.selectedMenuOptions = selectedMenuOptions || {};
+            bookingData.selectedAddons = selectedAddons || [];
+            bookingData.serviceDate = new Date(serviceDate);
+            bookingData.serviceTime = serviceTime;
+            bookingData.serviceType = 'time_based';
+        }
 
         // Add time slot information for time-based services
         if (serviceType === 'time_based') {
