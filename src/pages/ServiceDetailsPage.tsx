@@ -586,38 +586,7 @@ const ServiceDetailsPage: React.FC = () => {
               </div>
             )}
 
-            {service.availability && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Availability</h2>
-                <div className="space-y-3">
-                  {service.availability.availableDays && service.availability.availableDays.length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-700 mb-2">Available Days</p>
-                      <div className="flex flex-wrap gap-2">
-                        {service.availability.availableDays.map((day, idx) => (
-                          <span key={idx} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                            {day.charAt(0).toUpperCase() + day.slice(1)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {service.availability.timeSlots && service.availability.timeSlots.length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-700 mb-2">Time Slots</p>
-                      <div className="space-y-2">
-                        {service.availability.timeSlots.map((slot, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-sm text-gray-600">
-                            <Calendar size={14} />
-                            {slot.start} - {slot.end}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            
           </>
         )}
 
