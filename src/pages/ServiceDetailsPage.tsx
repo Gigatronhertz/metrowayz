@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, Heart, Share2, ChefHat, Users, Calendar } from 'lucide-react'
-import { serviceAPI, favoriteAPI, reviewAPI } from '../services/api'
+import { MapPin, Heart, Share2, ChefHat, Users, Calendar, Check, CreditCard, X } from 'lucide-react'
+import { usePaystackPayment } from 'react-paystack'
+import { serviceAPI, favoriteAPI, reviewAPI, bookingAPI } from '../services/api'
 import { formatCurrency, formatPriceUnit } from '../utils/format'
+import { useAuth } from '../context/AuthContext'
+import { isPaystackConfigured, getPaystackPublicKey } from '../config/paystack'
+import { convertToKobo, generatePaymentReference } from '../services/paystack'
 import Header from '../components/layout/Header'
 import Button from '../components/ui/Button'
 import Rating from '../components/ui/Rating'
 import Map from '../components/common/Map'
 import ImageGallery from '../components/common/ImageGallery'
+import Card from '../components/ui/Card'
 
 interface Service {
   _id: string
@@ -54,6 +59,7 @@ interface Service {
 const ServiceDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
   const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
@@ -61,6 +67,10 @@ const ServiceDetailsPage: React.FC = () => {
   const [selectedMenuOptions, setSelectedMenuOptions] = useState<{ [key: string]: string | string[] | undefined }>({})
   const [selectedAddons, setSelectedAddons] = useState<string[]>([])
   const [guestCount, setGuestCount] = useState(2)
+  const [showBookingModal, setShowBookingModal] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [paymentReference, setPaymentReference] = useState<string>('')
 
   // Fetch service details
   useEffect(() => {
@@ -190,28 +200,145 @@ const ServiceDetailsPage: React.FC = () => {
 
   const handleBookNow = () => {
     if (service?.isChefService) {
-      const chefBookingData = {
-        serviceId: service._id,
-        serviceName: service.title,
-        serviceLocation: service.location,
-        isChefService: true,
-        totalAmount: calculateChefServicePrice(),
-        selectedMenuOptions,
-        selectedAddons,
-        guestCount,
-        pricing: service.pricing,
-        guestRules: service.guestRules
+      if (!user) {
+        localStorage.setItem('redirectAfterAuth', `/service/${id}`)
+        navigate('/login')
+        return
       }
-      localStorage.setItem('pendingBooking', JSON.stringify(chefBookingData))
-      navigate('/payment')
+      const ref = generatePaymentReference()
+      setPaymentReference(ref)
+      setShowBookingModal(true)
     } else {
       localStorage.setItem('redirectAfterAuth', `/booking/${service._id}`)
       navigate(`/booking/${service._id}`)
     }
   }
 
+  const createChefBooking = async (reference: string) => {
+    if (!service) return
+
+    setIsProcessing(true)
+
+    try {
+      const bookingResponse = await bookingAPI.createBooking({
+        serviceId: service._id,
+        isChefService: true,
+        selectedMenuOptions,
+        selectedAddons,
+        guestCount,
+        specialRequests: ''
+      })
+
+      console.log('✅ Chef booking created successfully!', bookingResponse)
+      setShowSuccess(true)
+    } catch (error) {
+      console.error('❌ Error creating booking:', error)
+      alert('Failed to create booking. Please contact support with reference: ' + reference)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handlePaystackSuccess = async (reference: any) => {
+    try {
+      setIsProcessing(true)
+      await createChefBooking(reference.reference || reference.trxref || paymentReference)
+    } catch (error) {
+      console.error('Error in success handler:', error)
+      alert('Payment successful but booking failed. Please contact support with reference: ' + (reference.reference || paymentReference))
+    }
+  }
+
+  const handlePaystackClose = () => {
+    console.log('Payment popup closed')
+    setIsProcessing(false)
+  }
+
+  const paystackConfig = service && user && paymentReference ? {
+    email: user.email,
+    amount: convertToKobo(calculateChefServicePrice() || 0),
+    publicKey: getPaystackPublicKey(),
+    reference: paymentReference,
+    currency: 'NGN',
+    channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'] as any,
+    metadata: {
+      bookingId: 'pending',
+      serviceId: service._id,
+      serviceName: service.title,
+      userId: user._id,
+      userName: user.name,
+    },
+  } : {
+    email: '',
+    amount: 0,
+    publicKey: getPaystackPublicKey(),
+  }
+
+  const initializePayment = usePaystackPayment(paystackConfig as any)
+
+  const handlePayment = () => {
+    if (!isPaystackConfigured()) {
+      alert('Payment system is not configured. Please contact support.')
+      return
+    }
+
+    if (!user?.email) {
+      alert('Please log in to make a payment.')
+      navigate('/login')
+      return
+    }
+
+    if (!paymentReference) {
+      alert('Payment reference not ready. Please try again.')
+      return
+    }
+
+    setIsProcessing(true)
+
+    initializePayment({
+      onSuccess: (reference: any) => {
+        console.log('✅ onSuccess callback triggered!', reference)
+        handlePaystackSuccess(reference)
+      },
+      onClose: () => {
+        console.log('❌ onClose callback triggered!')
+        handlePaystackClose()
+      }
+    } as any)
+  }
+
+  const closeModal = () => {
+    setShowBookingModal(false)
+  }
+
+  const handleSuccessClose = () => {
+    setShowSuccess(false)
+    navigate('/bookings')
+  }
+
   const imageUrls = service.images.map(img => typeof img === 'string' ? img : img.url)
   const finalPrice = service.isChefService ? calculateChefServicePrice() : service.price
+
+  if (showSuccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 text-center">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check className="w-10 h-10 text-green-600" />
+          </div>
+          
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
+          <p className="text-gray-600 mb-6">
+            Your booking is pending vendor confirmation. You will receive an email once the vendor approves or rejects your booking.
+          </p>
+          
+          <Button onClick={handleSuccessClose} className="w-full">
+            View My Bookings
+          </Button>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -582,6 +709,109 @@ const ServiceDetailsPage: React.FC = () => {
 
       {/* Add bottom padding to account for fixed footer */}
       <div className="h-20"></div>
+
+      {/* Booking Modal for Chef Services */}
+      {showBookingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-end z-50">
+          <div className="bg-white w-full rounded-t-3xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Chef Service Booking</h2>
+              <button
+                onClick={closeModal}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6 pb-24">
+              {/* Booking Summary */}
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Service:</span>
+                    <span className="font-semibold">{service?.title}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Number of Guests:</span>
+                    <span className="font-semibold">{guestCount}</span>
+                  </div>
+
+                  {selectedMenuOptions && Object.keys(selectedMenuOptions).length > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Menu Selections:</span>
+                      <span className="font-semibold text-right">{Object.keys(selectedMenuOptions).length} option(s)</span>
+                    </div>
+                  )}
+
+                  {selectedAddons && selectedAddons.length > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Add-ons:</span>
+                      <span className="font-semibold text-right">{selectedAddons.length} selected</span>
+                    </div>
+                  )}
+
+                  <div className="border-t pt-3 flex justify-between">
+                    <span className="text-lg font-bold">Total Amount:</span>
+                    <span className="text-lg font-bold text-primary-500">
+                      {formatCurrency(calculateChefServicePrice())}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Payment Method Selection */}
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
+                
+                <button className="w-full p-4 rounded-xl border-2 border-primary-500 bg-primary-50">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-5 h-5 rounded-full border-2 border-primary-500 bg-primary-500 flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    </div>
+                    
+                    <CreditCard className="w-6 h-6 text-gray-600" />
+                    
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold text-gray-900">Pay with Paystack</div>
+                      <div className="text-sm text-gray-600">Card, Bank Transfer, USSD</div>
+                    </div>
+                  </div>
+                </button>
+              </Card>
+
+              {/* Info Card */}
+              <Card className="p-6 bg-blue-50 border-blue-200">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-blue-800 mb-2">Secure Payment</h3>
+                    <p className="text-blue-700 text-sm leading-relaxed">
+                      Your payment is processed securely through Paystack. Your booking will be confirmed immediately after successful payment.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Payment Button */}
+              <Button
+                onClick={handlePayment}
+                isLoading={isProcessing}
+                className="w-full"
+              >
+                {isProcessing ? 'Processing...' : `Pay ${formatCurrency(calculateChefServicePrice())}`}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
