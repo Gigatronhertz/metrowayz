@@ -26,6 +26,26 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    phone: {
+        type: String,
+        default: ''
+    },
+    address: {
+        type: String,
+        default: ''
+    },
+    city: {
+        type: String,
+        default: ''
+    },
+    country: {
+        type: String,
+        default: ''
+    },
+    bio: {
+        type: String,
+        default: ''
+    },
 
     // User type: 'customer' or 'provider' (or both)
     userType: {

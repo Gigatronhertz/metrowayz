@@ -98,13 +98,13 @@ const ServicesView = () => {
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Active</p>
             <p className="text-2xl font-bold text-green-600">
-              {servicesData?.services?.filter((s: any) => s.status === 'active').length || 0}
+              {servicesData?.data?.filter((s: any) => s.status === 'active').length || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Pending Approval</p>
             <p className="text-2xl font-bold text-yellow-600">
-              {servicesData?.services?.filter((s: any) => s.status === 'pending').length || 0}
+              {servicesData?.data?.filter((s: any) => s.status === 'pending').length || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
@@ -121,9 +121,9 @@ const ServicesView = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
             <p className="text-gray-500 mt-4">Loading services...</p>
           </div>
-        ) : servicesData?.services?.length > 0 ? (
+        ) : servicesData?.data?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {servicesData.services.map((service: any) => (
+            {servicesData.data.map((service: any) => (
               <div key={service._id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 {/* Service Image */}
                 <div className="relative h-48 bg-gray-200">

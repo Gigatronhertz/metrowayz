@@ -84,13 +84,13 @@ const BookingsManagement = () => {
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Pending</p>
             <p className="text-2xl font-bold text-yellow-600">
-              {bookingsData?.bookings?.filter((b: any) => b.status === 'pending').length || 0}
+              {bookingsData?.data?.filter((b: any) => b.status === 'pending').length || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <p className="text-sm text-gray-600">Confirmed</p>
             <p className="text-2xl font-bold text-green-600">
-              {bookingsData?.bookings?.filter((b: any) => b.status === 'confirmed').length || 0}
+              {bookingsData?.data?.filter((b: any) => b.status === 'confirmed').length || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
@@ -107,9 +107,9 @@ const BookingsManagement = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
             <p className="text-gray-500 mt-4">Loading bookings...</p>
           </div>
-        ) : bookingsData?.bookings?.length > 0 ? (
+        ) : bookingsData?.data?.length > 0 ? (
           <div className="space-y-4">
-            {bookingsData.bookings.map((booking: any) => (
+            {bookingsData.data.map((booking: any) => (
               <div key={booking._id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Service Image */}

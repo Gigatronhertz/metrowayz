@@ -739,6 +739,96 @@ app.get('/user-details', authenticateJWT, async (req, res) => {
     }
 });
 
+// Get user profile
+app.get('/api/user/profile', authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        if (!userId) {
+            return res.status(400).json({ message: "Missing userId in request" });
+        }
+
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({
+            success: true,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                address: user.address,
+                city: user.city,
+                country: user.country,
+                bio: user.bio,
+                profilePic: user.profilePic,
+                phoneNumber: user.phoneNumber
+            }
+        });
+    } catch (error) {
+        console.error("Error in /api/user/profile GET:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+// Update user profile
+app.put('/api/user/profile', authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        if (!userId) {
+            return res.status(400).json({ message: "Missing userId in request" });
+        }
+
+        const { name, phone, address, city, country, bio } = req.body;
+
+        // Build update object
+        const updateFields = {};
+
+        if (name !== undefined) updateFields.name = name;
+        if (phone !== undefined) updateFields.phone = phone;
+        if (address !== undefined) updateFields.address = address;
+        if (city !== undefined) updateFields.city = city;
+        if (country !== undefined) updateFields.country = country;
+        if (bio !== undefined) updateFields.bio = bio;
+
+        // Update user
+        const user = await User.findOneAndUpdate(
+            { googleId: userId },
+            { $set: updateFields },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                address: user.address,
+                city: user.city,
+                country: user.country,
+                bio: user.bio,
+                profilePic: user.profilePic,
+                phoneNumber: user.phoneNumber
+            }
+        });
+    } catch (error) {
+        console.error("Error in /api/user/profile PUT:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
 app.post('/update-profile', authenticateJWT, async (req, res) => {
     try {
         const userId = req.user.userId;
