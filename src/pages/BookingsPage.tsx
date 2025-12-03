@@ -253,7 +253,7 @@ const BookingsPage: React.FC = () => {
                       <>
                         {/* Show reschedule for all services except private chef */}
                         {(booking.serviceCategory?.toLowerCase() !== 'private chef' && 
-                          (typeof booking.serviceId === 'object' ? booking.serviceId.category?.toLowerCase() !== 'private chef' : true)) && (
+                          (typeof booking.serviceId === 'object' && booking.serviceId ? booking.serviceId.category?.toLowerCase() !== 'private chef' : true)) && (
                           <button
                             onClick={() => handleRescheduleClick(booking)}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary-50 text-secondary-600 font-semibold rounded-xl hover:bg-secondary-100 transition-colors"
@@ -264,7 +264,7 @@ const BookingsPage: React.FC = () => {
                         )}
                         {/* Show cancel button for all services except private chef */}
                         {(booking.serviceCategory?.toLowerCase() !== 'private chef' && 
-                          (typeof booking.serviceId === 'object' ? booking.serviceId.category?.toLowerCase() !== 'private chef' : true)) && (
+                          (typeof booking.serviceId === 'object' && booking.serviceId ? booking.serviceId.category?.toLowerCase() !== 'private chef' : true)) && (
                           <button
                             onClick={() => handleCancelClick(booking)}
                             className="flex-1 px-4 py-2.5 bg-red-50 text-red-600 font-semibold rounded-xl hover:bg-red-100 transition-colors"
