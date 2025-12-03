@@ -429,6 +429,30 @@ export const eventsAPI = {
   },
 };
 
+// ============= USER APIs =============
+
+export const userAPI = {
+  // Update user profile
+  updateProfile: async (data: {
+    name?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    country?: string;
+    bio?: string;
+  }) => {
+    return fetchWithAuth('/api/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get user profile
+  getProfile: async () => {
+    return fetchWithAuth('/api/user/profile');
+  },
+};
+
 export default {
   service: serviceAPI,
   booking: bookingAPI,
@@ -437,4 +461,5 @@ export default {
   favorite: favoriteAPI,
   payment: paymentAPI,
   events: eventsAPI,
+  user: userAPI,
 };

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { User, Mail, Phone, MapPin, Save, X } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
+import { userAPI } from '../services/api'
 import Header from '../components/layout/Header'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
@@ -9,7 +11,7 @@ import Button from '../components/ui/Button'
 
 const EditProfilePage: React.FC = () => {
   const navigate = useNavigate()
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, refreshUser } = useAuth()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -60,15 +62,30 @@ const EditProfilePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!formData.name.trim()) {
+      toast.error('Please enter your full name')
+      return
+    }
+
     setLoading(true)
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      alert('Profile updated successfully!')
+      await userAPI.updateProfile({
+        name: formData.name,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        country: formData.country,
+        bio: formData.bio,
+      })
+
+      toast.success('Profile updated successfully!')
+      await refreshUser()
       navigate('/profile')
     } catch (error) {
       console.error('Error updating profile:', error)
-      alert('Failed to update profile')
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile')
     } finally {
       setLoading(false)
     }
