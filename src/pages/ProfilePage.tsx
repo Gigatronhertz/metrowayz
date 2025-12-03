@@ -51,9 +51,9 @@ const ProfilePage: React.FC = () => {
 
   const menuItems = [
     { icon: Edit, label: 'Edit Profile', action: () => navigate('/edit-profile') },
-    { icon: HelpCircle, label: 'Help & Support', action: () => {} },
-    { icon: Shield, label: 'Privacy Policy', action: () => {} },
-    { icon: FileText, label: 'Terms of Service', action: () => {} },
+    { icon: HelpCircle, label: 'Help & Support', action: () => navigate('/help-support') },
+    { icon: Shield, label: 'Privacy Policy', action: () => navigate('/privacy-policy') },
+    { icon: FileText, label: 'Terms of Service', action: () => navigate('/terms-of-service') },
   ]
 
   const handleSignOut = async () => {

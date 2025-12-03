@@ -12,6 +12,10 @@ import BookingPage from './pages/BookingPage'
 import PaymentPage from './pages/PaymentPage'
 import BookingsPage from './pages/BookingsPage'
 import ProfilePage from './pages/ProfilePage'
+import EditProfilePage from './pages/EditProfilePage'
+import HelpSupportPage from './pages/HelpSupportPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsOfServicePage from './pages/TermsOfServicePage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // Vendor Pages
@@ -116,6 +120,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-profile"
+            element={
+              <ProtectedRoute>
+                <EditProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/help-support"
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <HelpSupportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/privacy-policy"
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <PrivacyPolicyPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/terms-of-service"
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <TermsOfServicePage />
               </ProtectedRoute>
             }
           />
