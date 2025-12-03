@@ -12,6 +12,11 @@ export interface User {
   totalBookings?: number
   referrals?: number
   createdAt?: Date | string
+  phone?: string
+  address?: string
+  city?: string
+  country?: string
+  bio?: string
 }
 
 export interface AuthResponse {

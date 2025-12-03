@@ -24,13 +24,13 @@ const EditProfilePage: React.FC = () => {
   useEffect(() => {
     if (user && !isLoading) {
       setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        address: user.address || '',
-        city: user.city || '',
-        country: user.country || '',
-        bio: user.bio || '',
+        name: user?.name || '',
+        email: user?.email || '',
+        phone: user?.phone || '',
+        address: user?.address || '',
+        city: user?.city || '',
+        country: user?.country || '',
+        bio: user?.bio || '',
       })
     }
   }, [user, isLoading])
