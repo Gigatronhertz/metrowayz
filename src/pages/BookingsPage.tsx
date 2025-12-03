@@ -216,11 +216,21 @@ const BookingsPage: React.FC = () => {
 
                 {/* Content Section */}
                 <div className="p-6">
+                  <div className="mb-3 pb-3 border-b border-gray-100">
+                    <p className="text-xs font-medium text-gray-500 uppercase">Booking ID: {booking._id.slice(-8).toUpperCase()}</p>
+                  </div>
+                  
                   <h3 className="text-xl font-display font-bold text-gray-900 mb-3 line-clamp-2">
                     {booking.serviceName}
                   </h3>
 
                   <div className="space-y-2 mb-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded">
+                        {booking.serviceCategory || (typeof booking.serviceId === 'object' ? booking.serviceId.category : 'Service')}
+                      </span>
+                    </div>
+                    
                     <div className="flex items-start gap-2 text-sm text-gray-600">
                       <Calendar className="w-4 h-4 mt-0.5 text-gray-400 flex-shrink-0" />
                       <span>{formatDateRange(new Date(booking.checkInDate), new Date(booking.checkOutDate))}</span>

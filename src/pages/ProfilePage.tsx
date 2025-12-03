@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
-import { User, CreditCard, Star, Users, HelpCircle, Shield, FileText, LogOut, FileEdit as Edit, Gift } from 'lucide-react'
+import { User, HelpCircle, Shield, FileText, LogOut, FileEdit as Edit } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { bookingAPI } from '../services/api'
 import Header from '../components/layout/Header'
@@ -51,9 +51,6 @@ const ProfilePage: React.FC = () => {
 
   const menuItems = [
     { icon: Edit, label: 'Edit Profile', action: () => navigate('/edit-profile') },
-    { icon: CreditCard, label: 'Payment Methods', action: () => {} },
-    { icon: Gift, label: 'Loyalty & Rewards', action: () => {} },
-    { icon: Users, label: 'Invite Friends', action: () => {} },
     { icon: HelpCircle, label: 'Help & Support', action: () => {} },
     { icon: Shield, label: 'Privacy Policy', action: () => {} },
     { icon: FileText, label: 'Terms of Service', action: () => {} },
@@ -91,41 +88,15 @@ const ProfilePage: React.FC = () => {
           
           <h2 className="text-xl font-bold text-gray-900 mb-1">{user?.name}</h2>
           <p className="text-gray-600 mb-3">{user?.email}</p>
-          
-          <div className="flex items-center justify-center">
-            <Star className="w-4 h-4 text-accent-500 mr-1" />
-            <span className="text-sm font-semibold">Member since {new Date(user?.createdAt || Date.now()).toLocaleDateString()}</span>
-          </div>
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary-500 mb-1">
-              {(user?.loyaltyPoints ?? 0).toLocaleString()}
-            </div>
-            <div className="text-sm text-gray-600">Loyalty Points</div>
-          </Card>
-          
+        <div className="grid grid-cols-1 gap-4">
           <Card className="p-4 text-center" onClick={() => navigate('/bookings')}>
             <div className="text-2xl font-bold text-primary-500 mb-1 cursor-pointer hover:text-primary-600">
               {bookingStatsLoading ? '-' : bookingCount}
             </div>
             <div className="text-sm text-gray-600">Total Bookings</div>
-          </Card>
-          
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-accent-500 mb-1">
-              {user?.membershipTier ?? 'Bronze'}
-            </div>
-            <div className="text-sm text-gray-600">Member Status</div>
-          </Card>
-          
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary-500 mb-1">
-              {user?.referrals ?? 0}
-            </div>
-            <div className="text-sm text-gray-600">Referrals</div>
           </Card>
         </div>
 
