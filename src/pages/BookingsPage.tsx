@@ -205,7 +205,7 @@ const BookingsPage: React.FC = () => {
                       <div className="text-2xl font-display font-bold">
                         {formatCurrency(booking.totalAmount)}
                       </div>
-                      {typeof booking.serviceId === 'object' && booking.serviceId.price && (
+                      {typeof booking.serviceId === 'object' && booking.serviceId && booking.serviceId.price && (
                         <div className="text-sm opacity-90">
                           {formatCurrency(booking.serviceId.price)} {booking.serviceId.isChefService ? 'per service' : formatPriceUnit(booking.serviceId.priceUnit || '', 'long')}
                         </div>
@@ -227,7 +227,7 @@ const BookingsPage: React.FC = () => {
                   <div className="space-y-2 mb-5">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded">
-                        {booking.serviceCategory || (typeof booking.serviceId === 'object' ? booking.serviceId.category : 'Service')}
+                        {booking.serviceCategory || (typeof booking.serviceId === 'object' && booking.serviceId ? booking.serviceId.category : 'Service')}
                       </span>
                     </div>
                     
