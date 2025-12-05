@@ -74,7 +74,6 @@ const ServiceDetailsPage: React.FC = () => {
   const [serviceDate, setServiceDate] = useState<string>('')
   const [serviceTime, setServiceTime] = useState<string>('')
 
-  // Fetch service details
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return
@@ -88,21 +87,18 @@ const ServiceDetailsPage: React.FC = () => {
           setGuestCount(response.data.guestRules.baseGuestLimit)
         }
 
-        // Check if favorited
         try {
           const favResponse = await favoriteAPI.checkFavorite(id)
           setIsFavorite(favResponse.isFavorited)
         } catch (err) {
-          // User might not be logged in
         }
 
-        // Fetch reviews
         try {
           const reviewResponse = await reviewAPI.getServiceReviews(id, { limit: 5 })
           setReviews(reviewResponse.data || [])
         } catch (err) {
           console.error('Error fetching reviews:', err)
-          setReviews([]) // Set empty array on error
+          setReviews([])
         }
       } catch (error) {
         console.error('Error fetching service:', error)
@@ -353,16 +349,13 @@ const ServiceDetailsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header with Back Button */}
       <div className="absolute top-0 left-0 right-0 z-10">
         <Header showBack />
       </div>
 
-      {/* Image Gallery */}
       <div className="relative">
         <ImageGallery images={imageUrls} title={service.title} />
         
-        {/* Action Buttons - Overlay on gallery */}
         <div className="absolute top-16 right-4 z-10 flex space-x-2">
           <button
             onClick={handleToggleFavorite}
@@ -376,9 +369,7 @@ const ServiceDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-6 space-y-6">
-        {/* Header Info */}
         <div>
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 mr-4">
@@ -415,20 +406,17 @@ const ServiceDetailsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Short Description for Chef Services */}
         {service.isChefService && service.shortDescription && (
           <div className="bg-primary-50 rounded-lg p-4 border border-primary-200">
             <p className="text-gray-700 font-medium">{service.shortDescription}</p>
           </div>
         )}
 
-        {/* Description */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
           <p className="text-gray-600 leading-relaxed">{service.description}</p>
         </div>
 
-        {/* Chef Service Details */}
         {service.isChefService && (
           <>
             <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -590,7 +578,6 @@ const ServiceDetailsPage: React.FC = () => {
           </>
         )}
 
-        {/* Amenities (for non-chef services) */}
         {!service.isChefService && service.amenities && service.amenities.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-3">Amenities</h2>
@@ -607,10 +594,9 @@ const ServiceDetailsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Location */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Location</h2>
-          <div className="h-64 rounded-2xl overflow-hidden">
+          <div className="h-64 rounded-2xl overflow-hidden relative z-0">
             <Map
               latitude={service.latitude}
               longitude={service.longitude}
@@ -625,7 +611,6 @@ const ServiceDetailsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Reviews */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Reviews</h2>
@@ -670,7 +655,6 @@ const ServiceDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Booking Footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
@@ -687,14 +671,11 @@ const ServiceDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Add bottom padding to account for fixed footer */}
       <div className="h-20"></div>
 
-      {/* Booking Modal for Chef Services */}
       {showBookingModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-end z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-end z-[9999]">
           <div className="bg-white w-full rounded-t-3xl max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
             <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">Chef Service Booking</h2>
               <button
@@ -705,9 +686,7 @@ const ServiceDetailsPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Modal Content */}
             <div className="p-6 space-y-6 pb-24">
-              {/* Date and Time Selection */}
               <Card className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <Calendar className="w-5 h-5 mr-2" />
@@ -764,7 +743,6 @@ const ServiceDetailsPage: React.FC = () => {
                 </div>
               </Card>
 
-              {/* Booking Summary */}
               <Card className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
                 
@@ -816,7 +794,6 @@ const ServiceDetailsPage: React.FC = () => {
                 </div>
               </Card>
 
-              {/* Payment Method Selection */}
               <Card className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
                 
@@ -836,7 +813,6 @@ const ServiceDetailsPage: React.FC = () => {
                 </button>
               </Card>
 
-              {/* Info Card */}
               <Card className="p-6 bg-blue-50 border-blue-200">
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -851,7 +827,6 @@ const ServiceDetailsPage: React.FC = () => {
                 </div>
               </Card>
 
-              {/* Payment Button */}
               <Button
                 onClick={handlePayment}
                 isLoading={isProcessing}
