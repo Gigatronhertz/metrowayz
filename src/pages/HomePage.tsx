@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Calendar, MapPin } from 'lucide-react'
 import { categories, banners } from '../data/mockData'
@@ -32,6 +32,7 @@ interface Service {
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
   const { isAuthenticated, logout } = useAuth()
+  const moreForYouRef = useRef<HTMLDivElement>(null)
   const [selectedCategory, setSelectedCategory] = useState('accommodation')
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
   const [services, setServices] = useState<Service[]>([])
@@ -286,7 +287,12 @@ const HomePage: React.FC = () => {
                 key={category.id}
                 category={category}
                 isSelected={selectedCategory === category.id}
-                onClick={() => setSelectedCategory(category.id)}
+                onClick={() => {
+                  setSelectedCategory(category.id)
+                  setTimeout(() => {
+                    moreForYouRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }, 100)
+                }}
               />
             ))}
           </div>
@@ -483,7 +489,7 @@ const HomePage: React.FC = () => {
         )}
 
         {/* More for You */}
-        <section>
+        <section ref={moreForYouRef}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">More for you</h2>
             <button
