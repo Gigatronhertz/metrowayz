@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     googleId: {
         type: String,
-        sparse: true
+        sparse: true,
+        unique: true
     },
     name: {
         type: String,
