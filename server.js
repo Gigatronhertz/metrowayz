@@ -31,8 +31,20 @@ db.on('error', (err) => {
     console.log(err);
 });
 
-db.once('open', () => {
+db.once('open', async () => {
     console.log("Database Connection Established Successfully");
+    
+    try {
+        const indexExists = await User.collection.getIndexes();
+        if (indexExists['googleId_1']) {
+            await User.collection.dropIndex('googleId_1');
+            console.log("Dropped old googleId index");
+        }
+        await User.collection.createIndex({ googleId: 1 }, { sparse: true, unique: true });
+        console.log("Created new googleId index with sparse and unique constraints");
+    } catch (err) {
+        console.error("Index migration error:", err.message);
+    }
 });
 
 const app = express();
