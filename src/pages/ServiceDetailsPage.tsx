@@ -298,6 +298,17 @@ const ServiceDetailsPage: React.FC = () => {
       return
     }
 
+    // Validate date selection for private chef services
+    if (!serviceDate) {
+      alert('Please select a service date before proceeding with payment.')
+      return
+    }
+
+    if (!serviceTime) {
+      alert('Please select a service time before proceeding with payment.')
+      return
+    }
+
     setIsProcessing(true)
 
     initializePayment({
