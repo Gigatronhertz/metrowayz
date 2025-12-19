@@ -268,12 +268,12 @@ const HomePage: React.FC = () => {
 
         <div className="container-max relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 mb-6 lg:mb-8 tracking-tight">
+            <h1 className="text-4xl lg:text-5xl font-display font-semibold text-gray-900 mb-4 lg:mb-6 tracking-tight">
               Premium Lifestyle
-              <span className="block text-primary-500 mt-2">Services</span>
+              <span className="block text-primary-500 mt-1">Services</span>
             </h1>
 
-            <p className="text-lg lg:text-xl text-gray-600 mb-12 lg:mb-16 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base lg:text-lg text-gray-600 mb-10 lg:mb-12 max-w-2xl mx-auto leading-relaxed">
               Book private chefs, luxury accommodations, entertainment, and professional services with ease
             </p>
 
@@ -286,24 +286,24 @@ const HomePage: React.FC = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto">
+            <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+                <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
                   500+
                 </div>
-                <div className="text-sm lg:text-base text-gray-600">Premium Services</div>
+                <div className="text-xs lg:text-sm text-gray-600">Premium Services</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+                <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
                   50K+
                 </div>
-                <div className="text-sm lg:text-base text-gray-600">Happy Customers</div>
+                <div className="text-xs lg:text-sm text-gray-600">Happy Customers</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+                <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
                   4.9★
                 </div>
-                <div className="text-sm lg:text-base text-gray-600">Average Rating</div>
+                <div className="text-xs lg:text-sm text-gray-600">Average Rating</div>
               </div>
             </div>
           </div>
@@ -313,11 +313,11 @@ const HomePage: React.FC = () => {
       <div className="bg-white py-20 lg:py-28">
         {/* Categories */}
         <section className="container-max">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-3">
               Browse by Category
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm lg:text-base text-gray-600 max-w-2xl mx-auto">
               Curated services to match your lifestyle needs
             </p>
           </div>
@@ -341,11 +341,11 @@ const HomePage: React.FC = () => {
 
         {/* Promotional Carousel */}
         <section className="container-max mt-20 lg:mt-28">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
               Special Offers & Events
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-sm lg:text-base text-gray-600">
               Don't miss out on our exclusive deals
             </p>
           </div>
@@ -364,11 +364,11 @@ const HomePage: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40" />
-                <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12 text-white">
+                <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-10 text-white">
                   <div className="max-w-2xl">
-                    <h3 className="text-3xl lg:text-5xl font-bold mb-3 lg:mb-4">{banner.title}</h3>
-                    <p className="text-lg lg:text-xl mb-6 lg:mb-8 opacity-95">{banner.subtitle}</p>
-                    <button className="px-8 py-3.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors">
+                    <h3 className="text-2xl lg:text-4xl font-display font-semibold mb-2 lg:mb-3">{banner.title}</h3>
+                    <p className="text-base lg:text-lg mb-4 lg:mb-6 opacity-95">{banner.subtitle}</p>
+                    <button className="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-lg transition-colors">
                       Explore Now
                     </button>
                   </div>
@@ -397,11 +397,11 @@ const HomePage: React.FC = () => {
       <div className="bg-gray-50 py-20 lg:py-28">
         {/* Explore Nearby */}
         <section className="container-max">
-          <div className="text-center mb-12 lg:mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+          <div className="text-center mb-10 lg:mb-12">
+            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
               Popular Near You
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm lg:text-base text-gray-600 max-w-2xl mx-auto">
               Highly-rated services available in your area
             </p>
           </div>
@@ -425,17 +425,17 @@ const HomePage: React.FC = () => {
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                    <h3 className="font-bold text-base lg:text-lg truncate mb-2">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <h3 className="font-semibold text-sm lg:text-base truncate mb-1.5">
                       {service.title}
                     </h3>
-                    <p className="text-sm opacity-90 truncate mb-3 flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4" />
+                    <p className="text-xs opacity-90 truncate mb-2 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
                       {service.location}
                     </p>
-                    <div className="text-xl font-bold">
+                    <div className="text-base lg:text-lg font-bold">
                       ₦{service.price.toLocaleString()}
-                      <span className="text-sm font-normal opacity-90"> {getPriceUnitDisplay(service)}</span>
+                      <span className="text-xs font-normal opacity-90"> {getPriceUnitDisplay(service)}</span>
                     </div>
                   </div>
                 </div>
@@ -449,11 +449,11 @@ const HomePage: React.FC = () => {
       <div className="bg-white py-20 lg:py-28">
         {/* Featured Services */}
         <section className="container-max">
-          <div className="text-center mb-12 lg:mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+          <div className="text-center mb-10 lg:mb-12">
+            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
               Featured Services
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm lg:text-base text-gray-600 max-w-2xl mx-auto">
               Premium selections handpicked for quality and excellence
             </p>
           </div>
@@ -559,12 +559,12 @@ const HomePage: React.FC = () => {
       <div className="bg-gray-50 py-20 lg:py-28">
         {/* More for You */}
         <section ref={moreForYouRef} className="container-max">
-          <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center justify-between mb-10">
             <div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
+              <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900">
                 More for you
               </h2>
-              <p className="text-gray-600 mt-2">Personalized recommendations</p>
+              <p className="text-sm text-gray-600 mt-1">Personalized recommendations</p>
             </div>
             <button
               onClick={() => navigate('/search')}
@@ -599,17 +599,17 @@ const HomePage: React.FC = () => {
                         className="w-full h-40 lg:h-44 object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
-                    <div className="p-4 lg:p-5">
-                      <h3 className="font-bold text-sm lg:text-base text-gray-900 truncate mb-2">
+                    <div className="p-3.5 lg:p-4">
+                      <h3 className="font-semibold text-xs lg:text-sm text-gray-900 truncate mb-1.5">
                         {service.title}
                       </h3>
-                      <p className="text-xs text-gray-500 truncate mb-3 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                      <p className="text-[10px] text-gray-500 truncate mb-2.5 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-gray-400" />
                         {service.location}
                       </p>
-                      <div className="text-lg lg:text-xl font-bold text-gray-900">
+                      <div className="text-base lg:text-lg font-bold text-gray-900">
                         ₦{service.price.toLocaleString()}
-                        <span className="text-xs font-normal text-gray-500"> {getPriceUnitDisplay(service)}</span>
+                        <span className="text-[10px] font-normal text-gray-500"> {getPriceUnitDisplay(service)}</span>
                       </div>
                     </div>
                   </div>
