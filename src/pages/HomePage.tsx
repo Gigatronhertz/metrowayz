@@ -134,27 +134,23 @@ const HomePage: React.FC = () => {
   const featuredServices = filteredServices.slice(0, 2)
 
   return (
-    <div className="min-h-screen bg-luxury-cream pb-20 lg:pb-0 relative">
+    <div className="min-h-screen bg-white pb-20 lg:pb-0 relative">
       {/* Mobile & Desktop Header */}
-      <header className={`relative bg-white/90 backdrop-blur-2xl border-b border-white/50 transition-all duration-500 z-50 ${
-        scrollPastServices ? 'sticky top-0 shadow-luxury-hover' : 'relative shadow-luxury'
+      <header className={`bg-white border-b border-gray-100 transition-all duration-300 z-50 ${
+        scrollPastServices ? 'sticky top-0 shadow-sm' : 'relative'
       }`}>
-        {/* Premium gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-50/30 via-white/50 to-secondary-50/30 pointer-events-none" />
-
-        <div className="container-max py-4 lg:py-6 relative z-10">
+        <div className="container-max py-5 lg:py-6">
           <div className="flex items-center justify-between">
-            {/* Logo - Icon only on mobile */}
+            {/* Logo */}
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/home')}>
-              <div className="relative p-2 lg:p-2.5 rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500 group-hover:from-primary-600 group-hover:to-secondary-600 transition-all duration-500 shadow-lg group-hover:shadow-xl transform group-hover:scale-105">
-                <img src="/logo.svg" alt="MetroWayz" className="w-7 h-7 lg:w-9 lg:h-9 brightness-0 invert" />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl" />
+              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-primary-500 flex items-center justify-center group-hover:bg-primary-600 transition-colors">
+                <img src="/logo.svg" alt="MetroWayz" className="w-6 h-6 lg:w-7 lg:h-7 brightness-0 invert" />
               </div>
               <div className="hidden lg:block">
-                <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-dark-900 to-dark-700 bg-clip-text text-transparent tracking-tight">
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                   MetroWayz
                 </h1>
-                <p className="text-xs bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent font-semibold">
+                <p className="text-xs text-gray-600 font-medium">
                   Premium Lifestyle Services
                 </p>
               </div>
@@ -206,35 +202,32 @@ const HomePage: React.FC = () => {
             <nav className="hidden lg:flex items-center gap-8">
               <button
                 onClick={() => navigate('/search')}
-                className="text-sm font-semibold text-dark-700 hover:text-primary-600 transition-all duration-300 relative group py-2"
+                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors"
               >
                 Services
-                <span className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 group-hover:w-full transition-all duration-500 rounded-full shadow-glow"></span>
               </button>
               <button
                 onClick={() => {
                   console.log('Desktop Vendor button clicked')
                   navigate('/vendor')
                 }}
-                className="text-sm font-semibold text-dark-700 hover:text-primary-600 transition-all duration-300 relative group py-2"
+                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors"
               >
                 Become a Vendor
-                <span className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 group-hover:w-full transition-all duration-500 rounded-full shadow-glow"></span>
               </button>
-              <button className="text-sm font-semibold text-dark-700 hover:text-primary-600 transition-all duration-300 relative group py-2">
+              <button className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
                 Help
-                <span className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 group-hover:w-full transition-all duration-500 rounded-full shadow-glow"></span>
               </button>
             </nav>
 
-            {/* Desktop Right Actions - Notification only on desktop */}
+            {/* Desktop Right Actions */}
             <div className="hidden lg:flex items-center gap-4">
               <button
                 onClick={() => {/* Navigate to notifications */}}
-                className="relative p-3 bg-white/50 hover:bg-gradient-to-br hover:from-primary-50 hover:to-secondary-50 rounded-2xl transition-all duration-500 group shadow-md hover:shadow-lg transform hover:scale-105"
+                className="relative p-2.5 hover:bg-gray-50 rounded-lg transition-colors"
               >
-                <Bell className="w-5 h-5 text-dark-600 group-hover:text-primary-600 transition-colors" />
-                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full ring-2 ring-white animate-pulse"></span>
+                <Bell className="w-5 h-5 text-gray-700" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full"></span>
               </button>
               {isAuthenticated ? (
                 <button
@@ -242,7 +235,7 @@ const HomePage: React.FC = () => {
                     console.log('Desktop Logout clicked')
                     logout()
                   }}
-                  className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg transition-colors"
                 >
                   Logout
                 </button>
@@ -252,7 +245,7 @@ const HomePage: React.FC = () => {
                     console.log('Desktop Login button clicked')
                     navigate('/')
                   }}
-                  className="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-sm font-semibold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-lg transition-colors"
                 >
                   Sign In
                 </button>
@@ -263,114 +256,105 @@ const HomePage: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-50 via-white to-secondary-50 py-16 lg:py-28 overflow-hidden">
-        {/* Animated gradient orbs */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary-400/20 to-secondary-400/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-secondary-400/20 to-accent-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      <section className="relative bg-gray-50 py-20 lg:py-32 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
+            alt="Luxury background"
+            className="w-full h-full object-cover opacity-10"
+          />
+        </div>
 
         <div className="container-max relative z-10">
-          <div className="max-w-5xl mx-auto text-center mb-12">
-            {/* Premium badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-white/80 backdrop-blur-md rounded-full shadow-luxury border border-primary-100/50 animate-fade-in">
-              <span className="w-2 h-2 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full animate-pulse" />
-              <span className="text-sm font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                Premium Lifestyle Services
-              </span>
-            </div>
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 mb-6 lg:mb-8 tracking-tight">
+              Premium Lifestyle
+              <span className="block text-primary-500 mt-2">Services</span>
+            </h1>
 
-            <h2 className="text-5xl lg:text-7xl font-display font-bold mb-6 lg:mb-8 animate-slide-up">
-              <span className="bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 bg-clip-text text-transparent">
-                Discover Premium
-              </span>
-              <span className="block mt-2 bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-600 bg-clip-text text-transparent">
-                Lifestyle Services
-              </span>
-            </h2>
-
-            <p className="text-lg lg:text-2xl text-dark-600 mb-10 lg:mb-14 max-w-3xl mx-auto leading-relaxed font-light animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <p className="text-lg lg:text-xl text-gray-600 mb-12 lg:mb-16 max-w-2xl mx-auto leading-relaxed">
               Book private chefs, luxury accommodations, entertainment, and professional services with ease
             </p>
 
             {/* Hero Search */}
-            <div className="max-w-3xl mx-auto animate-scale-in" style={{ animationDelay: '0.4s' }}>
+            <div className="max-w-2xl mx-auto mb-16">
               <SearchBar
                 placeholder="Search for services, chefs, venues, or locations..."
                 onFilterClick={() => navigate('/search')}
               />
             </div>
-          </div>
 
-          {/* Stats or trust indicators */}
-          <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto mt-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-            <div className="text-center p-6 bg-white/60 backdrop-blur-md rounded-2xl border border-white/40 shadow-luxury hover:shadow-luxury-hover transition-all duration-300 hover:-translate-y-1">
-              <div className="text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
-                500+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto">
+              <div className="text-center">
+                <div className="text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+                  500+
+                </div>
+                <div className="text-sm lg:text-base text-gray-600">Premium Services</div>
               </div>
-              <div className="text-sm lg:text-base text-dark-600 font-medium">Premium Services</div>
-            </div>
-            <div className="text-center p-6 bg-white/60 backdrop-blur-md rounded-2xl border border-white/40 shadow-luxury hover:shadow-luxury-hover transition-all duration-300 hover:-translate-y-1">
-              <div className="text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
-                50K+
+              <div className="text-center">
+                <div className="text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+                  50K+
+                </div>
+                <div className="text-sm lg:text-base text-gray-600">Happy Customers</div>
               </div>
-              <div className="text-sm lg:text-base text-dark-600 font-medium">Happy Customers</div>
-            </div>
-            <div className="text-center p-6 bg-white/60 backdrop-blur-md rounded-2xl border border-white/40 shadow-luxury hover:shadow-luxury-hover transition-all duration-300 hover:-translate-y-1">
-              <div className="text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
-                4.9★
+              <div className="text-center">
+                <div className="text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+                  4.9★
+                </div>
+                <div className="text-sm lg:text-base text-gray-600">Average Rating</div>
               </div>
-              <div className="text-sm lg:text-base text-dark-600 font-medium">Average Rating</div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="container-max space-y-20 lg:space-y-32 py-16 lg:py-24">
+      <div className="bg-white py-20 lg:py-28">
         {/* Categories */}
-        <section className="relative">
-          {/* Background gradient orb */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-primary-100/40 via-secondary-100/40 to-accent-100/40 rounded-full blur-3xl opacity-50 pointer-events-none" />
+        <section className="container-max">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Browse by Category
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Curated services to match your lifestyle needs
+            </p>
+          </div>
 
-          <div className="relative z-10">
-            <div className="text-center mb-12 lg:mb-16">
-              <div className="inline-block mb-4">
-                <span className="text-sm font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent uppercase tracking-wider">
-                  Explore Categories
-                </span>
-              </div>
-              <h2 className="text-4xl lg:text-6xl font-display font-bold mb-4 lg:mb-6">
-                <span className="bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 bg-clip-text text-transparent">
-                  Browse by Category
-                </span>
-              </h2>
-              <p className="text-base lg:text-xl text-dark-600 max-w-2xl mx-auto leading-relaxed">
-                Curated services to match your lifestyle needs
-              </p>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {categories.map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  isSelected={selectedCategory === category.id}
-                  onClick={() => {
-                    setSelectedCategory(category.id)
-                    setTimeout(() => {
-                      moreForYouRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    }, 100)
-                  }}
-                />
-              ))}
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            {categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                isSelected={selectedCategory === category.id}
+                onClick={() => {
+                  setSelectedCategory(category.id)
+                  setTimeout(() => {
+                    moreForYouRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }, 100)
+                }}
+              />
+            ))}
           </div>
         </section>
 
-        {/* Promo Banners */}
-        <section>
-          <div className="relative h-100 lg:h-[500px] rounded-3xl overflow-hidden shadow-luxury-hover border border-white/20">
+        {/* Promotional Carousel */}
+        <section className="container-max mt-20 lg:mt-28">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+              Special Offers & Events
+            </h2>
+            <p className="text-lg text-gray-600">
+              Don't miss out on our exclusive deals
+            </p>
+          </div>
+
+          <div className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden">
             {banners.map((banner, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 transition-opacity duration-500 ${
+                className={`absolute inset-0 transition-opacity duration-700 ${
                   index === currentBannerIndex ? 'opacity-100' : 'opacity-0'
                 }`}
               >
@@ -379,53 +363,47 @@ const HomePage: React.FC = () => {
                   alt={banner.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
-                <div className="absolute bottom-8 left-8 lg:left-12 text-white max-w-xl">
-                  <h3 className="text-2xl lg:text-4xl font-display font-bold mb-2">{banner.title}</h3>
-                  <p className="text-base lg:text-lg opacity-90 mb-6">{banner.subtitle}</p>
-                  <button className="px-6 py-3 bg-white text-gray-900 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
-                    Explore Now
-                  </button>
+                <div className="absolute inset-0 bg-black/40" />
+                <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12 text-white">
+                  <div className="max-w-2xl">
+                    <h3 className="text-3xl lg:text-5xl font-bold mb-3 lg:mb-4">{banner.title}</h3>
+                    <p className="text-lg lg:text-xl mb-6 lg:mb-8 opacity-95">{banner.subtitle}</p>
+                    <button className="px-8 py-3.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors">
+                      Explore Now
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
 
-            {/* Dots indicator */}
-            <div className="absolute bottom-8 right-8 lg:right-12 flex space-x-2">
+            {/* Navigation Dots */}
+            <div className="absolute bottom-8 right-8 flex gap-2">
               {banners.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentBannerIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentBannerIndex ? 'bg-white w-8' : 'bg-white/50'
+                  className={`h-2 rounded-full transition-all ${
+                    index === currentBannerIndex
+                      ? 'bg-white w-8'
+                      : 'bg-white/50 w-2 hover:bg-white/75'
                   }`}
                 />
               ))}
             </div>
           </div>
         </section>
+      </div>
 
+      <div className="bg-gray-50 py-20 lg:py-28">
         {/* Explore Nearby */}
-        <section className="relative">
-          {/* Background gradient */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-secondary-100/30 to-accent-100/30 rounded-full blur-3xl opacity-60 pointer-events-none" />
-
-          <div className="relative z-10">
-            <div className="text-center mb-12 lg:mb-16">
-              <div className="inline-block mb-4">
-                <span className="text-sm font-bold bg-gradient-to-r from-secondary-600 to-accent-600 bg-clip-text text-transparent uppercase tracking-wider">
-                  Discover Nearby
-                </span>
-              </div>
-              <h2 className="text-4xl lg:text-6xl font-display font-bold mb-4 lg:mb-6">
-                <span className="bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 bg-clip-text text-transparent">
-                  Popular Near You
-                </span>
-              </h2>
-              <p className="text-base lg:text-xl text-dark-600 max-w-2xl mx-auto leading-relaxed">
-                Highly-rated services available in your area
-              </p>
-            </div>
+        <section className="container-max">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+              Popular Near You
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Highly-rated services available in your area
+            </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
             {nearbyServices.map((service) => {
@@ -439,26 +417,25 @@ const HomePage: React.FC = () => {
                 <div
                   key={service._id}
                   onClick={() => navigate(`/service/${service._id}`)}
-                  className="group relative h-48 lg:h-56 rounded-2xl overflow-hidden shadow-luxury cursor-pointer hover:shadow-luxury-hover transition-all duration-500 transform hover:-translate-y-2 border border-white/20"
+                  className="group relative h-64 lg:h-72 rounded-xl overflow-hidden shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 border border-gray-100"
                 >
                   <img
                     src={imageUrl}
                     alt={service.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-transparent to-secondary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <h3 className="font-display font-bold text-sm lg:text-base truncate mb-1.5 drop-shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                    <h3 className="font-bold text-base lg:text-lg truncate mb-2">
                       {service.title}
                     </h3>
-                    <p className="text-xs opacity-90 truncate mb-3 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
+                    <p className="text-sm opacity-90 truncate mb-3 flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4" />
                       {service.location}
                     </p>
-                    <div className="text-base lg:text-lg font-display font-bold drop-shadow-lg">
+                    <div className="text-xl font-bold">
                       ₦{service.price.toLocaleString()}
-                      <span className="text-xs font-normal opacity-90"> {getPriceUnitDisplay(service)}</span>
+                      <span className="text-sm font-normal opacity-90"> {getPriceUnitDisplay(service)}</span>
                     </div>
                   </div>
                 </div>
@@ -467,27 +444,18 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Featured Services */}
-        <section className="relative">
-          {/* Background gradient */}
-          <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-primary-100/40 via-accent-100/40 to-secondary-100/40 rounded-full blur-3xl opacity-50 pointer-events-none" />
+      </div>
 
-          <div className="relative z-10">
-            <div className="text-center mb-12 lg:mb-16">
-              <div className="inline-block mb-4">
-                <span className="text-sm font-bold bg-gradient-to-r from-accent-600 to-primary-600 bg-clip-text text-transparent uppercase tracking-wider">
-                  Handpicked Selection
-                </span>
-              </div>
-              <h2 className="text-4xl lg:text-6xl font-display font-bold mb-4 lg:mb-6">
-                <span className="bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 bg-clip-text text-transparent">
-                  Featured Services
-                </span>
-              </h2>
-              <p className="text-base lg:text-xl text-dark-600 max-w-2xl mx-auto leading-relaxed">
-                Premium selections handpicked for quality and excellence
-              </p>
-            </div>
+      <div className="bg-white py-20 lg:py-28">
+        {/* Featured Services */}
+        <section className="container-max">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+              Featured Services
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Premium selections handpicked for quality and excellence
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
             {featuredServices.map((service) => (
@@ -586,28 +554,24 @@ const HomePage: React.FC = () => {
           </section>
         )}
 
-        {/* More for You */}
-        <section ref={moreForYouRef} className="relative">
-          {/* Background gradient */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary-100/30 to-secondary-100/30 rounded-full blur-3xl opacity-50 pointer-events-none" />
+      </div>
 
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-8 lg:mb-10">
-              <div>
-                <span className="text-sm font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent uppercase tracking-wider mb-2 block">
-                  Personalized
-                </span>
-                <h2 className="text-3xl lg:text-4xl font-display font-bold bg-gradient-to-br from-dark-900 via-dark-800 to-dark-700 bg-clip-text text-transparent">
-                  More for you
-                </h2>
-              </div>
-              <button
-                onClick={() => navigate('/search')}
-                className="px-6 py-3 bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-600 hover:to-secondary-700 text-white font-bold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              >
-                See all
-              </button>
+      <div className="bg-gray-50 py-20 lg:py-28">
+        {/* More for You */}
+        <section ref={moreForYouRef} className="container-max">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
+                More for you
+              </h2>
+              <p className="text-gray-600 mt-2">Personalized recommendations</p>
             </div>
+            <button
+              onClick={() => navigate('/search')}
+              className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors"
+            >
+              See all
+            </button>
           </div>
           {loading ? (
             <div className="text-center py-8">
@@ -626,25 +590,24 @@ const HomePage: React.FC = () => {
                   <div
                     key={service._id}
                     onClick={() => navigate(`/service/${service._id}`)}
-                    className="group bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-luxury cursor-pointer hover:shadow-luxury-hover transition-all duration-500 transform hover:-translate-y-2 border border-white/40"
+                    className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 border border-gray-100"
                   >
                     <div className="relative overflow-hidden">
                       <img
                         src={imageUrl}
                         alt={service.title}
-                        className="w-full h-36 lg:h-40 object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-40 lg:h-44 object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     </div>
-                    <div className="p-3 lg:p-4">
-                      <h3 className="font-display font-bold text-sm lg:text-base text-gray-900 truncate mb-1.5 group-hover:text-primary-600 transition-colors">
+                    <div className="p-4 lg:p-5">
+                      <h3 className="font-bold text-sm lg:text-base text-gray-900 truncate mb-2">
                         {service.title}
                       </h3>
-                      <p className="text-xs text-gray-500 truncate mb-2.5 flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-primary-400" />
+                      <p className="text-xs text-gray-500 truncate mb-3 flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-gray-400" />
                         {service.location}
                       </p>
-                      <div className="text-base lg:text-lg font-display font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                      <div className="text-lg lg:text-xl font-bold text-gray-900">
                         ₦{service.price.toLocaleString()}
                         <span className="text-xs font-normal text-gray-500"> {getPriceUnitDisplay(service)}</span>
                       </div>
