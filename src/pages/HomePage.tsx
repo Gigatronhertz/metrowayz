@@ -281,7 +281,7 @@ const HomePage: React.FC = () => {
               Curated services to match your lifestyle needs
             </p>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 lg:gap-14">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-14">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}
