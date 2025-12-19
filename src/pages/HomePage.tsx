@@ -300,7 +300,7 @@ const HomePage: React.FC = () => {
 
         {/* Promo Banners */}
         <section>
-          <div className="relative h-80 lg:h-[500px] rounded-2xl overflow-hidden shadow-lg">
+          <div className="relative h-100 lg:h-[500px] rounded-2xl overflow-hidden shadow-lg">
             {banners.map((banner, index) => (
               <div
                 key={index}
