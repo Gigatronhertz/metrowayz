@@ -34,7 +34,6 @@ const HomePage: React.FC = () => {
   const { isAuthenticated, logout } = useAuth()
   const moreForYouRef = useRef<HTMLDivElement>(null)
   const [selectedCategory, setSelectedCategory] = useState('accommodation')
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
   const [services, setServices] = useState<Service[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,13 +43,6 @@ const HomePage: React.FC = () => {
     return service.isChefService ? 'per service' : formatPriceUnit(service.priceUnit, 'short');
   };
 
-  // Auto-scroll banners
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBannerIndex((prev) => (prev + 1) % banners.length)
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [])
 
   // Scroll detection
   useEffect(() => {
@@ -353,56 +345,131 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Promotional Carousel */}
-        <section className="container-max mt-16 lg:mt-20">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
-              Special Offers & Events
-            </h2>
-            <p className="text-sm text-gray-600">
-              Don't miss out on our exclusive deals
-            </p>
+        {/* Service Showcase - Auto Scrolling */}
+        <section className="mt-16 lg:mt-20 overflow-hidden">
+          <div className="container-max mb-8">
+            <div className="text-center">
+              <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
+                Explore Our Services
+              </h2>
+              <p className="text-sm text-gray-600">
+                Premium lifestyle services at your fingertips
+              </p>
+            </div>
           </div>
 
-          <div className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden">
-            {banners.map((banner, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-700 ${
-                  index === currentBannerIndex ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                <img
-                  src={banner.image}
-                  alt={banner.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-10 text-white">
-                  <div className="max-w-2xl">
-                    <h3 className="text-2xl lg:text-4xl font-display font-semibold mb-2 lg:mb-3">{banner.title}</h3>
-                    <p className="text-base lg:text-lg mb-4 lg:mb-6 opacity-95">{banner.subtitle}</p>
-                    <button className="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-lg transition-colors">
-                      Explore Now
-                    </button>
+          {/* Auto-scrolling row */}
+          <div className="relative">
+            <div className="flex gap-4 animate-scroll">
+              {/* First set */}
+              <div className="flex gap-4 flex-shrink-0">
+                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
+                  <img
+                    src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
+                    alt="Luxury Apartments"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-semibold mb-1">Luxury Apartments</h3>
+                    <p className="text-sm opacity-90">Premium accommodations</p>
+                  </div>
+                </div>
+
+                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
+                  <img
+                    src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80"
+                    alt="Private Chefs"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-semibold mb-1">Private Chefs</h3>
+                    <p className="text-sm opacity-90">Culinary excellence at home</p>
+                  </div>
+                </div>
+
+                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
+                  <img
+                    src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
+                    alt="Events & Entertainment"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-semibold mb-1">Events & Entertainment</h3>
+                    <p className="text-sm opacity-90">Memorable experiences</p>
+                  </div>
+                </div>
+
+                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
+                  <img
+                    src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80"
+                    alt="Professional Services"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-semibold mb-1">Professional Services</h3>
+                    <p className="text-sm opacity-90">Expert assistance</p>
                   </div>
                 </div>
               </div>
-            ))}
 
-            {/* Navigation Dots */}
-            <div className="absolute bottom-8 right-8 flex gap-2">
-              {banners.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentBannerIndex(index)}
-                  className={`h-2 rounded-full transition-all ${
-                    index === currentBannerIndex
-                      ? 'bg-white w-8'
-                      : 'bg-white/50 w-2 hover:bg-white/75'
-                  }`}
-                />
-              ))}
+              {/* Duplicate set for seamless loop */}
+              <div className="flex gap-4 flex-shrink-0">
+                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
+                  <img
+                    src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
+                    alt="Luxury Apartments"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-semibold mb-1">Luxury Apartments</h3>
+                    <p className="text-sm opacity-90">Premium accommodations</p>
+                  </div>
+                </div>
+
+                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
+                  <img
+                    src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80"
+                    alt="Private Chefs"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-semibold mb-1">Private Chefs</h3>
+                    <p className="text-sm opacity-90">Culinary excellence at home</p>
+                  </div>
+                </div>
+
+                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
+                  <img
+                    src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
+                    alt="Events & Entertainment"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-semibold mb-1">Events & Entertainment</h3>
+                    <p className="text-sm opacity-90">Memorable experiences</p>
+                  </div>
+                </div>
+
+                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
+                  <img
+                    src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80"
+                    alt="Professional Services"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-semibold mb-1">Professional Services</h3>
+                    <p className="text-sm opacity-90">Expert assistance</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>

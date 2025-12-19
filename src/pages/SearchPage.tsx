@@ -36,6 +36,16 @@ const SearchPage: React.FC = () => {
   const [filters, setFilters] = useState<SearchFilters>({})
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  // Scroll detection for sticky search
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Fetch services from API
   useEffect(() => {
@@ -81,77 +91,89 @@ const SearchPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 relative">
-      <Header 
-        title="Search Services" 
-        showBack 
-        showNotifications 
+      <Header
+        title="Search Services"
+        showBack
+        showNotifications
       />
 
-      <div className="container-padding py-4 space-y-4">
-        {/* Search Bar */}
-        <SearchBar
-          placeholder="Search services..."
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onFilterClick={() => setShowFilters(true)}
-        />
+      {/* Sticky Search & Categories */}
+      <div className={`bg-white transition-all duration-500 z-40 ${
+        isScrolled ? 'sticky top-16 shadow-md' : 'relative'
+      }`}>
+        <div className={`container-padding transition-all duration-500 ${
+          isScrolled ? 'py-3' : 'py-4'
+        }`}>
+          {/* Search Bar */}
+          <div className="mb-3">
+            <SearchBar
+              placeholder="Search services..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onFilterClick={() => setShowFilters(true)}
+            />
+          </div>
 
-        {/* Categories */}
-        <div className="flex space-x-3 overflow-x-auto pb-2">
-          <button
-            onClick={() => handleCategoryChange('all')}
-            className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors ${
-              selectedCategory === 'all'
-                ? 'bg-primary-500 text-white'
-                : 'bg-white text-gray-700 border border-gray-200'
-            }`}
-          >
-            All
-          </button>
-          {categories.map((category) => (
+          {/* Categories */}
+          <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
             <button
-              key={category.id}
-              onClick={() => handleCategoryChange(category.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors ${
-                selectedCategory === category.id
+              onClick={() => handleCategoryChange('all')}
+              className={`px-3 py-1.5 rounded-full whitespace-nowrap text-xs font-semibold transition-all ${
+                selectedCategory === 'all'
                   ? 'bg-primary-500 text-white'
-                  : 'bg-white text-gray-700 border border-gray-200'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:border-primary-500'
               }`}
             >
-              {category.name.replace('\n', ' ')}
+              All
             </button>
-          ))}
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryChange(category.id)}
+                className={`px-3 py-1.5 rounded-full whitespace-nowrap text-xs font-semibold transition-all ${
+                  selectedCategory === category.id
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-primary-500'
+                }`}
+              >
+                {category.name.replace('\n', ' ')}
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
+
+      <div className="container-padding py-4 space-y-4">
 
         {/* Results Header */}
         <div className="flex items-center justify-between">
-          <p className="text-gray-600">
+          <p className="text-sm text-gray-600 font-medium">
             {filteredServices.length} services found
           </p>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg ${
-                viewMode === 'list' ? 'bg-primary-500 text-white' : 'bg-white text-gray-600'
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'list' ? 'bg-primary-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <List className="w-5 h-5" />
+              <List className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg ${
-                viewMode === 'grid' ? 'bg-primary-500 text-white' : 'bg-white text-gray-600'
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'grid' ? 'bg-primary-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <Grid className="w-5 h-5" />
+              <Grid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('map')}
-              className={`p-2 rounded-lg ${
-                viewMode === 'map' ? 'bg-primary-500 text-white' : 'bg-white text-gray-600'
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'map' ? 'bg-primary-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <Map className="w-5 h-5" />
+              <Map className="w-4 h-4" />
             </button>
           </div>
         </div>
