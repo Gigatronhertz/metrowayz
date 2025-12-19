@@ -34,7 +34,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       )}
     >
       <div className={cn(
-        "p-2 rounded-full transition-all duration-300",
+        "p-1 rounded-full transition-all duration-300",
         isSelected
           ? "bg-white/20"
           : "bg-primary-50"
