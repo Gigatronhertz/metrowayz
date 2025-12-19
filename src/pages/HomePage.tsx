@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Calendar, MapPin } from 'lucide-react'
-import { categories, banners } from '../data/mockData'
+import { categories } from '../data/mockData'
 import { serviceAPI, eventsAPI } from '../services/api'
 import { formatPriceUnit } from '../utils/format'
 import { useAuth } from '../hooks/useAuth'
