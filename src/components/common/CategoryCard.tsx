@@ -27,28 +27,28 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
     <button
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center justify-center gap-3 px-6 py-8 rounded-xl transition-all duration-300 w-full aspect-square border-2',
+        'flex flex-col items-center justify-center gap-2 px-3 py-3 rounded-xl transition-all duration-300 w-full aspect-square border-2',
         isSelected
           ? 'bg-primary-500 border-primary-600 text-white shadow-lg scale-105'
           : 'bg-white border-gray-200 hover:border-primary-300 text-gray-700 hover:bg-primary-50 hover:shadow-md'
       )}
     >
       <div className={cn(
-        "p-3 rounded-full transition-all duration-300",
+        "p-2 rounded-full transition-all duration-300",
         isSelected
           ? "bg-white/20"
           : "bg-primary-50"
       )}>
         <Icon
           className={cn(
-            "w-7 h-7 transition-colors",
+            "w-4 h-4 transition-colors",
             isSelected ? "text-white" : "text-primary-600"
           )}
           strokeWidth={2}
         />
       </div>
       <span className={cn(
-        "text-sm font-semibold text-center leading-tight",
+        "text-xs font-semibold text-center leading-tight",
         isSelected ? "text-white" : "text-gray-800"
       )}>
         {category.name}
