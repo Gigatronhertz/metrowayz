@@ -25,7 +25,8 @@
       "Bash(if [ -f C:UsersrichmondDesktopmetrowayz.env ])",
       "Bash(then grep -i CLOUDINARY C:UsersrichmondDesktopmetrowayz.env)",
       "Bash(else echo \".env file not found\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "WebFetch(domain:metrowayz.vercel.app)"
     ],
     "deny": [],
     "ask": []
