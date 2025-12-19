@@ -281,7 +281,7 @@ const HomePage: React.FC = () => {
               Curated services to match your lifestyle needs
             </p>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -300,7 +300,7 @@ const HomePage: React.FC = () => {
 
         {/* Promo Banners */}
         <section>
-          <div className="relative h-64 lg:h-96 rounded-2xl overflow-hidden shadow-lg">
+          <div className="relative h-80 lg:h-[500px] rounded-2xl overflow-hidden shadow-lg">
             {banners.map((banner, index) => (
               <div
                 key={index}

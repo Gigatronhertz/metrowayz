@@ -27,7 +27,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
     <button
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center justify-center gap-3 px-6 py-5 rounded-xl transition-all duration-300 min-w-[140px] border-2',
+        'flex flex-col items-center justify-center gap-3 px-6 py-8 rounded-xl transition-all duration-300 w-full aspect-square border-2',
         isSelected
           ? 'bg-primary-500 border-primary-600 text-white shadow-lg scale-105'
           : 'bg-white border-gray-200 hover:border-primary-300 text-gray-700 hover:bg-primary-50 hover:shadow-md'
