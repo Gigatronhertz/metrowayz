@@ -136,17 +136,21 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white pb-20 lg:pb-0 relative">
       {/* Mobile & Desktop Header */}
-      <header className={`bg-white border-b border-gray-100 transition-all duration-300 z-50 ${
-        scrollPastServices ? 'sticky top-0 shadow-sm' : 'relative'
+      <header className={`bg-white border-b border-gray-100 transition-all duration-500 z-50 ${
+        scrollPastServices ? 'sticky top-0 shadow-md' : 'relative'
       }`}>
-        <div className="container-max py-5 lg:py-6">
+        <div className={`container-max transition-all duration-500 ${scrollPastServices ? 'py-3' : 'py-5 lg:py-6'}`}>
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/home')}>
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-primary-500 flex items-center justify-center group-hover:bg-primary-600 transition-colors">
-                <img src="/logo.svg" alt="MetroWayz" className="w-6 h-6 lg:w-7 lg:h-7 brightness-0 invert" />
+              <div className={`rounded-xl bg-primary-500 flex items-center justify-center group-hover:bg-primary-600 transition-all duration-500 ${
+                scrollPastServices ? 'w-9 h-9' : 'w-10 h-10 lg:w-12 lg:h-12'
+              }`}>
+                <img src="/logo.svg" alt="MetroWayz" className={`brightness-0 invert transition-all duration-500 ${
+                  scrollPastServices ? 'w-5 h-5' : 'w-6 h-6 lg:w-7 lg:h-7'
+                }`} />
               </div>
-              <div className="hidden lg:block">
+              <div className={`hidden lg:block transition-all duration-500 ${scrollPastServices ? 'opacity-0 w-0' : 'opacity-100'}`}>
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                   MetroWayz
                 </h1>
@@ -155,6 +159,16 @@ const HomePage: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {/* Sticky Search Bar (Desktop Only) */}
+            {scrollPastServices && (
+              <div className="hidden lg:block flex-1 max-w-xl mx-8 animate-fade-in">
+                <SearchBar
+                  placeholder="Search services..."
+                  onFilterClick={() => navigate('/search')}
+                />
+              </div>
+            )}
 
             {/* Mobile Navigation - Shows when scrolled past services */}
             <nav className="flex lg:hidden items-center gap-3">
@@ -256,7 +270,7 @@ const HomePage: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative bg-gray-50 py-20 lg:py-32 overflow-hidden">
+      <section className="relative bg-gray-50 py-16 lg:py-24 overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img
@@ -268,17 +282,17 @@ const HomePage: React.FC = () => {
 
         <div className="container-max relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-5xl font-display font-semibold text-gray-900 mb-4 lg:mb-6 tracking-tight">
+            <h1 className="text-4xl lg:text-5xl font-display font-semibold text-gray-900 mb-4 lg:mb-5 tracking-tight">
               Premium Lifestyle
               <span className="block text-primary-500 mt-1">Services</span>
             </h1>
 
-            <p className="text-base lg:text-lg text-gray-600 mb-10 lg:mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base lg:text-lg text-gray-600 mb-8 lg:mb-10 max-w-2xl mx-auto leading-relaxed">
               Book private chefs, luxury accommodations, entertainment, and professional services with ease
             </p>
 
             {/* Hero Search */}
-            <div className="max-w-2xl mx-auto mb-16">
+            <div className="max-w-2xl mx-auto mb-12 lg:mb-14">
               <SearchBar
                 placeholder="Search for services, chefs, venues, or locations..."
                 onFilterClick={() => navigate('/search')}
@@ -310,19 +324,19 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <div className="bg-white py-20 lg:py-28">
+      <div className="bg-white py-16 lg:py-20">
         {/* Categories */}
         <section className="container-max">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-3">
+          <div className="text-center mb-8 lg:mb-10">
+            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
               Browse by Category
             </h2>
-            <p className="text-sm lg:text-base text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
               Curated services to match your lifestyle needs
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 lg:flex lg:justify-center lg:items-center lg:gap-4 gap-4">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -340,12 +354,12 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* Promotional Carousel */}
-        <section className="container-max mt-20 lg:mt-28">
-          <div className="text-center mb-10">
+        <section className="container-max mt-16 lg:mt-20">
+          <div className="text-center mb-8">
             <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
               Special Offers & Events
             </h2>
-            <p className="text-sm lg:text-base text-gray-600">
+            <p className="text-sm text-gray-600">
               Don't miss out on our exclusive deals
             </p>
           </div>
@@ -394,14 +408,14 @@ const HomePage: React.FC = () => {
         </section>
       </div>
 
-      <div className="bg-gray-50 py-20 lg:py-28">
+      <div className="bg-gray-50 py-16 lg:py-20">
         {/* Explore Nearby */}
         <section className="container-max">
-          <div className="text-center mb-10 lg:mb-12">
+          <div className="text-center mb-8 lg:mb-10">
             <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
               Popular Near You
             </h2>
-            <p className="text-sm lg:text-base text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
               Highly-rated services available in your area
             </p>
           </div>
@@ -446,14 +460,14 @@ const HomePage: React.FC = () => {
 
       </div>
 
-      <div className="bg-white py-20 lg:py-28">
+      <div className="bg-white py-16 lg:py-20">
         {/* Featured Services */}
         <section className="container-max">
-          <div className="text-center mb-10 lg:mb-12">
+          <div className="text-center mb-8 lg:mb-10">
             <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
               Featured Services
             </h2>
-            <p className="text-sm lg:text-base text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
               Premium selections handpicked for quality and excellence
             </p>
           </div>
@@ -556,10 +570,10 @@ const HomePage: React.FC = () => {
 
       </div>
 
-      <div className="bg-gray-50 py-20 lg:py-28">
+      <div className="bg-gray-50 py-16 lg:py-20">
         {/* More for You */}
         <section ref={moreForYouRef} className="container-max">
-          <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900">
                 More for you
