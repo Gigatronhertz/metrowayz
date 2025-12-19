@@ -33,11 +33,15 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate()
   const { isAuthenticated, logout } = useAuth()
   const moreForYouRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [selectedCategory, setSelectedCategory] = useState('accommodation')
   const [services, setServices] = useState<Service[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [scrollPastServices, setScrollPastServices] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [scrollLeft, setScrollLeft] = useState(0)
 
   const getPriceUnitDisplay = (service: Service) => {
     return service.isChefService ? 'per service' : formatPriceUnit(service.priceUnit, 'short');
@@ -124,6 +128,26 @@ const HomePage: React.FC = () => {
 
   const nearbyServices = filteredServices.slice(0, 4)
   const featuredServices = filteredServices.slice(0, 2)
+
+  // Drag to scroll handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return
+    setIsDragging(true)
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft)
+    setScrollLeft(scrollContainerRef.current.scrollLeft)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return
+    e.preventDefault()
+    const x = e.pageX - scrollContainerRef.current.offsetLeft
+    const walk = (x - startX) * 2
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk
+  }
+
+  const handleMouseUpOrLeave = () => {
+    setIsDragging(false)
+  }
 
   return (
     <div className="min-h-screen bg-white pb-20 lg:pb-0 relative">
@@ -359,7 +383,15 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* Auto-scrolling row */}
-          <div className="relative">
+          <div
+            ref={scrollContainerRef}
+            className="relative horizontal-scroll"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
+            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          >
             <div className="flex gap-4 animate-scroll">
               {/* First set */}
               <div className="flex gap-4 flex-shrink-0">

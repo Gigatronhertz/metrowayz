@@ -124,11 +124,22 @@ body {
   }
 
   .animate-scroll {
-    animation: scroll 40s linear infinite;
+    animation: scroll 33s linear infinite;
   }
 
   .animate-scroll:hover {
     animation-play-state: paused;
+  }
+
+  .horizontal-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar {
+    display: none;
   }
 }
 
