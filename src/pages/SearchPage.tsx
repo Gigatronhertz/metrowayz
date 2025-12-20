@@ -99,7 +99,7 @@ const SearchPage: React.FC = () => {
 
       {/* Sticky Search & Categories */}
       <div className={`bg-white transition-all duration-500 z-40 ${
-        isScrolled ? 'sticky top-0 lg:top-16 shadow-md' : 'relative'
+        isScrolled ? 'sticky top-0 shadow-md' : 'relative'
       }`}>
         <div className={`container-padding transition-all duration-500 ${
           isScrolled ? 'py-3' : 'py-4'
@@ -114,8 +114,10 @@ const SearchPage: React.FC = () => {
             />
           </div>
 
-          {/* Categories */}
-          <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+          {/* Categories - Hidden on mobile when sticky */}
+          <div className={`flex space-x-2 overflow-x-auto pb-2 scrollbar-hide ${
+            isScrolled ? 'hidden lg:flex' : 'flex'
+          }`}>
             <button
               onClick={() => handleCategoryChange('all')}
               className={`px-3 py-1.5 rounded-full whitespace-nowrap text-xs font-semibold transition-all ${

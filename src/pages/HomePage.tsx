@@ -156,17 +156,71 @@ const HomePage: React.FC = () => {
         scrollPastServices ? 'sticky top-0 shadow-md' : 'relative'
       }`}>
         <div className={`container-max transition-all duration-500 ${scrollPastServices ? 'py-3' : 'py-5 lg:py-6'}`}>
-          <div className="flex items-center justify-between">
+          {/* Mobile: Search bar replaces header when scrolled */}
+          {scrollPastServices ? (
+            <div className="lg:hidden animate-fade-in">
+              <SearchBar
+                placeholder="Search services..."
+                onFilterClick={() => navigate('/search')}
+              />
+            </div>
+          ) : (
+            <div className="lg:hidden flex items-center justify-between">
+              {/* Mobile Logo */}
+              <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/home')}>
+                <div className="rounded-xl bg-primary-500 flex items-center justify-center group-hover:bg-primary-600 transition-all w-10 h-10">
+                  <img src="/logo.svg" alt="MetroWayz" className="brightness-0 invert w-6 h-6" />
+                </div>
+              </div>
+
+              {/* Mobile Navigation */}
+              <nav className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    console.log('Vendor button clicked')
+                    navigate('/vendor')
+                  }}
+                  className="text-xs font-medium text-dark-700 hover:text-primary-600 transition-colors"
+                >
+                  Vendor
+                </button>
+                {isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      console.log('Logout clicked')
+                      logout()
+                    }}
+                    className="text-xs font-medium px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all duration-300 shadow-md"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      console.log('Login button clicked')
+                      navigate('/')
+                    }}
+                    className="text-xs font-semibold px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl transition-all duration-300 shadow-md"
+                  >
+                    Login
+                  </button>
+                )}
+              </nav>
+            </div>
+          )}
+
+          {/* Desktop: Standard header with inline search */}
+          <div className="hidden lg:flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/home')}>
               <div className={`rounded-xl bg-primary-500 flex items-center justify-center group-hover:bg-primary-600 transition-all duration-500 ${
-                scrollPastServices ? 'w-9 h-9' : 'w-10 h-10 lg:w-12 lg:h-12'
+                scrollPastServices ? 'w-9 h-9' : 'w-12 h-12'
               }`}>
                 <img src="/logo.svg" alt="MetroWayz" className={`brightness-0 invert transition-all duration-500 ${
-                  scrollPastServices ? 'w-5 h-5' : 'w-6 h-6 lg:w-7 lg:h-7'
+                  scrollPastServices ? 'w-5 h-5' : 'w-7 h-7'
                 }`} />
               </div>
-              <div className={`hidden lg:block transition-all duration-500 ${scrollPastServices ? 'opacity-0 w-0' : 'opacity-100'}`}>
+              <div className={`transition-all duration-500 ${scrollPastServices ? 'opacity-0 w-0' : 'opacity-100'}`}>
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                   MetroWayz
                 </h1>
@@ -176,9 +230,9 @@ const HomePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Sticky Search Bar */}
+            {/* Desktop Sticky Search Bar */}
             {scrollPastServices && (
-              <div className="flex-1 max-w-xl mx-4 lg:mx-8 animate-fade-in">
+              <div className="flex-1 max-w-xl mx-8 animate-fade-in">
                 <SearchBar
                   placeholder="Search services..."
                   onFilterClick={() => navigate('/search')}
@@ -186,50 +240,8 @@ const HomePage: React.FC = () => {
               </div>
             )}
 
-            {/* Mobile Navigation - Shows when scrolled past services */}
-            <nav className="flex lg:hidden items-center gap-3">
-              {scrollPastServices && (
-                <button
-                  onClick={() => navigate('/search')}
-                  className="text-sm font-semibold text-primary-600 animate-fade-in"
-                >
-                  Services
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  console.log('Vendor button clicked')
-                  navigate('/vendor')
-                }}
-                className="text-xs font-medium text-dark-700 hover:text-primary-600 transition-colors"
-              >
-                Vendor
-              </button>
-              {isAuthenticated ? (
-                <button
-                  onClick={() => {
-                    console.log('Logout clicked')
-                    logout()
-                  }}
-                  className="text-xs font-medium px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all duration-300 shadow-md"
-                >
-                  Logout
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    console.log('Login button clicked')
-                    navigate('/')
-                  }}
-                  className="text-xs font-semibold px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl transition-all duration-300 shadow-md"
-                >
-                  Login
-                </button>
-              )}
-            </nav>
-
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
+            <nav className="flex items-center gap-8">
               <button
                 onClick={() => navigate('/search')}
                 className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors"
@@ -251,7 +263,7 @@ const HomePage: React.FC = () => {
             </nav>
 
             {/* Desktop Right Actions */}
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => {/* Navigate to notifications */}}
                 className="relative p-2.5 hover:bg-gray-50 rounded-lg transition-colors"

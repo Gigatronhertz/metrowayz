@@ -18,6 +18,7 @@ const Review = require('./model/Review');
 const Notification = require('./model/Notification');
 const Favorite = require('./model/Favorite');
 const Event = require('./model/Event');
+const { sendWelcomeEmail, sendBookingConfirmationToUser, sendBookingNotificationToVendor } = require('./backend/config/emailService');
 
 dotenv.config();
 const mongo_uri = process.env.MONGO_URI;
@@ -167,6 +168,7 @@ passport.use(new GoogleStrategy({
     callbackURL: "https://metrowayz.onrender.com/auth/google_callback"
 }, async (accessToken, refreshToken, profile, done) => {
     let user = await User.findOne({ googleId: profile.id });
+    const isNewUser = !user;
     if (!user) {
         user = new User({
             googleId: profile.id,
@@ -176,6 +178,11 @@ passport.use(new GoogleStrategy({
             isAdmin: false,
         });
         await user.save();
+
+        // Send welcome email to new Google OAuth users (don't await)
+        sendWelcomeEmail(user.email, user.name).catch(err => {
+            console.error('Failed to send welcome email to Google OAuth user:', err);
+        });
     }
     return done(null, user);
 }));
@@ -361,6 +368,11 @@ app.post('/auth/signup', async (req, res) => {
         });
 
         await user.save();
+
+        // Send welcome email (don't await to avoid delaying response)
+        sendWelcomeEmail(user.email, user.name).catch(err => {
+            console.error('Failed to send welcome email:', err);
+        });
 
         // Generate JWT token
         const token = jwt.sign(
@@ -2447,15 +2459,30 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             booking._id
         );
 
-        // Send email to vendor about pending booking
-        const vendorEmail = service.createdBy.email;
-        const vendorName = service.createdBy.name;
-         sendBookingPendingEmail(vendorEmail, vendorName, {
+        // Prepare booking details for emails
+        const bookingEmailDetails = {
+            userName: user.name,
+            userEmail: user.email,
+            userPhone: user.phone || '',
+            vendorName: service.createdBy.name,
             serviceName: service.title,
+            serviceCategory: service.category,
+            serviceLocation: service.location,
             checkInDate: booking.checkInDate,
             checkOutDate: booking.checkOutDate,
-            guestName: user.name,
-            bookingId: booking._id
+            guests: booking.guests,
+            totalAmount: booking.totalAmount,
+            bookingId: booking._id.toString().slice(-8).toUpperCase()
+        };
+
+        // Send confirmation email to user (don't await to avoid delaying response)
+        sendBookingConfirmationToUser(user.email, bookingEmailDetails).catch(err => {
+            console.error('Failed to send booking confirmation to user:', err);
+        });
+
+        // Send notification email to vendor (don't await to avoid delaying response)
+        sendBookingNotificationToVendor(service.createdBy.email, bookingEmailDetails).catch(err => {
+            console.error('Failed to send booking notification to vendor:', err);
         });
 
         res.status(201).json({
