@@ -176,9 +176,9 @@ const HomePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Sticky Search Bar (Desktop Only) */}
+            {/* Sticky Search Bar */}
             {scrollPastServices && (
-              <div className="hidden lg:block flex-1 max-w-xl mx-8 animate-fade-in">
+              <div className="flex-1 max-w-xl mx-4 lg:mx-8 animate-fade-in">
                 <SearchBar
                   placeholder="Search services..."
                   onFilterClick={() => navigate('/search')}
@@ -287,18 +287,28 @@ const HomePage: React.FC = () => {
 
       {/* Hero Section */}
       <section className="relative bg-gray-50 py-16 lg:py-24 overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0">
+        {/* Background Images Grid */}
+        <div className="absolute inset-0 z-0 grid grid-cols-3 gap-2 p-4 opacity-10">
           <img
-            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
-            alt="Luxury background"
-            className="w-full h-full object-cover opacity-10"
+            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80"
+            alt="Luxury interior"
+            className="w-full h-full object-cover rounded-lg"
+          />
+          <img
+            src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80"
+            alt="Chef cooking"
+            className="w-full h-full object-cover rounded-lg"
+          />
+          <img
+            src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
+            alt="Event setup"
+            className="w-full h-full object-cover rounded-lg"
           />
         </div>
 
         <div className="container-max relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-5xl font-display font-semibold text-gray-900 mb-4 lg:mb-5 tracking-tight">
+            <h1 className="text-4xl lg:text-5xl font-display font-bold text-gray-900 mb-4 lg:mb-5 tracking-tight">
               Premium Lifestyle
               <span className="block text-primary-500 mt-1">Services</span>
             </h1>
@@ -316,7 +326,7 @@ const HomePage: React.FC = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
+            <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mb-8">
               <div className="text-center">
                 <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
                   500+
@@ -336,6 +346,13 @@ const HomePage: React.FC = () => {
                 <div className="text-xs lg:text-sm text-gray-600">Average Rating</div>
               </div>
             </div>
+
+            {/* Scroll Indicator */}
+            <div className="flex justify-center scroll-indicator">
+              <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex items-start justify-center p-2">
+                <div className="w-1 h-2 bg-gray-400 rounded-full"></div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -344,7 +361,7 @@ const HomePage: React.FC = () => {
         {/* Categories */}
         <section className="container-max">
           <div className="text-center mb-8 lg:mb-10">
-            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
+            <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
               Browse by Category
             </h2>
             <p className="text-sm text-gray-600 max-w-2xl mx-auto">
@@ -373,7 +390,7 @@ const HomePage: React.FC = () => {
         <section className="mt-16 lg:mt-20 overflow-hidden">
           <div className="container-max mb-8">
             <div className="text-center">
-              <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
+              <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
                 Explore Our Services
               </h2>
               <p className="text-sm text-gray-600">
@@ -511,7 +528,7 @@ const HomePage: React.FC = () => {
         {/* Explore Nearby */}
         <section className="container-max">
           <div className="text-center mb-8 lg:mb-10">
-            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
+            <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
               Popular Near You
             </h2>
             <p className="text-sm text-gray-600 max-w-2xl mx-auto">
@@ -563,7 +580,7 @@ const HomePage: React.FC = () => {
         {/* Featured Services */}
         <section className="container-max">
           <div className="text-center mb-8 lg:mb-10">
-            <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900 mb-2">
+            <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
               Featured Services
             </h2>
             <p className="text-sm text-gray-600 max-w-2xl mx-auto">
@@ -674,7 +691,7 @@ const HomePage: React.FC = () => {
         <section ref={moreForYouRef} className="container-max">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl lg:text-3xl font-display font-semibold text-gray-900">
+              <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900">
                 More for you
               </h2>
               <p className="text-sm text-gray-600 mt-1">Personalized recommendations</p>

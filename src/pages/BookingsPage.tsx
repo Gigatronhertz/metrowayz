@@ -128,8 +128,16 @@ const BookingsPage: React.FC = () => {
       <Header title="My Bookings" showNotifications />
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary-50 to-secondary-50 py-8 lg:py-12">
-        <div className="container-max">
+      <div className="relative bg-gray-50 py-12 lg:py-16 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80"
+            alt="Bookings background"
+            className="w-full h-full object-cover opacity-10"
+          />
+        </div>
+        <div className="container-max relative z-10">
           <h1 className="text-3xl lg:text-4xl font-display font-bold text-gray-900 mb-2">
             My Bookings
           </h1>

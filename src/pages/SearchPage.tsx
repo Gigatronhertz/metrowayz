@@ -99,7 +99,7 @@ const SearchPage: React.FC = () => {
 
       {/* Sticky Search & Categories */}
       <div className={`bg-white transition-all duration-500 z-40 ${
-        isScrolled ? 'sticky top-16 shadow-md' : 'relative'
+        isScrolled ? 'sticky top-0 lg:top-16 shadow-md' : 'relative'
       }`}>
         <div className={`container-padding transition-all duration-500 ${
           isScrolled ? 'py-3' : 'py-4'
