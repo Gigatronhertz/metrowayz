@@ -7,7 +7,6 @@ import { formatPriceUnit } from '../utils/format'
 import { useAuth } from '../hooks/useAuth'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import CategoryCard from '../components/common/CategoryCard'
-import ServiceCard from '../components/common/ServiceCard'
 import SearchBar from '../components/common/SearchBar'
 import { format } from 'date-fns'
 
@@ -127,7 +126,6 @@ const HomePage: React.FC = () => {
   })
 
   const nearbyServices = filteredServices.slice(0, 4)
-  const featuredServices = filteredServices.slice(0, 2)
 
   // Shuffle function for random services
   const shuffleArray = <T,>(array: T[]): T[] => {
