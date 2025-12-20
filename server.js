@@ -18,7 +18,7 @@ const Review = require('./model/Review');
 const Notification = require('./model/Notification');
 const Favorite = require('./model/Favorite');
 const Event = require('./model/Event');
-const { sendWelcomeEmail, sendBookingConfirmationToUser, sendBookingNotificationToVendor } = require('./backend/config/emailService');
+const { sendWelcomeEmail, sendBookingConfirmationToUser, sendBookingNotificationToVendor } = require('./model/emailService');
 
 dotenv.config();
 const mongo_uri = process.env.MONGO_URI;

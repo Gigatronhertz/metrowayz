@@ -129,6 +129,18 @@ const HomePage: React.FC = () => {
   const nearbyServices = filteredServices.slice(0, 4)
   const featuredServices = filteredServices.slice(0, 2)
 
+  // Shuffle function for random services
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }
+
+  const randomServices = shuffleArray(services)
+
   // Drag to scroll handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return
@@ -241,12 +253,30 @@ const HomePage: React.FC = () => {
             )}
 
             {/* Desktop Navigation */}
-            <nav className="flex items-center gap-8">
+            <nav className="flex items-center gap-6">
+              <button
+                onClick={() => navigate('/home')}
+                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors flex items-center gap-2"
+              >
+                Home
+              </button>
               <button
                 onClick={() => navigate('/search')}
-                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors"
+                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors flex items-center gap-2"
               >
-                Services
+                Search
+              </button>
+              <button
+                onClick={() => navigate('/bookings')}
+                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors flex items-center gap-2"
+              >
+                Bookings
+              </button>
+              <button
+                onClick={() => navigate('/profile')}
+                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors flex items-center gap-2"
+              >
+                Profile
               </button>
               <button
                 onClick={() => {
@@ -256,9 +286,6 @@ const HomePage: React.FC = () => {
                 className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors"
               >
                 Become a Vendor
-              </button>
-              <button className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors">
-                Help
               </button>
             </nav>
 
@@ -318,7 +345,7 @@ const HomePage: React.FC = () => {
           />
         </div>
 
-        <div className="container-max relative z-10">
+        <div className="container-max relative z-10 lg:px-[15px]">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl lg:text-5xl font-display font-bold text-gray-900 mb-4 lg:mb-5 tracking-tight">
               Premium Lifestyle
@@ -374,14 +401,14 @@ const HomePage: React.FC = () => {
         <section className="container-max">
           <div className="text-center mb-8 lg:mb-10">
             <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
-              Browse by Category
+              Our Services
             </h2>
             <p className="text-sm text-gray-600 max-w-2xl mx-auto">
               Curated services to match your lifestyle needs
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:flex lg:justify-center lg:items-center lg:gap-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -424,112 +451,64 @@ const HomePage: React.FC = () => {
             <div className="flex gap-4 animate-scroll">
               {/* First set */}
               <div className="flex gap-4 flex-shrink-0">
-                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
-                    alt="Luxury Apartments"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold mb-1">Luxury Apartments</h3>
-                    <p className="text-sm opacity-90">Premium accommodations</p>
-                  </div>
-                </div>
+                {services.slice(0, 8).map((service) => {
+                  const imageUrl = service.images && service.images.length > 0
+                    ? (typeof service.images[0] === 'string'
+                        ? service.images[0]
+                        : service.images[0]?.url)
+                    : '/placeholder.jpg';
 
-                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80"
-                    alt="Private Chefs"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold mb-1">Private Chefs</h3>
-                    <p className="text-sm opacity-90">Culinary excellence at home</p>
-                  </div>
-                </div>
-
-                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
-                    alt="Events & Entertainment"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold mb-1">Events & Entertainment</h3>
-                    <p className="text-sm opacity-90">Memorable experiences</p>
-                  </div>
-                </div>
-
-                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80"
-                    alt="Professional Services"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold mb-1">Professional Services</h3>
-                    <p className="text-sm opacity-90">Expert assistance</p>
-                  </div>
-                </div>
+                  return (
+                    <div
+                      key={service._id}
+                      onClick={() => navigate(`/service/${service._id}`)}
+                      className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer"
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={service.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        <h3 className="text-xl font-semibold mb-1 truncate">{service.title}</h3>
+                        <p className="text-sm opacity-90 truncate">{service.location}</p>
+                        <p className="text-lg font-bold mt-2">₦{service.price.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Duplicate set for seamless loop */}
               <div className="flex gap-4 flex-shrink-0">
-                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
-                    alt="Luxury Apartments"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold mb-1">Luxury Apartments</h3>
-                    <p className="text-sm opacity-90">Premium accommodations</p>
-                  </div>
-                </div>
+                {services.slice(0, 8).map((service) => {
+                  const imageUrl = service.images && service.images.length > 0
+                    ? (typeof service.images[0] === 'string'
+                        ? service.images[0]
+                        : service.images[0]?.url)
+                    : '/placeholder.jpg';
 
-                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80"
-                    alt="Private Chefs"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold mb-1">Private Chefs</h3>
-                    <p className="text-sm opacity-90">Culinary excellence at home</p>
-                  </div>
-                </div>
-
-                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
-                    alt="Events & Entertainment"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold mb-1">Events & Entertainment</h3>
-                    <p className="text-sm opacity-90">Memorable experiences</p>
-                  </div>
-                </div>
-
-                <div className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80"
-                    alt="Professional Services"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl font-semibold mb-1">Professional Services</h3>
-                    <p className="text-sm opacity-90">Expert assistance</p>
-                  </div>
-                </div>
+                  return (
+                    <div
+                      key={`dup-${service._id}`}
+                      onClick={() => navigate(`/service/${service._id}`)}
+                      className="relative w-80 h-64 rounded-xl overflow-hidden group cursor-pointer"
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={service.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        <h3 className="text-xl font-semibold mb-1 truncate">{service.title}</h3>
+                        <p className="text-sm opacity-90 truncate">{service.location}</p>
+                        <p className="text-lg font-bold mt-2">₦{service.price.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -599,21 +578,45 @@ const HomePage: React.FC = () => {
               Premium selections handpicked for quality and excellence
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
-            {featuredServices.map((service) => (
-              <ServiceCard
-                key={service._id}
-                service={{
-                  ...service,
-                  id: service._id,
-                  images: service.images && Array.isArray(service.images)
-                    ? service.images.map(img => typeof img === 'string' ? img : img?.url || '/placeholder.jpg')
-                    : ['/placeholder.jpg'],
-                  latitude: service.latitude || 0,
-                  longitude: service.longitude || 0
-                } as any}
-              />
-            ))}
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex gap-4 lg:gap-6 pb-4">
+              {services.slice(0, 10).map((service) => {
+                const imageUrl = service.images && service.images.length > 0
+                  ? (typeof service.images[0] === 'string'
+                      ? service.images[0]
+                      : service.images[0]?.url)
+                  : '/placeholder.jpg';
+
+                return (
+                  <div
+                    key={service._id}
+                    onClick={() => navigate(`/service/${service._id}`)}
+                    className="flex-shrink-0 w-64 bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 border border-gray-100"
+                  >
+                    <div className="relative overflow-hidden">
+                      <img
+                        src={imageUrl}
+                        alt={service.title}
+                        className="w-full h-40 object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-sm text-gray-900 truncate mb-1.5">
+                        {service.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 truncate mb-2.5 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-gray-400" />
+                        {service.location}
+                      </p>
+                      <div className="text-base font-bold text-gray-900">
+                        ₦{service.price.toLocaleString()}
+                        <span className="text-xs font-normal text-gray-500"> {getPriceUnitDisplay(service)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -721,7 +724,7 @@ const HomePage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {filteredServices.slice(2).map((service) => {
+              {randomServices.map((service) => {
                 const imageUrl = service.images && service.images.length > 0
                   ? (typeof service.images[0] === 'string'
                       ? service.images[0]
