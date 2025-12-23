@@ -7,8 +7,7 @@ import {
   XCircle,
   CalendarRange,
   Settings,
-  LogOut,
-  Shield
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 

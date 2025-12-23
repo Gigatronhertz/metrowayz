@@ -125,8 +125,6 @@ const HomePage: React.FC = () => {
     }
   })
 
-  const nearbyServices = filteredServices.slice(0, 4)
-
   // Shuffle function for random services
   const shuffleArray = <T,>(array: T[]): T[] => {
     const shuffled = [...array]
