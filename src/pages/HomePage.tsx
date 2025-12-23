@@ -103,28 +103,6 @@ const HomePage: React.FC = () => {
     fetchEvents()
   }, [])
 
-  const filteredServices = services.filter(service => {
-    const categoryLower = service.category.toLowerCase()
-    switch (selectedCategory) {
-      case 'private-chefs':
-        return categoryLower.includes('chef') || categoryLower.includes('private chef')
-      case 'entertainment':
-        return categoryLower.includes('entertainment')
-      case 'accommodation':
-        return categoryLower.includes('accommodation')
-      case 'professional':
-        // Professional Services includes: Transportation, Events, Cleaning, Health & Wellness, and Professional Services
-        return categoryLower.includes('professional') ||
-               categoryLower.includes('transportation') ||
-               categoryLower.includes('event') ||
-               categoryLower.includes('cleaning') ||
-               categoryLower.includes('health') ||
-               categoryLower.includes('wellness')
-      default:
-        return true
-    }
-  })
-
   // Shuffle function for random services
   const shuffleArray = <T,>(array: T[]): T[] => {
     const shuffled = [...array]
