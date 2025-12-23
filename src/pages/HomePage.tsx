@@ -299,7 +299,7 @@ const HomePage: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative bg-gray-50 py-16 lg:py-24 overflow-hidden">
+      <section className="relative bg-gray-50 py-16 lg:py-24 overflow-hidden lg:px-[15px]">
         {/* Background Image - Single image on desktop, grid on mobile */}
         <div className="absolute inset-0 z-0 opacity-10">
           {/* Mobile: Grid of 3 images */}
