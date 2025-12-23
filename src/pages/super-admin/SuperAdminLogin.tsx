@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { Shield, Lock, Mail } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import superAdminApi from '../../services/super-admin/superAdminApi';
 import { useAuth } from '../../hooks/useAuth';
@@ -104,7 +104,7 @@ const SuperAdminLogin = () => {
         {/* Logo & Title */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-secondary-500 rounded-full mb-4 shadow-sm">
-            <Shield size={48} className="text-white" strokeWidth={2.5} />
+            <img src="/logo.svg" alt="MetroWayz" className="w-12 h-12 brightness-0 invert" />
           </div>
           <h1 className="text-4xl font-display font-bold text-gray-900 mb-2">MetroWayz</h1>
           <p className="text-secondary-600 text-lg font-semibold">Super Admin Portal</p>

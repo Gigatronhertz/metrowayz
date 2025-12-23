@@ -37,8 +37,8 @@ const SuperAdminSidebar = ({ isOpen, onClose }: SuperAdminSidebarProps) => {
       {/* Logo */}
       <div className="p-6 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="bg-secondary-500 rounded-xl p-2 shadow-sm">
-            <Shield size={28} className="text-white" strokeWidth={2.5} />
+          <div className="bg-secondary-500 rounded-xl p-2.5 shadow-sm">
+            <img src="/logo.svg" alt="MetroWayz" className="w-7 h-7 brightness-0 invert" />
           </div>
           <div>
             <h1 className="text-xl font-display font-bold text-gray-900">MetroWayz</h1>

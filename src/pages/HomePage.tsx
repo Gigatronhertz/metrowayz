@@ -399,7 +399,7 @@ const HomePage: React.FC = () => {
         <section className="container-max">
           <div className="text-center mb-8 lg:mb-10">
             <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
-              Our Services
+              Explore Our Services
             </h2>
             <p className="text-sm text-gray-600 max-w-2xl mx-auto">
               Curated services to match your lifestyle needs
@@ -428,7 +428,7 @@ const HomePage: React.FC = () => {
           <div className="container-max mb-8">
             <div className="text-center">
               <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
-                Explore Our Services
+                Services Near you
               </h2>
               <p className="text-sm text-gray-600">
                 Premium lifestyle services at your fingertips
@@ -515,7 +515,7 @@ const HomePage: React.FC = () => {
 
       <div className="bg-gray-50 py-16 lg:py-20">
         {/* Explore Nearby */}
-        <section className="container-max">
+        {/* <section className="container-max">
           <div className="text-center mb-8 lg:mb-10">
             <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
               Popular Near You
@@ -561,13 +561,13 @@ const HomePage: React.FC = () => {
               );
             })}
           </div>
-        </section>
+        </section> */}
 
       </div>
 
       <div className="bg-white py-16 lg:py-20">
         {/* Featured Services */}
-        <section className="container-max">
+        {/* <section className="container-max">
           <div className="text-center mb-8 lg:mb-10">
             <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
               Featured Services
@@ -616,7 +616,7 @@ const HomePage: React.FC = () => {
               })}
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Upcoming Events - Show when Entertainment is selected */}
         {selectedCategory === 'entertainment' && events.length > 0 && (

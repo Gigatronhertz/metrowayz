@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import GoogleSignInButton from '../components/auth/GoogleSignInButton';
-import { Store, Users, DollarSign, Calendar } from 'lucide-react';
+import { Users, DollarSign, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const VendorLoginPage = () => {
@@ -31,7 +31,7 @@ const VendorLoginPage = () => {
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Store size={40} className="text-white" />
+            <img src="/logo.svg" alt="MetroWayz" className="w-12 h-12 brightness-0 invert" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Vendor Portal
