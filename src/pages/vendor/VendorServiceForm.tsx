@@ -760,8 +760,24 @@ const VendorServiceForm = () => {
               </div>
 
               {/* Pricing Model */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Pricing Model</h2>
+              <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-blue-200">
+                <div className="mb-4">
+                  <h2 className="text-xl font-bold text-gray-900">Pricing Model</h2>
+                  <p className="text-xs text-gray-500 mt-1">Set how you charge customers for your chef service</p>
+                </div>
+
+                {/* Pricing Guide */}
+                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
+                  <h3 className="font-bold text-blue-900 mb-2">📊 Pricing Model Explained:</h3>
+                  <div className="space-y-2 text-sm text-blue-900">
+                    <div className="bg-white rounded p-2 border border-blue-200">
+                      <strong>Fixed Price:</strong> One set price for the service (e.g., ₦50,000 flat rate). Best for standard packages.
+                    </div>
+                    <div className="bg-white rounded p-2 border border-blue-200">
+                      <strong>Price Range:</strong> Minimum and maximum price (e.g., ₦50,000 - ₦120,000). Final price depends on menu options selected.
+                    </div>
+                  </div>
+                </div>
 
                 <div className="space-y-4">
                   <div>
@@ -868,11 +884,28 @@ const VendorServiceForm = () => {
               </div>
 
               {/* Guest Rules */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Guest Rules</h2>
+              <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-orange-200">
+                <div className="mb-4">
+                  <h2 className="text-xl font-bold text-gray-900">Guest Rules</h2>
+                  <p className="text-xs text-gray-500 mt-1">Configure guest capacity and extra guest pricing</p>
+                </div>
+
+                {/* Guest Rules Guide */}
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-4 mb-6">
+                  <h3 className="font-bold text-orange-900 mb-2">👥 Example Scenario:</h3>
+                  <div className="bg-white rounded p-3 border border-orange-200 text-sm">
+                    <p className="text-gray-900 mb-2">
+                      <strong>Base Guest Limit: 2</strong> → Base price includes up to 2 guests<br />
+                      <strong>Max Guests: 20</strong> → You can serve up to 20 people total<br />
+                      <strong>Extra Guest Fee: ₦5,000</strong> → Each guest beyond 2 costs ₦5,000
+                    </p>
+                    <div className="mt-2 pt-2 border-t border-orange-200 text-orange-900">
+                      💰 <strong>Example:</strong> If customer books for 6 guests → Base price + (4 extra × ₦5,000) = Base + ₦20,000
+                    </div>
+                  </div>
+                </div>
 
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-600">Define how many guests your chef service can accommodate and pricing for additional guests</p>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -922,15 +955,33 @@ const VendorServiceForm = () => {
               </div>
 
               {/* Availability */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Availability</h2>
+              <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-indigo-200">
+                <div className="mb-4">
+                  <h2 className="text-xl font-bold text-gray-900">Availability</h2>
+                  <p className="text-xs text-gray-500 mt-1">Set when you're available to provide chef services</p>
+                </div>
+
+                {/* Availability Guide */}
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-lg p-4 mb-6">
+                  <h3 className="font-bold text-indigo-900 mb-2">📅 Setting Your Availability:</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="bg-white rounded p-2 border border-indigo-200 text-gray-900">
+                      <strong>Available Days:</strong> Select which days you work (e.g., Monday-Saturday)
+                    </div>
+                    <div className="bg-white rounded p-2 border border-indigo-200 text-gray-900">
+                      <strong>Time Slots:</strong> Your working hours for each day
+                      <div className="ml-4 mt-1 text-xs text-indigo-900">
+                        • Example: 10:00-14:00 (Morning shift), 18:00-22:00 (Evening shift)
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Available Days *
                     </label>
-                    <p className="text-sm text-gray-600 mb-3">Select which days of the week you're available for services</p>
                     <div className="grid grid-cols-4 gap-2">
                       {DAYS_OF_WEEK.map(day => (
                         <label key={day} className="flex items-center gap-2 cursor-pointer p-2 border rounded hover:bg-gray-50">
@@ -954,12 +1005,18 @@ const VendorServiceForm = () => {
                       <button
                         type="button"
                         onClick={handleAddTimeSlot}
-                        className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 flex items-center gap-1 font-medium shadow-sm"
                       >
-                        <Plus size={16} /> Add Slot
+                        <Plus size={16} /> Add Time Slot
                       </button>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">Example: Morning slot 10:00-14:00, Evening slot 18:00-22:00</p>
+                    <div className="bg-indigo-50 border border-indigo-200 rounded p-2 mb-3 text-xs">
+                      <strong className="text-indigo-900">💡 Examples:</strong>
+                      <div className="text-indigo-800 mt-1 space-y-0.5">
+                        • Morning: 10:00-14:00 (Lunch service)
+                        • Evening: 18:00-22:00 (Dinner service)
+                      </div>
+                    </div>
                     <div className="space-y-2">
                       {formData.availability.timeSlots.length === 0 ? (
                         <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded">No time slots added yet. Click "Add Slot" to add your working hours.</p>
@@ -1000,18 +1057,59 @@ const VendorServiceForm = () => {
               </div>
 
               {/* Menu Parameters */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-purple-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">Menu Parameters & Options</h2>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Menu Parameters & Options</h2>
+                    <p className="text-xs text-gray-500 mt-1">Create customization options for your chef service</p>
+                  </div>
                   <button
                     type="button"
                     onClick={handleAddMenuParameter}
-                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 font-medium shadow-sm"
                   >
-                    <Plus size={16} /> Add Parameter
+                    <Plus size={18} /> Add Parameter
                   </button>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">Example: Menu Type (Basic/Premium/Luxury), Cuisine (African/Continental), or Table Setup. Each option can have a different price.</p>
+
+                {/* Example Guide */}
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-lg p-4 mb-6">
+                  <h3 className="font-bold text-purple-900 mb-3 flex items-center gap-2">
+                    <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">?</span>
+                    How Menu Parameters Work - Examples:
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="bg-white rounded-lg p-3 border border-purple-200">
+                      <div className="font-semibold text-gray-900 mb-1">Example 1: Menu Type Selection</div>
+                      <div className="text-sm text-gray-700 space-y-1">
+                        <div><strong>Parameter Name:</strong> <code className="bg-gray-100 px-2 py-0.5 rounded">menu_type</code></div>
+                        <div><strong>Display Label:</strong> Menu Type</div>
+                        <div><strong>Type:</strong> Single Select (customer picks one)</div>
+                        <div className="ml-4 mt-2 space-y-1">
+                          <div>• <strong>Basic</strong> (value: basic) - ₦0 extra</div>
+                          <div>• <strong>Premium</strong> (value: premium) - +₦15,000</div>
+                          <div>• <strong>Luxury</strong> (value: luxury) - +₦35,000</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-purple-200">
+                      <div className="font-semibold text-gray-900 mb-1">Example 2: Cuisine Choice</div>
+                      <div className="text-sm text-gray-700 space-y-1">
+                        <div><strong>Parameter Name:</strong> <code className="bg-gray-100 px-2 py-0.5 rounded">cuisine</code></div>
+                        <div><strong>Display Label:</strong> Cuisine Type</div>
+                        <div><strong>Type:</strong> Single Select</div>
+                        <div className="ml-4 mt-2 space-y-1">
+                          <div>• <strong>African</strong> (value: african) - ₦0 extra</div>
+                          <div>• <strong>Continental</strong> (value: continental) - +₦10,000</div>
+                          <div>• <strong>Asian Fusion</strong> (value: asian) - +₦20,000</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 p-2 bg-blue-100 border border-blue-300 rounded text-xs text-blue-900">
+                    💡 <strong>Tip:</strong> The "priceEffect" is added to your base price when customer selects that option. Use 0 for default/free options.
+                  </div>
+                </div>
 
                 <div className="space-y-4">
                   {formData.menuParameters.length === 0 ? (
@@ -1023,27 +1121,29 @@ const VendorServiceForm = () => {
                           <div className="flex-1 grid grid-cols-2 gap-3 mr-2">
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Parameter Name (e.g., "menu_type")
+                                Parameter Name <span className="text-xs text-gray-500">(technical name, lowercase, no spaces)</span>
                               </label>
                               <input
                                 type="text"
                                 value={param.name}
                                 onChange={(e) => handleMenuParameterChange(paramIndex, 'name', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                                placeholder="menu_type"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                                placeholder="e.g., menu_type, cuisine, table_setup"
                               />
+                              <p className="mt-1 text-xs text-gray-500">Use underscore for spaces</p>
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Display Label (e.g., "Menu Type")
+                                Display Label <span className="text-xs text-gray-500">(what customers see)</span>
                               </label>
                               <input
                                 type="text"
                                 value={param.label}
                                 onChange={(e) => handleMenuParameterChange(paramIndex, 'label', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                                placeholder="Menu Type"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                                placeholder="e.g., Menu Type, Cuisine Type"
                               />
+                              <p className="mt-1 text-xs text-gray-500">Friendly name for customers</p>
                             </div>
                           </div>
                           <button
@@ -1073,45 +1173,60 @@ const VendorServiceForm = () => {
                         {param.type !== 'boolean' && (
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                              <label className="text-sm font-medium text-gray-700">Options (example: Basic ₦0, Premium +₦15,000)</label>
+                              <label className="text-sm font-medium text-gray-700">
+                                Options <span className="text-xs text-gray-500">(customers choose from these)</span>
+                              </label>
                               <button
                                 type="button"
                                 onClick={() => handleAddParameterOption(paramIndex)}
-                                className="text-xs text-blue-600 hover:text-blue-700"
+                                className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 font-medium"
                               >
                                 + Add Option
                               </button>
                             </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded p-2 mb-2">
+                              <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-blue-900">
+                                <div>Display Name</div>
+                                <div>Value (lowercase)</div>
+                                <div className="text-right">Extra Price (₦)</div>
+                              </div>
+                            </div>
                             {param.options.map((option: any, optionIndex: number) => (
-                              <div key={optionIndex} className="flex gap-2 items-end bg-gray-50 p-2 rounded">
-                                <input
-                                  type="text"
-                                  value={option.label}
-                                  onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'label', e.target.value)}
-                                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
-                                  placeholder="e.g., Premium"
-                                />
-                                <input
-                                  type="text"
-                                  value={option.value}
-                                  onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'value', e.target.value)}
-                                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs"
-                                  placeholder="e.g., premium"
-                                />
-                                <input
-                                  type="number"
-                                  value={option.priceEffect}
-                                  onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'priceEffect', parseFloat(e.target.value))}
-                                  className="w-24 px-2 py-1 border border-gray-300 rounded text-xs"
-                                  placeholder="e.g., 15000"
-                                  step="0.01"
-                                />
+                              <div key={optionIndex} className="flex gap-2 items-center bg-gray-50 p-2 rounded border border-gray-200">
+                                <div className="flex-1">
+                                  <input
+                                    type="text"
+                                    value={option.label}
+                                    onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'label', e.target.value)}
+                                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+                                    placeholder="e.g., Premium, Basic"
+                                  />
+                                </div>
+                                <div className="flex-1">
+                                  <input
+                                    type="text"
+                                    value={option.value}
+                                    onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'value', e.target.value)}
+                                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm font-mono"
+                                    placeholder="e.g., premium, basic"
+                                  />
+                                </div>
+                                <div className="w-28">
+                                  <input
+                                    type="number"
+                                    value={option.priceEffect}
+                                    onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'priceEffect', parseFloat(e.target.value))}
+                                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm text-right"
+                                    placeholder="0 or 15000"
+                                    step="1000"
+                                  />
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveParameterOption(paramIndex, optionIndex)}
-                                  className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                  className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
                                 >
-                                  <Trash2 size={14} />
+                                  <Trash2 size={16} />
                                 </button>
                               </div>
                             ))}
@@ -1124,50 +1239,92 @@ const VendorServiceForm = () => {
               </div>
 
               {/* Add-ons */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-green-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">Add-ons (Optional)</h2>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Add-ons (Optional)</h2>
+                    <p className="text-xs text-gray-500 mt-1">Extra services customers can add for additional cost</p>
+                  </div>
                   <button
                     type="button"
                     onClick={handleAddAddon}
-                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-medium shadow-sm"
                   >
-                    <Plus size={16} /> Add Add-on
+                    <Plus size={18} /> Add Add-on
                   </button>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">Examples: Cocktail Mixing (₦25,000), Waiters (₦15,000), Dessert Platter (₦10,000)</p>
 
-                <div className="space-y-2">
+                {/* Example Guide */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4 mb-4">
+                  <h3 className="font-bold text-green-900 mb-2 flex items-center gap-2">
+                    <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">💡</span>
+                    Add-on Examples:
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="bg-white rounded p-2 border border-green-200">
+                      <strong>Cocktail Mixing Service</strong> - ₦25,000
+                    </div>
+                    <div className="bg-white rounded p-2 border border-green-200">
+                      <strong>Professional Waiters (2)</strong> - ₦15,000
+                    </div>
+                    <div className="bg-white rounded p-2 border border-green-200">
+                      <strong>Dessert Platter</strong> - ₦10,000
+                    </div>
+                    <div className="bg-white rounded p-2 border border-green-200">
+                      <strong>Live Cooking Station</strong> - ₦20,000
+                    </div>
+                  </div>
+                  <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs text-yellow-900">
+                    ⚠️ <strong>Note:</strong> Add-ons are completely optional - customers can book without selecting any.
+                  </div>
+                </div>
+
+                <div className="space-y-3">
                   {formData.addons.length === 0 ? (
-                    <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded">No add-ons yet. Optional services that customers can add for extra cost.</p>
+                    <p className="text-sm text-gray-500 p-4 bg-gray-50 rounded border border-gray-200">No add-ons yet. Click "Add Add-on" to create optional services that customers can add for extra cost.</p>
                   ) : (
-                    formData.addons.map((addon, index) => (
-                      <div key={index} className="flex gap-2 items-end">
-                        <input
-                          type="text"
-                          value={addon.label}
-                          onChange={(e) => handleAddonChange(index, 'label', e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                          placeholder="e.g., Cocktail Mixing"
-                        />
-                        <input
-                          type="number"
-                          value={addon.price}
-                          onChange={(e) => handleAddonChange(index, 'price', e.target.value)}
-                          className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                          placeholder="e.g., 25000"
-                          min="0"
-                          step="0.01"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAddon(index)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                    <>
+                      <div className="bg-green-50 border border-green-200 rounded p-2">
+                        <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-green-900">
+                          <div>Add-on Service Name</div>
+                          <div className="text-right">Price (₦)</div>
+                        </div>
                       </div>
-                    ))
+                      {formData.addons.map((addon, index) => (
+                        <div key={index} className="flex gap-3 items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              value={addon.label}
+                              onChange={(e) => handleAddonChange(index, 'label', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                              placeholder="e.g., Cocktail Mixing Service, Professional Waiters"
+                            />
+                          </div>
+                          <div className="w-40">
+                            <div className="relative">
+                              <span className="absolute left-3 top-2.5 text-gray-500 text-sm">₦</span>
+                              <input
+                                type="number"
+                                value={addon.price}
+                                onChange={(e) => handleAddonChange(index, 'price', e.target.value)}
+                                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-right focus:ring-2 focus:ring-green-500"
+                                placeholder="25000"
+                                min="0"
+                                step="1000"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAddon(index)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      ))}
+                    </>
                   )}
                 </div>
               </div>
