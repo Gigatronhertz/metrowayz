@@ -300,22 +300,31 @@ const HomePage: React.FC = () => {
 
       {/* Hero Section */}
       <section className="relative bg-gray-50 py-16 lg:py-24 overflow-hidden">
-        {/* Background Images Grid */}
-        <div className="absolute inset-0 z-0 grid grid-cols-3 gap-2 p-4 opacity-10">
+        {/* Background Image - Single image on desktop, grid on mobile */}
+        <div className="absolute inset-0 z-0 opacity-10">
+          {/* Mobile: Grid of 3 images */}
+          <div className="lg:hidden grid grid-cols-3 gap-2 p-4 h-full">
+            <img
+              src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80"
+              alt="Luxury interior"
+              className="w-full h-full object-cover rounded-lg"
+            />
+            <img
+              src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80"
+              alt="Chef cooking"
+              className="w-full h-full object-cover rounded-lg"
+            />
+            <img
+              src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
+              alt="Event setup"
+              className="w-full h-full object-cover rounded-lg"
+            />
+          </div>
+          {/* Desktop: Single image */}
           <img
-            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80"
-            alt="Luxury interior"
-            className="w-full h-full object-cover rounded-lg"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80"
-            alt="Chef cooking"
-            className="w-full h-full object-cover rounded-lg"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
-            alt="Event setup"
-            className="w-full h-full object-cover rounded-lg"
+            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1600&q=80"
+            alt="Premium lifestyle services"
+            className="hidden lg:block w-full h-full object-cover"
           />
         </div>
 
@@ -489,7 +498,7 @@ const HomePage: React.FC = () => {
         </section>
       </div>
 
-      <div className="bg-gray-50 py-16 lg:py-20">
+      <div className="bg-gray-50 py-8 lg:py-10">
         {/* Explore Nearby */}
         {/* <section className="container-max">
           <div className="text-center mb-8 lg:mb-10">
@@ -539,10 +548,7 @@ const HomePage: React.FC = () => {
           </div>
         </section> */}
 
-      </div>
-
-      <div className="bg-white py-16 lg:py-20">
-        {/* Featured Services */}
+        {/* More for You */}
         {/* <section className="container-max">
           <div className="text-center mb-8 lg:mb-10">
             <h2 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">
@@ -596,7 +602,7 @@ const HomePage: React.FC = () => {
 
         {/* Upcoming Events - Show when Entertainment is selected */}
         {selectedCategory === 'entertainment' && events.length > 0 && (
-          <section>
+          <section className="container-max mb-16">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-3xl font-bold text-gray-900">Upcoming Events</h2>
             </div>
@@ -673,10 +679,6 @@ const HomePage: React.FC = () => {
           </section>
         )}
 
-      </div>
-
-      <div className="bg-gray-50 py-16 lg:py-20">
-        {/* More for You */}
         <section ref={moreForYouRef} className="container-max">
           <div className="flex items-center justify-between mb-8">
             <div>
