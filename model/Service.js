@@ -152,6 +152,11 @@ const serviceSchema = new mongoose.Schema({
         }]
     }],
 
+    // Menu Items (simple menu list for chefs)
+    menuItems: [{
+        type: String
+    }],
+
     // Add-ons
     addons: [{
         label: String,

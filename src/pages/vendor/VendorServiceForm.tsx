@@ -52,6 +52,8 @@ const VendorServiceForm = () => {
   const navigate = useNavigate();
   const isEditing = Boolean(id);
 
+  const [customServiceType, setCustomServiceType] = useState('');
+
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -85,6 +87,7 @@ const VendorServiceForm = () => {
       extraGuestFee: ''
     },
     menuParameters: [] as any[],
+    menuItems: [] as string[],
     addons: [] as Array<{ label: string; price: string }>,
     availability: {
       availableDays: [] as string[],
@@ -139,6 +142,7 @@ const VendorServiceForm = () => {
           extraGuestFee: ''
         },
         menuParameters: service.menuParameters || [],
+        menuItems: service.menuItems || [],
         addons: service.addons || [],
         availability: service.availability || {
           availableDays: [],
@@ -412,6 +416,30 @@ const VendorServiceForm = () => {
     }));
   };
 
+  // Menu Items handlers
+  const handleAddMenuItem = () => {
+    setFormData(prev => ({
+      ...prev,
+      menuItems: [...prev.menuItems, '']
+    }));
+  };
+
+  const handleRemoveMenuItem = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      menuItems: prev.menuItems.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleMenuItemChange = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      menuItems: prev.menuItems.map((item, i) =>
+        i === index ? value : item
+      )
+    }));
+  };
+
   const handleAmenityToggle = (amenity: string) => {
     setFormData(prev => ({
       ...prev,
@@ -563,6 +591,7 @@ const VendorServiceForm = () => {
         extraGuestFee: parseFloat(formData.guestRules.extraGuestFee) || 0
       } : undefined,
       menuParameters: formData.isChefService ? formData.menuParameters : undefined,
+      menuItems: formData.isChefService ? formData.menuItems : undefined,
       addons: formData.isChefService ? formData.addons.map(addon => ({
         ...addon,
         price: parseFloat(addon.price) || 0
@@ -756,28 +785,21 @@ const VendorServiceForm = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Service Title *
-                    </label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., Private Fine Dining Experience, BBQ Grill Service"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Service Type
+                      Service Type *
                     </label>
                     <select
                       name="serviceType"
                       value={formData.serviceType}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        handleInputChange(e);
+                        // Auto-generate title from service type
+                        if (e.target.value && e.target.value !== 'other') {
+                          const selectedOption = e.target.options[e.target.selectedIndex];
+                          setFormData(prev => ({ ...prev, title: selectedOption.text }));
+                        }
+                      }}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
                     >
                       <option value="">Select service type...</option>
                       <option value="private_dining">Private Fine Dining</option>
@@ -787,28 +809,32 @@ const VendorServiceForm = () => {
                       <option value="continental">Continental Dinner</option>
                       <option value="dessert">Dessert Menu</option>
                       <option value="corporate">Corporate Lunch</option>
+                      <option value="other">Other (Please Specify)</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Short Description
-                    </label>
-                    <input
-                      type="text"
-                      name="shortDescription"
-                      value={formData.shortDescription}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., Exquisite 3-course meal with wine pairing (max 100 chars)"
-                      maxLength={100}
-                    />
-                    <p className="mt-1 text-xs text-gray-500">{formData.shortDescription.length}/100 characters</p>
-                  </div>
+                  {formData.serviceType === 'other' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Specify Service Type *
+                      </label>
+                      <input
+                        type="text"
+                        value={customServiceType}
+                        onChange={(e) => {
+                          setCustomServiceType(e.target.value);
+                          setFormData(prev => ({ ...prev, title: e.target.value }));
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., Brunch Service, Cocktail Party Catering"
+                        required
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Full Description *
+                      Description *
                     </label>
                     <textarea
                       name="description"
@@ -1138,182 +1164,60 @@ const VendorServiceForm = () => {
                 </div>
               </div>
 
-              {/* Menu Parameters */}
+              {/* Menu */}
               <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-purple-200">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Menu Parameters & Options</h2>
-                    <p className="text-xs text-gray-500 mt-1">Create customization options for your chef service</p>
+                    <h2 className="text-xl font-bold text-gray-900">Menu</h2>
+                    <p className="text-xs text-gray-500 mt-1">Add menu items that match your selected service type</p>
                   </div>
                   <button
                     type="button"
-                    onClick={handleAddMenuParameter}
+                    onClick={handleAddMenuItem}
                     className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 font-medium shadow-sm"
                   >
-                    <Plus size={18} /> Add Parameter
+                    <Plus size={18} /> Add Menu Item
                   </button>
                 </div>
 
-                {/* Example Guide */}
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-lg p-4 mb-6">
-                  <h3 className="font-bold text-purple-900 mb-3 flex items-center gap-2">
-                    <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">?</span>
-                    How Menu Parameters Work - Examples:
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-lg p-4 mb-4">
+                  <h3 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
+                    <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">💡</span>
+                    Menu Examples:
                   </h3>
-                  <div className="space-y-3">
-                    <div className="bg-white rounded-lg p-3 border border-purple-200">
-                      <div className="font-semibold text-gray-900 mb-1">Example 1: Menu Type Selection</div>
-                      <div className="text-sm text-gray-700 space-y-1">
-                        <div><strong>Parameter Name:</strong> <code className="bg-gray-100 px-2 py-0.5 rounded">menu_type</code></div>
-                        <div><strong>Display Label:</strong> Menu Type</div>
-                        <div><strong>Type:</strong> Single Select (customer picks one)</div>
-                        <div className="ml-4 mt-2 space-y-1">
-                          <div>• <strong>Basic</strong> (value: basic) - ₦0 extra</div>
-                          <div>• <strong>Premium</strong> (value: premium) - +₦15,000</div>
-                          <div>• <strong>Luxury</strong> (value: luxury) - +₦35,000</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-white rounded-lg p-3 border border-purple-200">
-                      <div className="font-semibold text-gray-900 mb-1">Example 2: Cuisine Choice</div>
-                      <div className="text-sm text-gray-700 space-y-1">
-                        <div><strong>Parameter Name:</strong> <code className="bg-gray-100 px-2 py-0.5 rounded">cuisine</code></div>
-                        <div><strong>Display Label:</strong> Cuisine Type</div>
-                        <div><strong>Type:</strong> Single Select</div>
-                        <div className="ml-4 mt-2 space-y-1">
-                          <div>• <strong>African</strong> (value: african) - ₦0 extra</div>
-                          <div>• <strong>Continental</strong> (value: continental) - +₦10,000</div>
-                          <div>• <strong>Asian Fusion</strong> (value: asian) - +₦20,000</div>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="bg-white rounded p-2 border border-purple-200 text-purple-900">Jollof Rice</div>
+                    <div className="bg-white rounded p-2 border border-purple-200 text-purple-900">Basmati Rice</div>
+                    <div className="bg-white rounded p-2 border border-purple-200 text-purple-900">Fried Rice</div>
+                    <div className="bg-white rounded p-2 border border-purple-200 text-purple-900">Grilled Chicken</div>
+                    <div className="bg-white rounded p-2 border border-purple-200 text-purple-900">Fish Pepper Soup</div>
+                    <div className="bg-white rounded p-2 border border-purple-200 text-purple-900">Egusi Soup</div>
                   </div>
-                  <div className="mt-3 p-2 bg-blue-100 border border-blue-300 rounded text-xs text-blue-900">
-                    💡 <strong>Tip:</strong> The "priceEffect" is added to your base price when customer selects that option. Use 0 for default/free options.
+                  <div className="mt-2 p-2 bg-blue-100 border border-blue-300 rounded text-xs text-blue-900">
+                    💡 <strong>Tip:</strong> Add menu items that are available for your selected service type (e.g., breakfast items for Breakfast service).
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  {formData.menuParameters.length === 0 ? (
-                    <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded">No parameters added yet. Examples: Menu Type, Cuisine Choice, Table Setup</p>
+                <div className="space-y-3">
+                  {formData.menuItems.length === 0 ? (
+                    <p className="text-sm text-gray-500 p-4 bg-gray-50 rounded border border-gray-200">No menu items yet. Click "Add Menu Item" to add dishes to your menu.</p>
                   ) : (
-                    formData.menuParameters.map((param, paramIndex) => (
-                      <div key={paramIndex} className="border border-gray-300 rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1 grid grid-cols-2 gap-3 mr-2">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Parameter Name <span className="text-xs text-gray-500">(technical name, lowercase, no spaces)</span>
-                              </label>
-                              <input
-                                type="text"
-                                value={param.name}
-                                onChange={(e) => handleMenuParameterChange(paramIndex, 'name', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
-                                placeholder="e.g., menu_type, cuisine, table_setup"
-                              />
-                              <p className="mt-1 text-xs text-gray-500">Use underscore for spaces</p>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Display Label <span className="text-xs text-gray-500">(what customers see)</span>
-                              </label>
-                              <input
-                                type="text"
-                                value={param.label}
-                                onChange={(e) => handleMenuParameterChange(paramIndex, 'label', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
-                                placeholder="e.g., Menu Type, Cuisine Type"
-                              />
-                              <p className="mt-1 text-xs text-gray-500">Friendly name for customers</p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveMenuParameter(paramIndex)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg mt-6"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-
-                        <div className="mb-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Type
-                          </label>
-                          <select
-                            value={param.type}
-                            onChange={(e) => handleMenuParameterChange(paramIndex, 'type', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="single_select">Single Select (pick one)</option>
-                            <option value="multi_select">Multi Select (pick multiple)</option>
-                            <option value="boolean">Yes/No</option>
-                          </select>
-                        </div>
-
-                        {param.type !== 'boolean' && (
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <label className="text-sm font-medium text-gray-700">
-                                Options <span className="text-xs text-gray-500">(customers choose from these)</span>
-                              </label>
-                              <button
-                                type="button"
-                                onClick={() => handleAddParameterOption(paramIndex)}
-                                className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 font-medium"
-                              >
-                                + Add Option
-                              </button>
-                            </div>
-                            <div className="bg-blue-50 border border-blue-200 rounded p-2 mb-2">
-                              <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-blue-900">
-                                <div>Display Name</div>
-                                <div>Value (lowercase)</div>
-                                <div className="text-right">Extra Price (₦)</div>
-                              </div>
-                            </div>
-                            {param.options.map((option: any, optionIndex: number) => (
-                              <div key={optionIndex} className="flex gap-2 items-center bg-gray-50 p-2 rounded border border-gray-200">
-                                <div className="flex-1">
-                                  <input
-                                    type="text"
-                                    value={option.label}
-                                    onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'label', e.target.value)}
-                                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
-                                    placeholder="e.g., Premium, Basic"
-                                  />
-                                </div>
-                                <div className="flex-1">
-                                  <input
-                                    type="text"
-                                    value={option.value}
-                                    onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'value', e.target.value)}
-                                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm font-mono"
-                                    placeholder="e.g., premium, basic"
-                                  />
-                                </div>
-                                <div className="w-28">
-                                  <input
-                                    type="number"
-                                    value={option.priceEffect}
-                                    onChange={(e) => handleParameterOptionChange(paramIndex, optionIndex, 'priceEffect', parseFloat(e.target.value))}
-                                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm text-right"
-                                    placeholder="0 or 15000"
-                                    step="1000"
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveParameterOption(paramIndex, optionIndex)}
-                                  className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                    formData.menuItems.map((item, index) => (
+                      <div key={index} className="flex gap-3 items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <input
+                          type="text"
+                          value={item}
+                          onChange={(e) => handleMenuItemChange(index, e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                          placeholder="e.g., Jollof Rice, Basmati Rice, Grilled Chicken"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMenuItem(index)}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
                     ))
                   )}
