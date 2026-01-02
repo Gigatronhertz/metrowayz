@@ -171,6 +171,25 @@ const serviceSchema = new mongoose.Schema({
         blockedDates: [String]
     },
 
+    // Service Type Options (for booking modal)
+    serviceTypeOptions: [{
+        type: String
+    }],
+
+    // Meal Packages (simplified meal selection with pricing)
+    mealPackages: [{
+        label: String,
+        price: {
+            type: Number,
+            default: 0
+        }
+    }],
+
+    // Additional Notes Options (dietary preferences, restrictions)
+    additionalNotesOptions: [{
+        type: String
+    }],
+
     // Creator information
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,

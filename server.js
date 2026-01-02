@@ -2286,7 +2286,10 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             selectedMenuOptions,
             selectedAddons,
             serviceDate,
-            serviceTime
+            serviceTime,
+            selectedServiceType,
+            selectedMealPackage,
+            selectedAdditionalNotes
         } = req.body;
 
         // Validate required fields
@@ -2375,8 +2378,14 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
                 const extraGuests = guestCount - service.guestRules.baseGuestLimit;
                 guestFee = extraGuests * (service.guestRules.extraGuestFee || 0);
             }
-            
-            totalAmount = basePrice + menuPrice + addonPrice + guestFee;
+
+            // Add meal package price if selected
+            let mealPackagePrice = 0;
+            if (selectedMealPackage && selectedMealPackage.price) {
+                mealPackagePrice = selectedMealPackage.price;
+            }
+
+            totalAmount = basePrice + menuPrice + addonPrice + guestFee + mealPackagePrice;
             checkIn = new Date(serviceDate);
             checkOut = new Date(serviceDate);
         } else if (serviceType === 'time_based') {
@@ -2426,6 +2435,9 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             bookingData.serviceDate = new Date(serviceDate);
             bookingData.serviceTime = serviceTime;
             bookingData.serviceType = 'time_based';
+            bookingData.selectedServiceType = selectedServiceType;
+            bookingData.selectedMealPackage = selectedMealPackage;
+            bookingData.selectedAdditionalNotes = selectedAdditionalNotes;
         }
 
         // Add time slot information for time-based services

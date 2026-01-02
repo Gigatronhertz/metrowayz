@@ -54,6 +54,9 @@ interface Service {
     timeSlots: Array<{ start: string; end: string }>
     blockedDates: string[]
   }
+  serviceTypeOptions?: string[]
+  mealPackages?: Array<{ label: string; price: number }>
+  additionalNotesOptions?: string[]
 }
 
 const ServiceDetailsPage: React.FC = () => {
@@ -73,6 +76,9 @@ const ServiceDetailsPage: React.FC = () => {
   const [paymentReference, setPaymentReference] = useState<string>('')
   const [serviceDate, setServiceDate] = useState<string>('')
   const [serviceTime, setServiceTime] = useState<string>('')
+  const [selectedServiceType, setSelectedServiceType] = useState<string>('')
+  const [selectedMealPackage, setSelectedMealPackage] = useState<{ label: string; price: number } | null>(null)
+  const [selectedAdditionalNotes, setSelectedAdditionalNotes] = useState<string>('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -172,7 +178,10 @@ const ServiceDetailsPage: React.FC = () => {
       guestFee = extraGuests * (service.guestRules.extraGuestFee || 0)
     }
 
-    return basePrice + menuPrice + addonPrice + guestFee
+    // Add meal package price if selected
+    const mealPackagePrice = selectedMealPackage?.price || 0
+
+    return basePrice + menuPrice + addonPrice + guestFee + mealPackagePrice
   }
 
   if (loading) {
@@ -231,7 +240,10 @@ const ServiceDetailsPage: React.FC = () => {
         selectedMenuOptions,
         selectedAddons,
         guestCount,
-        specialRequests: ''
+        specialRequests: '',
+        selectedServiceType,
+        selectedMealPackage,
+        selectedAdditionalNotes
       })
 
       console.log('✅ Chef booking created successfully!', bookingResponse)
@@ -327,6 +339,9 @@ const ServiceDetailsPage: React.FC = () => {
     setShowBookingModal(false)
     setServiceDate('')
     setServiceTime('')
+    setSelectedServiceType('')
+    setSelectedMealPackage(null)
+    setSelectedAdditionalNotes('')
   }
 
   const handleSuccessClose = () => {
@@ -698,16 +713,155 @@ const ServiceDetailsPage: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-6 pb-24">
+              {/* Chef Details */}
+              <Card className="p-6 bg-gradient-to-r from-primary-50 to-blue-50">
+                <div className="flex items-center gap-2 mb-2">
+                  <ChefHat className="w-5 h-5 text-primary-600" />
+                  <h3 className="text-lg font-bold text-gray-900">Chef Service Details</h3>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-xl font-bold text-gray-900">{service?.title}</p>
+                    {service?.serviceType && (
+                      <p className="text-sm text-primary-600 font-medium">
+                        {service.serviceType.replace(/_/g, ' ').charAt(0).toUpperCase() + service.serviceType.replace(/_/g, ' ').slice(1)}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Rating value={service?.rating || 0} size="sm" />
+                    <span className="text-sm text-gray-600">
+                      {service?.rating} ({service?.reviewCount} reviews)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-gray-600 text-sm">
+                    <MapPin className="w-4 h-4" />
+                    <span>{service?.location}</span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Services Provided */}
+              {service?.shortDescription && (
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Services Provided</h3>
+                  <p className="text-gray-700 leading-relaxed">{service.shortDescription}</p>
+                </Card>
+              )}
+
+              {/* Menu Options */}
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Menu Options</h3>
+                <div className="space-y-4">
+                  {/* Service Type */}
+                  {service?.serviceTypeOptions && service.serviceTypeOptions.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Service Type *
+                      </label>
+                      <select
+                        value={selectedServiceType}
+                        onChange={(e) => setSelectedServiceType(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      >
+                        <option value="">Select service type...</option>
+                        {service.serviceTypeOptions.map((option, idx) => (
+                          <option key={idx} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Meals + Pricing */}
+                  {service?.mealPackages && service.mealPackages.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Meals + Pricing *
+                      </label>
+                      <select
+                        value={selectedMealPackage?.label || ''}
+                        onChange={(e) => {
+                          const pkg = service.mealPackages?.find(p => p.label === e.target.value)
+                          setSelectedMealPackage(pkg || null)
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      >
+                        <option value="">Select meal package...</option>
+                        {service.mealPackages.map((pkg, idx) => (
+                          <option key={idx} value={pkg.label}>
+                            {pkg.label} - {formatCurrency(pkg.price)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Additional Notes */}
+                  {service?.additionalNotesOptions && service.additionalNotesOptions.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Additional Notes (Dietary Preferences)
+                      </label>
+                      <select
+                        value={selectedAdditionalNotes}
+                        onChange={(e) => setSelectedAdditionalNotes(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      >
+                        <option value="">Select dietary preference...</option>
+                        {service.additionalNotesOptions.map((option, idx) => (
+                          <option key={idx} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Number of Guests */}
+              {service?.guestRules && (
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Number of Guests</h3>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
+                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
+                    >
+                      -
+                    </button>
+                    <span className="text-center min-w-16 font-bold text-lg">{guestCount} guests</span>
+                    <button
+                      onClick={() => setGuestCount(Math.min(service.guestRules!.maxGuestsAllowed, guestCount + 1))}
+                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs text-gray-500 ml-2">
+                      (Max: {service.guestRules.maxGuestsAllowed})
+                    </span>
+                  </div>
+                  {guestCount > service.guestRules.baseGuestLimit && service.guestRules.extraGuestFee > 0 && (
+                    <p className="text-xs text-gray-600 mt-3">
+                      Extra guest fee: +{formatCurrency(service.guestRules.extraGuestFee)} per guest above {service.guestRules.baseGuestLimit}
+                    </p>
+                  )}
+                </Card>
+              )}
+
+              {/* Date & Time */}
               <Card className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <Calendar className="w-5 h-5 mr-2" />
                   Select Date & Time
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Service Date
+                      Service Date *
                     </label>
                     <input
                       type="date"
@@ -721,7 +875,7 @@ const ServiceDetailsPage: React.FC = () => {
                   {serviceDate && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Service Time
+                        Service Time *
                       </label>
                       {service?.availability?.timeSlots && service.availability.timeSlots.length > 0 ? (
                         <div className="space-y-2">
@@ -756,11 +910,37 @@ const ServiceDetailsPage: React.FC = () => {
 
               <Card className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
-                
+
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Service:</span>
                     <span className="font-semibold">{service?.title}</span>
+                  </div>
+
+                  {selectedServiceType && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Service Type:</span>
+                      <span className="font-semibold">{selectedServiceType}</span>
+                    </div>
+                  )}
+
+                  {selectedMealPackage && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Meal Package:</span>
+                      <span className="font-semibold">{selectedMealPackage.label} - {formatCurrency(selectedMealPackage.price)}</span>
+                    </div>
+                  )}
+
+                  {selectedAdditionalNotes && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Dietary Preference:</span>
+                      <span className="font-semibold">{selectedAdditionalNotes}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Number of Guests:</span>
+                    <span className="font-semibold">{guestCount}</span>
                   </div>
 
                   {serviceDate && (
@@ -774,25 +954,6 @@ const ServiceDetailsPage: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Service Time:</span>
                       <span className="font-semibold">{serviceTime}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Number of Guests:</span>
-                    <span className="font-semibold">{guestCount}</span>
-                  </div>
-
-                  {selectedMenuOptions && Object.keys(selectedMenuOptions).length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Menu Selections:</span>
-                      <span className="font-semibold text-right">{Object.keys(selectedMenuOptions).length} option(s)</span>
-                    </div>
-                  )}
-
-                  {selectedAddons && selectedAddons.length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Add-ons:</span>
-                      <span className="font-semibold text-right">{selectedAddons.length} selected</span>
                     </div>
                   )}
 

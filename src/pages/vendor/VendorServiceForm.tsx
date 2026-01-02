@@ -90,7 +90,10 @@ const VendorServiceForm = () => {
       availableDays: [] as string[],
       timeSlots: [] as Array<{ start: string; end: string }>,
       blockedDates: [] as string[]
-    }
+    },
+    serviceTypeOptions: [] as string[],
+    mealPackages: [] as Array<{ label: string; price: string }>,
+    additionalNotesOptions: [] as string[]
   });
 
   const [uploading, setUploading] = useState(false);
@@ -141,7 +144,10 @@ const VendorServiceForm = () => {
           availableDays: [],
           timeSlots: [],
           blockedDates: []
-        }
+        },
+        serviceTypeOptions: service.serviceTypeOptions || [],
+        mealPackages: service.mealPackages || [],
+        additionalNotesOptions: service.additionalNotesOptions || []
       });
     }
   }, [serviceData]);
@@ -336,6 +342,76 @@ const VendorServiceForm = () => {
     }));
   };
 
+  // New field handlers
+  const handleAddServiceTypeOption = () => {
+    setFormData(prev => ({
+      ...prev,
+      serviceTypeOptions: [...prev.serviceTypeOptions, '']
+    }));
+  };
+
+  const handleRemoveServiceTypeOption = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      serviceTypeOptions: prev.serviceTypeOptions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleServiceTypeOptionChange = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      serviceTypeOptions: prev.serviceTypeOptions.map((option, i) =>
+        i === index ? value : option
+      )
+    }));
+  };
+
+  const handleAddMealPackage = () => {
+    setFormData(prev => ({
+      ...prev,
+      mealPackages: [...prev.mealPackages, { label: '', price: '' }]
+    }));
+  };
+
+  const handleRemoveMealPackage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      mealPackages: prev.mealPackages.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleMealPackageChange = (index: number, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      mealPackages: prev.mealPackages.map((pkg, i) =>
+        i === index ? { ...pkg, [field]: value } : pkg
+      )
+    }));
+  };
+
+  const handleAddAdditionalNotesOption = () => {
+    setFormData(prev => ({
+      ...prev,
+      additionalNotesOptions: [...prev.additionalNotesOptions, '']
+    }));
+  };
+
+  const handleRemoveAdditionalNotesOption = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      additionalNotesOptions: prev.additionalNotesOptions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAdditionalNotesOptionChange = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      additionalNotesOptions: prev.additionalNotesOptions.map((option, i) =>
+        i === index ? value : option
+      )
+    }));
+  };
+
   const handleAmenityToggle = (amenity: string) => {
     setFormData(prev => ({
       ...prev,
@@ -491,7 +567,13 @@ const VendorServiceForm = () => {
         ...addon,
         price: parseFloat(addon.price) || 0
       })) : undefined,
-      availability: formData.isChefService ? formData.availability : undefined
+      availability: formData.isChefService ? formData.availability : undefined,
+      serviceTypeOptions: formData.isChefService ? formData.serviceTypeOptions : undefined,
+      mealPackages: formData.isChefService ? formData.mealPackages.map(pkg => ({
+        ...pkg,
+        price: parseFloat(pkg.price) || 0
+      })) : undefined,
+      additionalNotesOptions: formData.isChefService ? formData.additionalNotesOptions : undefined
     };
 
     mutation.mutate(submitData);
@@ -1325,6 +1407,207 @@ const VendorServiceForm = () => {
                         </div>
                       ))}
                     </>
+                  )}
+                </div>
+              </div>
+
+              {/* Service Type Options */}
+              <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-indigo-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Service Type Options</h2>
+                    <p className="text-xs text-gray-500 mt-1">Categories for customers to choose from (e.g., Breakfast, Lunch, Dinner)</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddServiceTypeOption}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 font-medium shadow-sm"
+                  >
+                    <Plus size={18} /> Add Option
+                  </button>
+                </div>
+
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-lg p-4 mb-4">
+                  <h3 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                    <span className="bg-indigo-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">💡</span>
+                    Examples:
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="bg-white rounded p-2 border border-indigo-200 text-indigo-900">Breakfast</div>
+                    <div className="bg-white rounded p-2 border border-indigo-200 text-indigo-900">Lunch</div>
+                    <div className="bg-white rounded p-2 border border-indigo-200 text-indigo-900">Dinner</div>
+                    <div className="bg-white rounded p-2 border border-indigo-200 text-indigo-900">Brunch</div>
+                    <div className="bg-white rounded p-2 border border-indigo-200 text-indigo-900">Full Day Service</div>
+                    <div className="bg-white rounded p-2 border border-indigo-200 text-indigo-900">Event Catering</div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {formData.serviceTypeOptions.length === 0 ? (
+                    <p className="text-sm text-gray-500 p-4 bg-gray-50 rounded border border-gray-200">No service type options yet. Click "Add Option" to create service categories.</p>
+                  ) : (
+                    formData.serviceTypeOptions.map((option, index) => (
+                      <div key={index} className="flex gap-3 items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleServiceTypeOptionChange(index, e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                          placeholder="e.g., Breakfast, Lunch, Dinner"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveServiceTypeOption(index)}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Meal Packages */}
+              <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-orange-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Meal Packages</h2>
+                    <p className="text-xs text-gray-500 mt-1">Simplified meal selection with pricing (e.g., 3-Course Meal - ₦50,000)</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddMealPackage}
+                    className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2 font-medium shadow-sm"
+                  >
+                    <Plus size={18} /> Add Package
+                  </button>
+                </div>
+
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-4 mb-4">
+                  <h3 className="font-bold text-orange-900 mb-2 flex items-center gap-2">
+                    <span className="bg-orange-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">💡</span>
+                    Examples:
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="bg-white rounded p-2 border border-orange-200">
+                      <strong>3-Course Meal</strong> - ₦50,000
+                    </div>
+                    <div className="bg-white rounded p-2 border border-orange-200">
+                      <strong>5-Course Meal</strong> - ₦80,000
+                    </div>
+                    <div className="bg-white rounded p-2 border border-orange-200">
+                      <strong>Light Breakfast</strong> - ₦25,000
+                    </div>
+                    <div className="bg-white rounded p-2 border border-orange-200">
+                      <strong>Full Buffet</strong> - ₦120,000
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {formData.mealPackages.length === 0 ? (
+                    <p className="text-sm text-gray-500 p-4 bg-gray-50 rounded border border-gray-200">No meal packages yet. Click "Add Package" to create meal options with pricing.</p>
+                  ) : (
+                    <>
+                      <div className="bg-orange-50 border border-orange-200 rounded p-2">
+                        <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-orange-900">
+                          <div>Meal Package Name</div>
+                          <div className="text-right">Price (₦)</div>
+                        </div>
+                      </div>
+                      {formData.mealPackages.map((pkg, index) => (
+                        <div key={index} className="flex gap-3 items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              value={pkg.label}
+                              onChange={(e) => handleMealPackageChange(index, 'label', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
+                              placeholder="e.g., 3-Course Meal, Light Breakfast"
+                            />
+                          </div>
+                          <div className="w-40">
+                            <div className="relative">
+                              <span className="absolute left-3 top-2.5 text-gray-500 text-sm">₦</span>
+                              <input
+                                type="number"
+                                value={pkg.price}
+                                onChange={(e) => handleMealPackageChange(index, 'price', e.target.value)}
+                                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-right focus:ring-2 focus:ring-orange-500"
+                                placeholder="50000"
+                                min="0"
+                                step="1000"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMealPackage(index)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Additional Notes Options */}
+              <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-teal-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Additional Notes Options</h2>
+                    <p className="text-xs text-gray-500 mt-1">Dietary preferences and restrictions for customers to select</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddAdditionalNotesOption}
+                    className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center gap-2 font-medium shadow-sm"
+                  >
+                    <Plus size={18} /> Add Option
+                  </button>
+                </div>
+
+                <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-300 rounded-lg p-4 mb-4">
+                  <h3 className="font-bold text-teal-900 mb-2 flex items-center gap-2">
+                    <span className="bg-teal-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">💡</span>
+                    Examples:
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="bg-white rounded p-2 border border-teal-200 text-teal-900">Vegetarian</div>
+                    <div className="bg-white rounded p-2 border border-teal-200 text-teal-900">Vegan</div>
+                    <div className="bg-white rounded p-2 border border-teal-200 text-teal-900">Gluten-free</div>
+                    <div className="bg-white rounded p-2 border border-teal-200 text-teal-900">No Pork</div>
+                    <div className="bg-white rounded p-2 border border-teal-200 text-teal-900">Halal Only</div>
+                    <div className="bg-white rounded p-2 border border-teal-200 text-teal-900">Nut Allergies</div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {formData.additionalNotesOptions.length === 0 ? (
+                    <p className="text-sm text-gray-500 p-4 bg-gray-50 rounded border border-gray-200">No additional notes options yet. Click "Add Option" to create dietary preferences.</p>
+                  ) : (
+                    formData.additionalNotesOptions.map((option, index) => (
+                      <div key={index} className="flex gap-3 items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleAdditionalNotesOptionChange(index, e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500"
+                          placeholder="e.g., Vegetarian, Gluten-free, No Pork"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAdditionalNotesOption(index)}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))
                   )}
                 </div>
               </div>

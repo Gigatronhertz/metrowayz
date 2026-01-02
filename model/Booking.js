@@ -95,6 +95,18 @@ const bookingSchema = new mongoose.Schema({
         type: String // Format: "HH:mm"
     },
 
+    // New Simplified Booking Fields
+    selectedServiceType: {
+        type: String // e.g., "Breakfast", "Lunch", "Dinner", "Full Day"
+    },
+    selectedMealPackage: {
+        label: String,
+        price: Number
+    },
+    selectedAdditionalNotes: {
+        type: String // e.g., "Vegetarian", "Gluten-free", "No pork"
+    },
+
     // Pricing (no payment for now, but keep for future)
     totalAmount: {
         type: Number,
