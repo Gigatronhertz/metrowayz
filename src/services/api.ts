@@ -117,6 +117,9 @@ export const bookingAPI = {
     guestCount?: number;
     serviceDate?: string;
     serviceTime?: string;
+    selectedServiceType?: string;
+    selectedMealPackage?: { label: string; price: number } | null;
+    selectedAdditionalNotes?: string;
   }) => {
     return fetchWithAuth('/api/bookings', {
       method: 'POST',
