@@ -154,8 +154,8 @@ const HomePage: React.FC = () => {
             <div className="lg:hidden flex items-center justify-between">
               {/* Mobile Logo */}
               <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/home')}>
-                <div className="rounded-xl bg-primary-500 flex items-center justify-center group-hover:bg-primary-600 transition-all w-10 h-10">
-                  <img src="/logo.svg" alt="MetroWayz" className="brightness-0 invert w-6 h-6" />
+                <div className="rounded-full bg-primary-500 flex items-center justify-center group-hover:bg-primary-600 transition-all w-12 h-12">
+                  <img src="/logo.svg" alt="MetroWayz" className="brightness-0 invert w-7 h-7" />
                 </div>
               </div>
 
@@ -199,11 +199,11 @@ const HomePage: React.FC = () => {
           <div className="hidden lg:flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/home')}>
-              <div className={`rounded-xl bg-primary-500 flex items-center justify-center group-hover:bg-primary-600 transition-all duration-500 ${
-                scrollPastServices ? 'w-9 h-9' : 'w-12 h-12'
+              <div className={`rounded-full bg-primary-500 flex items-center justify-center group-hover:bg-primary-600 transition-all duration-500 ${
+                scrollPastServices ? 'w-10 h-10' : 'w-14 h-14'
               }`}>
                 <img src="/logo.svg" alt="MetroWayz" className={`brightness-0 invert transition-all duration-500 ${
-                  scrollPastServices ? 'w-5 h-5' : 'w-7 h-7'
+                  scrollPastServices ? 'w-6 h-6' : 'w-8 h-8'
                 }`} />
               </div>
               <div className={`transition-all duration-500 ${scrollPastServices ? 'opacity-0 w-0' : 'opacity-100'}`}>
