@@ -86,7 +86,7 @@ const OnboardingPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <img src="/logo.svg" alt="MetroWayz" className="w-12 h-12 brightness-0 invert" />
+            <img src="/logo.svg" alt="MetroWayz" className="w-12 h-12 " />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome to MetroWayz
