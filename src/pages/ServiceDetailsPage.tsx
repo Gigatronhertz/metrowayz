@@ -42,12 +42,7 @@ interface Service {
     maxGuestsAllowed: number
     extraGuestFee: number
   }
-  menuParameters?: Array<{
-    name: string
-    label: string
-    type: string
-    options: Array<{ label: string; value: string; priceEffect: number }>
-  }>
+  menuItems?: string[]
   addons?: Array<{ label: string; price: number }>
   availability?: {
     availableDays: string[]
@@ -67,7 +62,6 @@ const ServiceDetailsPage: React.FC = () => {
   const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState<any[]>([])
-  const [selectedMenuOptions, setSelectedMenuOptions] = useState<{ [key: string]: string | string[] | undefined }>({})
   const [selectedAddons, setSelectedAddons] = useState<string[]>([])
   const [guestCount, setGuestCount] = useState(2)
   const [showBookingModal, setShowBookingModal] = useState(false)
@@ -145,21 +139,6 @@ const ServiceDetailsPage: React.FC = () => {
       basePrice = service.pricing.range?.minPrice || 0
     }
 
-    let menuPrice = 0
-    if (service.menuParameters) {
-      service.menuParameters.forEach((param) => {
-        const selected = selectedMenuOptions[param.name]
-        if (selected) {
-          const option = param.options.find(
-            (opt: { label: string; value: string; priceEffect: number }) => opt.value === selected
-          )
-          if (option) {
-            menuPrice += option.priceEffect || 0
-          }
-        }
-      })
-    }
-
     let addonPrice = 0
     if (service.addons) {
       selectedAddons.forEach((addonLabel) => {
@@ -181,7 +160,7 @@ const ServiceDetailsPage: React.FC = () => {
     // Add meal package price if selected
     const mealPackagePrice = selectedMealPackage?.price || 0
 
-    return basePrice + menuPrice + addonPrice + guestFee + mealPackagePrice
+    return basePrice + addonPrice + guestFee + mealPackagePrice
   }
 
   if (loading) {
@@ -237,7 +216,6 @@ const ServiceDetailsPage: React.FC = () => {
         isChefService: true,
         serviceDate,
         serviceTime,
-        selectedMenuOptions,
         selectedAddons,
         guestCount,
         specialRequests: '',
@@ -432,12 +410,6 @@ const ServiceDetailsPage: React.FC = () => {
           </div>
         </div>
 
-        {service.isChefService && service.shortDescription && (
-          <div className="bg-primary-50 rounded-lg p-4 border border-primary-200">
-            <p className="text-gray-700 font-medium">{service.shortDescription}</p>
-          </div>
-        )}
-
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
           <p className="text-gray-600 leading-relaxed">{service.description}</p>
@@ -491,83 +463,14 @@ const ServiceDetailsPage: React.FC = () => {
               )}
             </div>
 
-            {service.menuParameters && service.menuParameters.length > 0 && (
+            {service.menuItems && service.menuItems.length > 0 && (
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Menu Options</h2>
-                <div className="space-y-4">
-                  {service.menuParameters.map((param, idx) => (
-                    <div key={idx}>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {param.label}
-                      </label>
-                      {param.type === 'boolean' ? (
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedMenuOptions[param.name] === 'true'}
-                            onChange={(e) => {
-                              const updated = { ...selectedMenuOptions }
-                              if (e.target.checked) {
-                                updated[param.name] = 'true'
-                              } else {
-                                delete updated[param.name]
-                              }
-                              setSelectedMenuOptions(updated)
-                            }}
-                            className="rounded"
-                          />
-                          <span className="text-sm text-gray-600">{param.label}</span>
-                        </label>
-                      ) : param.type === 'multi_select' ? (
-                        <div className="space-y-2">
-                          {param.options.map((option: any, optIdx: number) => (
-                            <label key={optIdx} className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={(selectedMenuOptions[param.name] || []).includes(option.value)}
-                                onChange={(e) => {
-                                  const current = (selectedMenuOptions[param.name] as string[]) || []
-                                  const updated = e.target.checked
-                                    ? [...current, option.value]
-                                    : current.filter((v: string) => v !== option.value)
-                                  setSelectedMenuOptions({
-                                    ...selectedMenuOptions,
-                                    [param.name]: updated
-                                  })
-                                }}
-                                className="rounded"
-                              />
-                              <span className="text-sm text-gray-600">
-                                {option.label}
-                                {option.priceEffect > 0 && (
-                                  <span className="text-primary-600 font-medium ml-1">
-                                    +{formatCurrency(option.priceEffect)}
-                                  </span>
-                                )}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      ) : (
-                        <select
-                          value={selectedMenuOptions[param.name] || ''}
-                          onChange={(e) => 
-                            setSelectedMenuOptions({
-                              ...selectedMenuOptions,
-                              [param.name]: e.target.value
-                            })
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
-                        >
-                          <option value="">Select an option...</option>
-                          {param.options.map((option: any, optIdx: number) => (
-                            <option key={optIdx} value={option.value}>
-                              {option.label}
-                              {option.priceEffect > 0 && ` (+${formatCurrency(option.priceEffect)})`}
-                            </option>
-                          ))}
-                        </select>
-                      )}
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Menu Items</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {service.menuItems.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 p-3 bg-primary-50 rounded-lg border border-primary-100">
+                      <ChefHat className="w-4 h-4 text-primary-600 flex-shrink-0" />
+                      <span className="text-sm font-medium text-gray-900">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -600,7 +503,7 @@ const ServiceDetailsPage: React.FC = () => {
               </div>
             )}
 
-            
+
           </>
         )}
 
@@ -741,17 +644,24 @@ const ServiceDetailsPage: React.FC = () => {
                 </div>
               </Card>
 
-              {/* Services Provided */}
-              {service?.shortDescription && (
+              {/* Menu */}
+              {service?.menuItems && service.menuItems.length > 0 && (
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Services Provided</h3>
-                  <p className="text-gray-700 leading-relaxed">{service.shortDescription}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Menu Items</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {service.menuItems.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2 p-2 bg-primary-50 rounded-lg border border-primary-100">
+                        <ChefHat className="w-4 h-4 text-primary-600 flex-shrink-0" />
+                        <span className="text-sm font-medium text-gray-900">{item}</span>
+                      </div>
+                    ))}
+                  </div>
                 </Card>
               )}
 
               {/* Menu Options */}
               <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Menu Options</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Details</h3>
                 <div className="space-y-4">
                   {/* Service Type */}
                   {service?.serviceTypeOptions && service.serviceTypeOptions.length > 0 && (
