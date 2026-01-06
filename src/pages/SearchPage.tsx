@@ -46,16 +46,6 @@ const SearchPage: React.FC = () => {
   const [filters, setFilters] = useState<SearchFilters>({})
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
-  const [isScrolled, setIsScrolled] = useState(false)
-
-  // Scroll detection for sticky search
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 100)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // Fetch services from API
   useEffect(() => {

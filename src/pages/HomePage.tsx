@@ -32,7 +32,6 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate()
   const moreForYouRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [selectedCategory, setSelectedCategory] = useState('accommodation')
   const [services, setServices] = useState<Service[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -222,7 +221,7 @@ const HomePage: React.FC = () => {
               <CategoryCard
                 key={category.id}
                 category={category}
-                isSelected={selectedCategory === category.id}
+                isSelected={false}
                 onClick={() => {
                   navigate(`/search?category=${category.id}`)
                 }}
@@ -423,8 +422,8 @@ const HomePage: React.FC = () => {
           </div>
         </section> */}
 
-        {/* Upcoming Events - Show when Entertainment is selected */}
-        {selectedCategory === 'entertainment' && events.length > 0 && (
+        {/* Upcoming Events */}
+        {events.length > 0 && (
           <section className="container-max mb-16">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-3xl font-bold text-gray-900">Upcoming Events</h2>
