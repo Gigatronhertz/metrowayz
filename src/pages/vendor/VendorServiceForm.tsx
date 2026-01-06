@@ -8,10 +8,9 @@ import { Upload, X, MapPin, Plus, Trash2 } from 'lucide-react';
 import MapPicker from '../../components/vendor/MapPicker';
 
 const CATEGORIES = [
-  'Private Chefs',
-  'Entertainment',
   'Accommodation',
-  'Professional Services'
+  'Private Chefs',
+  'Entertainment'
 ];
 
 const PRICE_UNITS = [

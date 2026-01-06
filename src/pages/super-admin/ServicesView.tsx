@@ -7,12 +7,12 @@ import { Star } from 'lucide-react';
 const CATEGORIES = [
   'All',
   'Accommodation',
+  'Private Chefs',
+  'Entertainment',
   'Transportation',
   'Events',
   'Cleaning',
-  'Entertainment',
-  'Health & Wellness',
-  'Professional Services'
+  'Health & Wellness'
 ];
 
 const ServicesView = () => {

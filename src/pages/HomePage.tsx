@@ -330,7 +330,7 @@ const HomePage: React.FC = () => {
             </h1>
 
             <p className="text-base lg:text-lg text-gray-600 mb-8 lg:mb-10 max-w-2xl mx-auto leading-relaxed">
-              Book private chefs, luxury accommodations, entertainment, and professional services with ease
+              Book luxury accommodations, private chefs, and entertainment services with ease
             </p>
 
             {/* Hero Search */}
@@ -385,7 +385,7 @@ const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 max-w-4xl mx-auto">
             {categories.map((category) => (
               <CategoryCard
                 key={category.id}

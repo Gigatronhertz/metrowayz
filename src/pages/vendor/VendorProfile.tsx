@@ -15,12 +15,12 @@ const BUSINESS_TYPES = [
 
 const CATEGORIES = [
   'Accommodation',
+  'Private Chefs',
+  'Entertainment',
   'Transportation',
   'Events',
   'Cleaning',
-  'Entertainment',
-  'Health & Wellness',
-  'Professional Services'
+  'Health & Wellness'
 ];
 
 const VendorProfile = () => {
