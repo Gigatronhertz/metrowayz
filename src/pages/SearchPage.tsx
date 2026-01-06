@@ -27,6 +27,16 @@ interface Service {
   isAvailable: boolean
 }
 
+// Map category IDs to actual category names used in the database
+const getCategoryName = (categoryId: string): string | undefined => {
+  const categoryMap: { [key: string]: string } = {
+    'accommodation': 'Accommodation',
+    'private-chefs': 'Private Chefs',
+    'entertainment': 'Entertainment',
+  }
+  return categoryMap[categoryId]
+}
+
 const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
@@ -52,9 +62,10 @@ const SearchPage: React.FC = () => {
     const fetchServices = async () => {
       try {
         setLoading(true)
+        const categoryName = selectedCategory !== 'all' ? getCategoryName(selectedCategory) : undefined
         const response = await serviceAPI.getPublicServices({
           search: searchQuery || undefined,
-          category: selectedCategory !== 'all' ? selectedCategory : undefined,
+          category: categoryName,
           minPrice: filters.priceRange?.[0],
           maxPrice: filters.priceRange?.[1],
           sortBy: filters.sortBy || 'createdAt',

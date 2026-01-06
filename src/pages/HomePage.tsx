@@ -392,10 +392,7 @@ const HomePage: React.FC = () => {
                 category={category}
                 isSelected={selectedCategory === category.id}
                 onClick={() => {
-                  setSelectedCategory(category.id)
-                  setTimeout(() => {
-                    moreForYouRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                  }, 100)
+                  navigate(`/search?category=${category.id}`)
                 }}
               />
             ))}
