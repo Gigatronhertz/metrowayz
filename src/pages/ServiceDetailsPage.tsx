@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, Heart, Share2, ChefHat, Users, Calendar, Check, CreditCard, X } from 'lucide-react'
+import { MapPin, Heart, Share2, ChefHat, Users, Calendar, Check } from 'lucide-react'
 import { usePaystackPayment } from 'react-paystack'
 import { serviceAPI, favoriteAPI, reviewAPI, bookingAPI } from '../services/api'
 import { formatCurrency, formatPriceUnit } from '../utils/format'
@@ -64,7 +64,6 @@ const ServiceDetailsPage: React.FC = () => {
   const [reviews, setReviews] = useState<any[]>([])
   const [selectedAddons, setSelectedAddons] = useState<string[]>([])
   const [guestCount, setGuestCount] = useState(2)
-  const [showBookingModal, setShowBookingModal] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [paymentReference, setPaymentReference] = useState<string>('')
@@ -191,9 +190,26 @@ const ServiceDetailsPage: React.FC = () => {
         navigate('/login')
         return
       }
+
+      // Validate required fields
+      if (!serviceDate) {
+        alert('Please select a service date')
+        return
+      }
+
+      if (!serviceTime) {
+        alert('Please select a service time')
+        return
+      }
+
+      // Generate payment reference and trigger payment
       const ref = generatePaymentReference()
       setPaymentReference(ref)
-      setShowBookingModal(true)
+
+      // Trigger payment immediately
+      setTimeout(() => {
+        handlePayment()
+      }, 100)
     } else {
       localStorage.setItem('redirectAfterAuth', `/booking/${service._id}`)
       navigate(`/booking/${service._id}`)
@@ -313,15 +329,6 @@ const ServiceDetailsPage: React.FC = () => {
     } as any)
   }
 
-  const closeModal = () => {
-    setShowBookingModal(false)
-    setServiceDate('')
-    setServiceTime('')
-    setSelectedServiceType('')
-    setSelectedMealPackage(null)
-    setSelectedAdditionalNotes('')
-  }
-
   const handleSuccessClose = () => {
     setShowSuccess(false)
     navigate('/bookings')
@@ -417,51 +424,13 @@ const ServiceDetailsPage: React.FC = () => {
 
         {service.isChefService && (
           <>
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Pricing & Booking Details</h2>
-              
-              {service.pricing?.model === 'range' && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    Base price: {formatCurrency(service.pricing.range?.minPrice || 0)} - {formatCurrency(service.pricing.range?.maxPrice || 0)}
-                  </p>
-                </div>
-              )}
-
-              {service.guestRules && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center gap-2">
-                      <Users size={16} />
-                      Number of Guests
-                    </div>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      -
-                    </button>
-                    <span className="text-center min-w-12 font-semibold">{guestCount}</span>
-                    <button
-                      onClick={() => setGuestCount(Math.min(service.guestRules!.maxGuestsAllowed, guestCount + 1))}
-                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      +
-                    </button>
-                    <span className="text-xs text-gray-500">
-                      (Base: {service.guestRules.baseGuestLimit}, Max: {service.guestRules.maxGuestsAllowed})
-                    </span>
-                  </div>
-                  {guestCount > service.guestRules.baseGuestLimit && service.guestRules.extraGuestFee > 0 && (
-                    <p className="text-xs text-gray-600 mt-2">
-                      +{formatCurrency(service.guestRules.extraGuestFee)} per extra guest
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
+            {service.pricing?.model === 'range' && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  Base price: {formatCurrency(service.pricing.range?.minPrice || 0)} - {formatCurrency(service.pricing.range?.maxPrice || 0)}
+                </p>
+              </div>
+            )}
 
             {service.menuItems && service.menuItems.length > 0 && (
               <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -503,7 +472,163 @@ const ServiceDetailsPage: React.FC = () => {
               </div>
             )}
 
+            {/* Booking Form */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Booking Details</h2>
+              <div className="space-y-4">
+                {/* Service Type */}
+                {service.serviceTypeOptions && service.serviceTypeOptions.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Service Type *
+                    </label>
+                    <select
+                      value={selectedServiceType}
+                      onChange={(e) => setSelectedServiceType(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    >
+                      <option value="">Select service type...</option>
+                      {service.serviceTypeOptions.map((option, idx) => (
+                        <option key={idx} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
+                {/* Meal Package */}
+                {service.mealPackages && service.mealPackages.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Meal Package *
+                    </label>
+                    <select
+                      value={selectedMealPackage?.label || ''}
+                      onChange={(e) => {
+                        const pkg = service.mealPackages?.find(p => p.label === e.target.value)
+                        setSelectedMealPackage(pkg || null)
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    >
+                      <option value="">Select meal package...</option>
+                      {service.mealPackages.map((pkg, idx) => (
+                        <option key={idx} value={pkg.label}>
+                          {pkg.label} - {formatCurrency(pkg.price)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Dietary Preferences */}
+                {service.additionalNotesOptions && service.additionalNotesOptions.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Dietary Preferences (Optional)
+                    </label>
+                    <select
+                      value={selectedAdditionalNotes}
+                      onChange={(e) => setSelectedAdditionalNotes(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    >
+                      <option value="">Select dietary preference...</option>
+                      {service.additionalNotesOptions.map((option, idx) => (
+                        <option key={idx} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Number of Guests */}
+                {service.guestRules && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="flex items-center gap-2">
+                        <Users size={16} />
+                        Number of Guests
+                      </div>
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
+                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
+                      >
+                        -
+                      </button>
+                      <span className="text-center min-w-16 font-bold text-lg">{guestCount} guests</span>
+                      <button
+                        onClick={() => setGuestCount(Math.min(service.guestRules!.maxGuestsAllowed, guestCount + 1))}
+                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Base: {service.guestRules.baseGuestLimit}, Max: {service.guestRules.maxGuestsAllowed}
+                    </p>
+                    {guestCount > service.guestRules.baseGuestLimit && service.guestRules.extraGuestFee > 0 && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        +{formatCurrency(service.guestRules.extraGuestFee)} per extra guest
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Date & Time */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <div className="flex items-center gap-2">
+                      <Calendar size={16} />
+                      Service Date *
+                    </div>
+                  </label>
+                  <input
+                    type="date"
+                    value={serviceDate}
+                    onChange={(e) => setServiceDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                </div>
+
+                {serviceDate && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Service Time *
+                    </label>
+                    {service.availability?.timeSlots && service.availability.timeSlots.length > 0 ? (
+                      <div className="space-y-2">
+                        {service.availability.timeSlots.map((slot, idx) => (
+                          <label key={idx} className="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                            <input
+                              type="radio"
+                              name="timeSlot"
+                              value={slot.start}
+                              checked={serviceTime === slot.start}
+                              onChange={(e) => setServiceTime(e.target.value)}
+                              className="text-primary-600"
+                            />
+                            <span className="text-sm font-medium text-gray-700">
+                              {slot.start} - {slot.end}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <input
+                        type="time"
+                        value={serviceTime}
+                        onChange={(e) => setServiceTime(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </>
         )}
 
@@ -601,325 +726,6 @@ const ServiceDetailsPage: React.FC = () => {
       </div>
 
       <div className="h-20"></div>
-
-      {showBookingModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-end z-[9999]">
-          <div className="bg-white w-full rounded-t-3xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Chef Service Booking</h2>
-              <button
-                onClick={closeModal}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <X className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6 pb-24">
-              {/* Chef Details */}
-              <Card className="p-6 bg-gradient-to-r from-primary-50 to-blue-50">
-                <div className="flex items-center gap-2 mb-2">
-                  <ChefHat className="w-5 h-5 text-primary-600" />
-                  <h3 className="text-lg font-bold text-gray-900">Chef Service Details</h3>
-                </div>
-                <div className="space-y-2">
-                  <div>
-                    <p className="text-xl font-bold text-gray-900">{service?.title}</p>
-                    {service?.serviceType && (
-                      <p className="text-sm text-primary-600 font-medium">
-                        {service.serviceType.replace(/_/g, ' ').charAt(0).toUpperCase() + service.serviceType.replace(/_/g, ' ').slice(1)}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Rating value={service?.rating || 0} size="sm" />
-                    <span className="text-sm text-gray-600">
-                      {service?.rating} ({service?.reviewCount} reviews)
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 text-gray-600 text-sm">
-                    <MapPin className="w-4 h-4" />
-                    <span>{service?.location}</span>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Menu */}
-              {service?.menuItems && service.menuItems.length > 0 && (
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Menu Items</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {service.menuItems.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-2 p-2 bg-primary-50 rounded-lg border border-primary-100">
-                        <ChefHat className="w-4 h-4 text-primary-600 flex-shrink-0" />
-                        <span className="text-sm font-medium text-gray-900">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
-
-              {/* Menu Options */}
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Details</h3>
-                <div className="space-y-4">
-                  {/* Service Type */}
-                  {service?.serviceTypeOptions && service.serviceTypeOptions.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Service Type *
-                      </label>
-                      <select
-                        value={selectedServiceType}
-                        onChange={(e) => setSelectedServiceType(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      >
-                        <option value="">Select service type...</option>
-                        {service.serviceTypeOptions.map((option, idx) => (
-                          <option key={idx} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {/* Meals + Pricing */}
-                  {service?.mealPackages && service.mealPackages.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Meals + Pricing *
-                      </label>
-                      <select
-                        value={selectedMealPackage?.label || ''}
-                        onChange={(e) => {
-                          const pkg = service.mealPackages?.find(p => p.label === e.target.value)
-                          setSelectedMealPackage(pkg || null)
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      >
-                        <option value="">Select meal package...</option>
-                        {service.mealPackages.map((pkg, idx) => (
-                          <option key={idx} value={pkg.label}>
-                            {pkg.label} - {formatCurrency(pkg.price)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {/* Additional Notes */}
-                  {service?.additionalNotesOptions && service.additionalNotesOptions.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Additional Notes (Dietary Preferences)
-                      </label>
-                      <select
-                        value={selectedAdditionalNotes}
-                        onChange={(e) => setSelectedAdditionalNotes(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      >
-                        <option value="">Select dietary preference...</option>
-                        {service.additionalNotesOptions.map((option, idx) => (
-                          <option key={idx} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                </div>
-              </Card>
-
-              {/* Number of Guests */}
-              {service?.guestRules && (
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Number of Guests</h3>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
-                    >
-                      -
-                    </button>
-                    <span className="text-center min-w-16 font-bold text-lg">{guestCount} guests</span>
-                    <button
-                      onClick={() => setGuestCount(Math.min(service.guestRules!.maxGuestsAllowed, guestCount + 1))}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
-                    >
-                      +
-                    </button>
-                    <span className="text-xs text-gray-500 ml-2">
-                      (Max: {service.guestRules.maxGuestsAllowed})
-                    </span>
-                  </div>
-                  {guestCount > service.guestRules.baseGuestLimit && service.guestRules.extraGuestFee > 0 && (
-                    <p className="text-xs text-gray-600 mt-3">
-                      Extra guest fee: +{formatCurrency(service.guestRules.extraGuestFee)} per guest above {service.guestRules.baseGuestLimit}
-                    </p>
-                  )}
-                </Card>
-              )}
-
-              {/* Date & Time */}
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Calendar className="w-5 h-5 mr-2" />
-                  Select Date & Time
-                </h3>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Service Date *
-                    </label>
-                    <input
-                      type="date"
-                      value={serviceDate}
-                      onChange={(e) => setServiceDate(e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  {serviceDate && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Service Time *
-                      </label>
-                      {service?.availability?.timeSlots && service.availability.timeSlots.length > 0 ? (
-                        <div className="space-y-2">
-                          {service.availability.timeSlots.map((slot, idx) => (
-                            <label key={idx} className="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 rounded-lg hover:bg-gray-50">
-                              <input
-                                type="radio"
-                                name="timeSlot"
-                                value={slot.start}
-                                checked={serviceTime === slot.start}
-                                onChange={(e) => setServiceTime(e.target.value)}
-                                className="rounded"
-                              />
-                              <span className="text-sm text-gray-700">
-                                {slot.start} - {slot.end}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      ) : (
-                        <input
-                          type="time"
-                          value={serviceTime}
-                          onChange={(e) => setServiceTime(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h3>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Service:</span>
-                    <span className="font-semibold">{service?.title}</span>
-                  </div>
-
-                  {selectedServiceType && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Service Type:</span>
-                      <span className="font-semibold">{selectedServiceType}</span>
-                    </div>
-                  )}
-
-                  {selectedMealPackage && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Meal Package:</span>
-                      <span className="font-semibold">{selectedMealPackage.label} - {formatCurrency(selectedMealPackage.price)}</span>
-                    </div>
-                  )}
-
-                  {selectedAdditionalNotes && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Dietary Preference:</span>
-                      <span className="font-semibold">{selectedAdditionalNotes}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Number of Guests:</span>
-                    <span className="font-semibold">{guestCount}</span>
-                  </div>
-
-                  {serviceDate && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Service Date:</span>
-                      <span className="font-semibold">{new Date(serviceDate).toLocaleDateString()}</span>
-                    </div>
-                  )}
-
-                  {serviceTime && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Service Time:</span>
-                      <span className="font-semibold">{serviceTime}</span>
-                    </div>
-                  )}
-
-                  <div className="border-t pt-3 flex justify-between">
-                    <span className="text-lg font-bold">Total Amount:</span>
-                    <span className="text-lg font-bold text-primary-500">
-                      {formatCurrency(calculateChefServicePrice())}
-                    </span>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
-                
-                <button className="w-full p-4 rounded-xl border-2 border-primary-500 bg-primary-50">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-5 h-5 rounded-full border-2 border-primary-500 bg-primary-500 flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full" />
-                    </div>
-                    
-                    <CreditCard className="w-6 h-6 text-gray-600" />
-                    
-                    <div className="flex-1 text-left">
-                      <div className="font-semibold text-gray-900">Pay with Paystack</div>
-                      <div className="text-sm text-gray-600">Card, Bank Transfer, USSD</div>
-                    </div>
-                  </div>
-                </button>
-              </Card>
-
-              <Card className="p-6 bg-blue-50 border-blue-200">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-blue-800 mb-2">Secure Payment</h3>
-                    <p className="text-blue-700 text-sm leading-relaxed">
-                      Your payment is processed securely through Paystack. Your booking will be confirmed immediately after successful payment.
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              <Button
-                onClick={handlePayment}
-                isLoading={isProcessing}
-                className="w-full"
-              >
-                {isProcessing ? 'Processing...' : `Pay ${formatCurrency(calculateChefServicePrice())}`}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
