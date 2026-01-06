@@ -4,7 +4,7 @@ import { Grid, List, Map } from 'lucide-react'
 import { categories } from '../data/mockData'
 import { serviceAPI } from '../services/api'
 import { SearchFilters } from '../types'
-import Header from '../components/layout/Header'
+import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import SearchBar from '../components/common/SearchBar'
 import ServiceCard from '../components/common/ServiceCard'
@@ -101,20 +101,12 @@ const SearchPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 relative">
-      <Header
-        title="Search Services"
-        showBack
-        showNotifications
-      />
+    <div className="min-h-screen bg-gray-50 pb-20 lg:pb-0 relative">
+      <MainHeader />
 
-      {/* Sticky Search & Categories */}
-      <div className={`bg-white transition-all duration-500 z-40 ${
-        isScrolled ? 'sticky top-0 shadow-md' : 'relative'
-      }`}>
-        <div className={`container-padding transition-all duration-500 ${
-          isScrolled ? 'py-3' : 'py-4'
-        }`}>
+      {/* Search & Categories */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="container-max py-4">
           {/* Search Bar */}
           <div className="mb-3">
             <SearchBar
@@ -125,10 +117,8 @@ const SearchPage: React.FC = () => {
             />
           </div>
 
-          {/* Categories - Hidden on mobile when sticky */}
-          <div className={`flex space-x-2 overflow-x-auto pb-2 scrollbar-hide ${
-            isScrolled ? 'hidden lg:flex' : 'flex'
-          }`}>
+          {/* Categories */}
+          <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
             <button
               onClick={() => handleCategoryChange('all')}
               className={`px-3 py-1.5 rounded-full whitespace-nowrap text-xs font-semibold transition-all ${

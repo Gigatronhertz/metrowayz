@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Calendar, MapPin } from 'lucide-react'
+import { Calendar, MapPin } from 'lucide-react'
 import { categories } from '../data/mockData'
 import { serviceAPI, eventsAPI } from '../services/api'
 import { formatPriceUnit } from '../utils/format'
-import { useAuth } from '../hooks/useAuth'
+import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import CategoryCard from '../components/common/CategoryCard'
 import SearchBar from '../components/common/SearchBar'
@@ -30,14 +30,12 @@ interface Service {
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
-  const { isAuthenticated, logout } = useAuth()
   const moreForYouRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [selectedCategory, setSelectedCategory] = useState('accommodation')
   const [services, setServices] = useState<Service[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [scrollPastServices, setScrollPastServices] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
@@ -45,19 +43,6 @@ const HomePage: React.FC = () => {
   const getPriceUnitDisplay = (service: Service) => {
     return service.isChefService ? 'per service' : formatPriceUnit(service.priceUnit, 'short');
   };
-
-
-  // Scroll detection
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY
-      // Detect if scrolled past services section (approximately 800px down)
-      setScrollPastServices(scrollPosition > 800)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // Fetch services from API
   useEffect(() => {
@@ -137,160 +122,7 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white pb-20 lg:pb-0 relative">
-      {/* Mobile & Desktop Header */}
-      <header className={`bg-white border-b border-gray-100 transition-all duration-500 z-50 ${
-        scrollPastServices ? 'sticky top-0 shadow-md' : 'relative'
-      }`}>
-        <div className={`container-max transition-all duration-500 ${scrollPastServices ? 'py-3' : 'py-5 lg:py-6'}`}>
-          {/* Mobile: Search bar replaces header when scrolled */}
-          {scrollPastServices ? (
-            <div className="lg:hidden animate-fade-in">
-              <SearchBar
-                placeholder="Search services..."
-                onFilterClick={() => navigate('/search')}
-              />
-            </div>
-          ) : (
-            <div className="lg:hidden flex items-center justify-between">
-              {/* Mobile Logo */}
-              <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/home')}>
-                <img src="/logo.svg" alt="MetroWayz" className="w-12 h-12 transition-all" />
-              </div>
-
-              {/* Mobile Navigation */}
-              <nav className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    console.log('Vendor button clicked')
-                    navigate('/vendor')
-                  }}
-                  className="text-xs font-medium text-dark-700 hover:text-primary-600 transition-colors"
-                >
-                  Vendor
-                </button>
-                {isAuthenticated ? (
-                  <button
-                    onClick={() => {
-                      console.log('Logout clicked')
-                      logout()
-                    }}
-                    className="text-xs font-medium px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all duration-300 shadow-md"
-                  >
-                    Logout
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      console.log('Login button clicked')
-                      navigate('/')
-                    }}
-                    className="text-xs font-semibold px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white rounded-xl transition-all duration-300 shadow-md"
-                  >
-                    Login
-                  </button>
-                )}
-              </nav>
-            </div>
-          )}
-
-          {/* Desktop: Standard header with inline search */}
-          <div className="hidden lg:flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/home')}>
-              <img src="/logo.svg" alt="MetroWayz" className={`transition-all duration-500 ${
-                scrollPastServices ? 'w-10 h-10' : 'w-14 h-14'
-              }`} />
-              <div className={`transition-all duration-500 ${scrollPastServices ? 'opacity-0 w-0' : 'opacity-100'}`}>
-                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                  MetroWayz
-                </h1>
-                <p className="text-xs text-gray-600 font-medium">
-                  Premium Lifestyle Services
-                </p>
-              </div>
-            </div>
-
-            {/* Desktop Sticky Search Bar */}
-            {scrollPastServices && (
-              <div className="flex-1 max-w-xl mx-8 animate-fade-in">
-                <SearchBar
-                  placeholder="Search services..."
-                  onFilterClick={() => navigate('/search')}
-                />
-              </div>
-            )}
-
-            {/* Desktop Navigation */}
-            <nav className="flex items-center gap-6">
-              <button
-                onClick={() => navigate('/home')}
-                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors flex items-center gap-2"
-              >
-                Home
-              </button>
-              <button
-                onClick={() => navigate('/search')}
-                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors flex items-center gap-2"
-              >
-                Search
-              </button>
-              <button
-                onClick={() => navigate('/bookings')}
-                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors flex items-center gap-2"
-              >
-                Bookings
-              </button>
-              <button
-                onClick={() => navigate('/profile')}
-                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors flex items-center gap-2"
-              >
-                Profile
-              </button>
-              <button
-                onClick={() => {
-                  console.log('Desktop Vendor button clicked')
-                  navigate('/vendor')
-                }}
-                className="text-sm font-medium text-gray-700 hover:text-primary-500 transition-colors"
-              >
-                Become a Vendor
-              </button>
-            </nav>
-
-            {/* Desktop Right Actions */}
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => {/* Navigate to notifications */}}
-                className="relative p-2.5 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <Bell className="w-5 h-5 text-gray-700" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full"></span>
-              </button>
-              {isAuthenticated ? (
-                <button
-                  onClick={() => {
-                    console.log('Desktop Logout clicked')
-                    logout()
-                  }}
-                  className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg transition-colors"
-                >
-                  Logout
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    console.log('Desktop Login button clicked')
-                    navigate('/')
-                  }}
-                  className="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-lg transition-colors"
-                >
-                  Sign In
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       {/* Hero Section */}
       <section className="relative bg-gray-50 py-16 lg:py-24 overflow-hidden lg:px-[15px]">

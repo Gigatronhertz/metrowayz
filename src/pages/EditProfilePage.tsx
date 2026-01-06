@@ -4,7 +4,7 @@ import { User, Mail, Phone, MapPin, Save, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { userAPI } from '../services/api'
-import Header from '../components/layout/Header'
+import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -93,7 +93,7 @@ const EditProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <Header title="Edit Profile" showBack />
+      <MainHeader />
 
       <div className="container-padding py-6 space-y-6">
         {/* Profile Picture */}

@@ -4,7 +4,7 @@ import { Calendar, MessageSquare } from 'lucide-react'
 import { serviceAPI, bookingAPI } from '../services/api'
 import { formatCurrency, formatPriceUnit, getPluralPriceUnit } from '../utils/format'
 
-import Header from '../components/layout/Header'
+import MainHeader from '../components/layout/MainHeader'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import BookingCalendar from '../components/Calendar/BookingCalendar'
@@ -130,7 +130,7 @@ const BookingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Book Service" showBack />
+      <MainHeader />
 
       <div className="container-padding py-6 space-y-6">
         {/* Service Summary */}

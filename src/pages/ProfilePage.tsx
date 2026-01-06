@@ -3,7 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom'
 import { User, HelpCircle, Shield, FileText, LogOut, FileEdit as Edit } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { bookingAPI } from '../services/api'
-import Header from '../components/layout/Header'
+import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -69,7 +69,7 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <Header title="Profile" />
+      <MainHeader />
 
       <div className="container-padding py-6 space-y-6">
         {/* Profile Header */}

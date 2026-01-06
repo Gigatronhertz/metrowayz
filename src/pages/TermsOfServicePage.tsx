@@ -1,13 +1,13 @@
 import React from 'react'
 import { FileText } from 'lucide-react'
-import Header from '../components/layout/Header'
+import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
 
 const TermsOfServicePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <Header title="Terms of Service" showBack />
+      <MainHeader />
 
       <div className="container-padding py-6 space-y-6">
         {/* Header */}

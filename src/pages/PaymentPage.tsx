@@ -7,7 +7,7 @@ import { formatCurrency } from '../utils/format'
 import { useAuth } from '../context/AuthContext'
 import { isPaystackConfigured, getPaystackPublicKey } from '../config/paystack'
 import { convertToKobo, generatePaymentReference } from '../services/paystack'
-import Header from '../components/layout/Header'
+import MainHeader from '../components/layout/MainHeader'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 
@@ -255,7 +255,7 @@ const PaymentPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title={isChefService ? "Chef Service Booking" : "Confirm Booking"} showBack />
+      <MainHeader />
 
       <div className="container-padding py-6 space-y-6">
         {/* Payment Summary */}

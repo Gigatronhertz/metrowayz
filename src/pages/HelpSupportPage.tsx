@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { HelpCircle, MessageSquare, Mail, Phone, ChevronDown, ChevronUp } from 'lucide-react'
-import Header from '../components/layout/Header'
+import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -71,7 +71,7 @@ const HelpSupportPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <Header title="Help & Support" showBack />
+      <MainHeader />
 
       <div className="container-padding py-6 space-y-6">
         {/* Contact Support Card */}

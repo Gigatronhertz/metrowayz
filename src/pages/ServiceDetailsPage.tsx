@@ -7,7 +7,7 @@ import { formatCurrency, formatPriceUnit } from '../utils/format'
 import { useAuth } from '../context/AuthContext'
 import { isPaystackConfigured, getPaystackPublicKey } from '../config/paystack'
 import { convertToKobo, generatePaymentReference } from '../services/paystack'
-import Header from '../components/layout/Header'
+import MainHeader from '../components/layout/MainHeader'
 import Button from '../components/ui/Button'
 import Rating from '../components/ui/Rating'
 import Map from '../components/common/Map'
@@ -359,15 +359,13 @@ const ServiceDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="absolute top-0 left-0 right-0 z-10">
-        <Header showBack />
-      </div>
+    <div className="min-h-screen bg-white pb-20 lg:pb-0">
+      <MainHeader showSearch={false} />
 
       <div className="relative">
         <ImageGallery images={imageUrls} title={service.title} />
-        
-        <div className="absolute top-16 right-4 z-10 flex space-x-2">
+
+        <div className="absolute top-4 right-4 z-10 flex space-x-2">
           <button
             onClick={handleToggleFavorite}
             className="p-3 bg-white/90 rounded-full shadow-lg"

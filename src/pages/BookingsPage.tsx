@@ -3,7 +3,7 @@ import { Calendar, RotateCcw } from 'lucide-react'
 import { bookingAPI } from '../services/api'
 import { BookingStatus } from '../types'
 import { formatCurrency, formatDateRange, formatPriceUnit } from '../utils/format'
-import Header from '../components/layout/Header'
+import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import CancelBookingModal from '../components/booking/CancelBookingModal'
 import RescheduleBookingModal from '../components/booking/RescheduleBookingModal'
@@ -125,7 +125,7 @@ const BookingsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white pb-20 lg:pb-0 relative">
-      <Header title="My Bookings" showNotifications />
+      <MainHeader />
 
       {/* Hero Section */}
       <div className="relative bg-gray-50 py-12 lg:py-16 overflow-hidden">
