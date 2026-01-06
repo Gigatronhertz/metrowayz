@@ -719,8 +719,8 @@ const ServiceDetailsPage: React.FC = () => {
               <div className="text-sm text-gray-500">{formatPriceUnit(service.priceUnit, 'long')}</div>
             )}
           </div>
-          <Button onClick={handleBookNow} className="px-8">
-            Book Now
+          <Button onClick={handleBookNow} className="px-8" isLoading={isProcessing} disabled={isProcessing}>
+            {isProcessing ? 'Processing...' : 'Book Now'}
           </Button>
         </div>
       </div>
