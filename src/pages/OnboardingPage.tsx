@@ -85,7 +85,7 @@ const OnboardingPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="mx-auto mb-4">
             <img src="/logo.svg" alt="MetroWayz" className="w-12 h-12 " />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
