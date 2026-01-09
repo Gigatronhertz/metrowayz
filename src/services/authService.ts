@@ -7,16 +7,6 @@ export interface User {
   profilePicture?: string
   role: 'user' | 'seller' | 'admin'
   onboarded?: boolean
-  loyaltyPoints?: number
-  membershipTier?: 'Bronze' | 'Silver' | 'Gold' | 'Platinum'
-  totalBookings?: number
-  referrals?: number
-  createdAt?: Date | string
-  phone?: string
-  address?: string
-  city?: string
-  country?: string
-  bio?: string
 }
 
 export interface AuthResponse {
@@ -27,10 +17,43 @@ export interface AuthResponse {
 }
 
 export const tokenManager = {
-  setToken: (token: string) => localStorage.setItem('authToken', token),
-  getToken: () => localStorage.getItem('authToken'),
-  removeToken: () => localStorage.removeItem('authToken'),
-  isAuthenticated: () => !!localStorage.getItem('authToken')
+  setToken: (token: string) => {
+    // Validate token format before storing
+    if (!token || typeof token !== 'string' || token.length < 10) {
+      throw new Error('Invalid token format');
+    }
+    localStorage.setItem('authToken', token);
+    // Set expiration check
+    localStorage.setItem('tokenTimestamp', Date.now().toString());
+  },
+  
+  getToken: () => {
+    const token = localStorage.getItem('authToken');
+    const timestamp = localStorage.getItem('tokenTimestamp');
+    
+    // Check if token is expired (24 hours)
+    if (timestamp) {
+      const tokenAge = Date.now() - parseInt(timestamp);
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+      
+      if (tokenAge > maxAge) {
+        tokenManager.removeToken();
+        return null;
+      }
+    }
+    
+    return token;
+  },
+  
+  removeToken: () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('tokenTimestamp');
+  },
+  
+  isAuthenticated: () => {
+    const token = tokenManager.getToken();
+    return !!token;
+  }
 }
 
 export const authService = {
@@ -153,25 +176,36 @@ export const authService = {
           console.log('Received message from:', event.origin)
           console.log('Message data:', event.data)
 
-          // Accept messages from the popup (which comes from the backend domain)
-          // The popup is opened from API_BASE_URL, so messages will come from there
+          // Strict origin validation
           const backendOrigin = new URL(API_BASE_URL).origin
-          if (event.origin !== backendOrigin && event.origin !== window.location.origin) {
-            console.warn('Ignoring message from unexpected origin:', event.origin)
+          if (event.origin !== backendOrigin) {
+            console.warn('Rejecting message from unauthorized origin:', event.origin)
             return
           }
 
-          if (event.data && event.data.token) {
+          // Validate message structure
+          if (!event.data || typeof event.data !== 'object') {
+            console.warn('Invalid message format received')
+            return
+          }
+
+          if (event.data.token && typeof event.data.token === 'string') {
             const token = event.data.token
-            console.log('Received token, closing popup')
-            try {
-              popup.close()
-            } catch (error) {
-              console.warn('Could not close popup:', error)
+            // Basic token validation
+            if (token.length > 10 && token.includes('.')) {
+              console.log('Received valid token, closing popup')
+              try {
+                popup.close()
+              } catch (error) {
+                console.warn('Could not close popup:', error)
+              }
+              window.removeEventListener('message', handleMessage)
+              resolve(token)
+            } else {
+              console.warn('Received invalid token format')
+              reject(new Error('Invalid token received'))
             }
-            window.removeEventListener('message', handleMessage)
-            resolve(token)
-          } else if (event.data && event.data.error) {
+          } else if (event.data.error && typeof event.data.error === 'string') {
             console.log('Received error from popup:', event.data.error)
             try {
               popup.close()
@@ -198,67 +232,5 @@ export const authService = {
         reject(error instanceof Error ? error : new Error('Authentication failed'))
       }
     })
-  },
-
-  loginWithEmail: async (email: string, password: string): Promise<AuthResponse> => {
-    const url = `${API_BASE_URL}/auth/login`
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    }
-
-    const response = await fetch(url, requestOptions)
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Login failed')
-    }
-
-    const data = await response.json()
-    
-    if (data.token) {
-      tokenManager.setToken(data.token)
-    }
-
-    return {
-      success: true,
-      user: data.user,
-      token: data.token,
-      message: 'Login successful'
-    }
-  },
-
-  signupWithEmail: async (email: string, password: string, name: string): Promise<AuthResponse> => {
-    const url = `${API_BASE_URL}/auth/signup`
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password, name })
-    }
-
-    const response = await fetch(url, requestOptions)
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Signup failed')
-    }
-
-    const data = await response.json()
-    
-    if (data.token) {
-      tokenManager.setToken(data.token)
-    }
-
-    return {
-      success: true,
-      user: data.user,
-      token: data.token,
-      message: 'Signup successful'
-    }
   }
 }

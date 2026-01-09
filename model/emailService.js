@@ -1,28 +1,18 @@
-const sgMail = require('@sendgrid/mail');
+// Zoho Mail Webhook Configuration
+// WARNING: This URL is hardcoded. Anyone with access to this code can send emails from your account.
+// For better security, use environment variables instead.
+const ZOHO_WEBHOOK_URL = process.env.ZOHO_WEBHOOK_URL || 'https://zohomailwh.ca/integPlatform/webhooks/2912441217974080963/incomingwebhooks/mail?encapiKey=MdLT5XamzMp0tx9EFVsA3HoxouNKPxArrjos2LnwAO1yvSQFtm77xJ%2F5BJkQyXNdAS8dfswTcNufTj8HJ1inrBzD3xeMP%2FhGiCdVzzj%2BmDMoR5Qh6FA%3D';
 
-// REPLACE THIS WITH YOUR SENDGRID API KEY
-const SENDGRID_API_KEY = 'YOUR_SENDGRID_API_KEY_HERE';
-
-// Email sender (must be verified in SendGrid)
-const FROM_EMAIL = 'richmondchidubem135@gmail.com';
-const FROM_NAME = 'MetroWayz';
-
-// Set SendGrid API Key
-sgMail.setApiKey(SENDGRID_API_KEY);
-
-console.log('✅ SendGrid email service initialized');
+if (!ZOHO_WEBHOOK_URL) {
+  console.warn('⚠️ ZOHO_WEBHOOK_URL not configured. Email sending will fail.');
+} else {
+  console.log('✅ Zoho Mail email service initialized');
+}
 
 // Send Welcome Email
 const sendWelcomeEmail = async (userEmail, userName) => {
   try {
-    const msg = {
-      to: userEmail,
-      from: {
-        email: FROM_EMAIL,
-        name: FROM_NAME
-      },
-      subject: 'Welcome to MetroWayz - Premium Lifestyle Services',
-      html: `
+    const emailContent = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -124,17 +114,33 @@ const sendWelcomeEmail = async (userEmail, userName) => {
           </div>
         </body>
         </html>
-      `
-    };
+      `;
 
-    const response = await sgMail.send(msg);
-    console.log('Welcome email sent successfully via SendGrid');
-    return { success: true, messageId: response[0].headers['x-message-id'] };
+    console.log('📧 Sending welcome email to:', userEmail);
+
+    const response = await fetch(ZOHO_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: String(userEmail),
+        subject: 'Welcome to MetroWayz - Premium Lifestyle Services',
+        content: emailContent
+      })
+    });
+
+    const result = await response.text();
+
+    if (response.ok) {
+      console.log('Welcome email sent successfully via Zoho');
+      return { success: true };
+    } else {
+      console.error('Zoho webhook error:', result);
+      return { success: false, error: result };
+    }
   } catch (error) {
     console.error('Error sending welcome email:', error);
-    if (error.response) {
-      console.error('SendGrid error details:', error.response.body);
-    }
     return { success: false, error: error.message };
   }
 };
@@ -154,14 +160,7 @@ const sendBookingConfirmationToUser = async (userEmail, bookingDetails) => {
       bookingId
     } = bookingDetails;
 
-    const msg = {
-      to: userEmail,
-      from: {
-        email: FROM_EMAIL,
-        name: FROM_NAME
-      },
-      subject: `Booking Confirmed - ${serviceName}`,
-      html: `
+    const emailContent = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -319,17 +318,33 @@ const sendBookingConfirmationToUser = async (userEmail, bookingDetails) => {
           </div>
         </body>
         </html>
-      `
-    };
+      `;
 
-    const response = await sgMail.send(msg);
-    console.log('Booking confirmation email sent to user via SendGrid');
-    return { success: true, messageId: response[0].headers['x-message-id'] };
+    console.log('📧 Sending booking confirmation to user:', userEmail);
+
+    const response = await fetch(ZOHO_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: String(userEmail),
+        subject: `Booking Confirmed - ${serviceName}`,
+        content: emailContent
+      })
+    });
+
+    const result = await response.text();
+
+    if (response.ok) {
+      console.log('Booking confirmation email sent to user via Zoho');
+      return { success: true };
+    } else {
+      console.error('Zoho webhook error:', result);
+      return { success: false, error: result };
+    }
   } catch (error) {
     console.error('Error sending booking confirmation to user:', error);
-    if (error.response) {
-      console.error('SendGrid error details:', error.response.body);
-    }
     return { success: false, error: error.message };
   }
 };
@@ -352,14 +367,7 @@ const sendBookingNotificationToVendor = async (vendorEmail, bookingDetails) => {
       bookingId
     } = bookingDetails;
 
-    const msg = {
-      to: vendorEmail,
-      from: {
-        email: FROM_EMAIL,
-        name: FROM_NAME
-      },
-      subject: `New Booking - ${serviceName}`,
-      html: `
+    const emailContent = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -532,17 +540,33 @@ const sendBookingNotificationToVendor = async (vendorEmail, bookingDetails) => {
           </div>
         </body>
         </html>
-      `
-    };
+      `;
 
-    const response = await sgMail.send(msg);
-    console.log('Booking notification email sent to vendor via SendGrid');
-    return { success: true, messageId: response[0].headers['x-message-id'] };
+    console.log('📧 Sending booking notification to vendor:', vendorEmail);
+
+    const response = await fetch(ZOHO_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: String(vendorEmail),
+        subject: `New Booking - ${serviceName}`,
+        content: emailContent
+      })
+    });
+
+    const result = await response.text();
+
+    if (response.ok) {
+      console.log('Booking notification email sent to vendor via Zoho');
+      return { success: true };
+    } else {
+      console.error('Zoho webhook error:', result);
+      return { success: false, error: result };
+    }
   } catch (error) {
     console.error('Error sending booking notification to vendor:', error);
-    if (error.response) {
-      console.error('SendGrid error details:', error.response.body);
-    }
     return { success: false, error: error.message };
   }
 };

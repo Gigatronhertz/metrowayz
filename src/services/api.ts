@@ -6,16 +6,31 @@ const getAuthToken = () => {
   return localStorage.getItem('authToken');
 };
 
+// Security headers for all requests
+const getSecurityHeaders = (): Record<string, string> => {
+  return {
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest', // CSRF protection
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache'
+  };
+};
+
 // Helper to make authenticated requests with retry logic
 const fetchWithAuth = async (url: string, options: RequestInit = {}, retries = 2) => {
   const token = getAuthToken();
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...getSecurityHeaders(),
   };
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  // Validate URL to prevent SSRF
+  if (!url.startsWith('/api/') && !url.startsWith(API_BASE_URL)) {
+    throw new Error('Invalid API endpoint');
   }
 
   try {
@@ -25,6 +40,9 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}, retries = 2
         ...headers,
         ...(options.headers || {}),
       },
+      // Security settings
+      credentials: 'same-origin',
+      mode: 'cors',
       // Increase timeout for cold starts
       signal: AbortSignal.timeout(30000), // 30 seconds
     });
@@ -107,19 +125,10 @@ export const bookingAPI = {
   // Create a new booking
   createBooking: async (data: {
     serviceId: string;
-    checkInDate?: string;
-    checkOutDate?: string;
-    guests?: number;
+    checkInDate: string;
+    checkOutDate: string;
+    guests: number;
     specialRequests?: string;
-    isChefService?: boolean;
-    selectedMenuOptions?: Record<string, string | string[] | undefined>;
-    selectedAddons?: string[];
-    guestCount?: number;
-    serviceDate?: string;
-    serviceTime?: string;
-    selectedServiceType?: string;
-    selectedMealPackage?: { label: string; price: number } | null;
-    selectedAdditionalNotes?: string;
   }) => {
     return fetchWithAuth('/api/bookings', {
       method: 'POST',
@@ -185,11 +194,6 @@ export const bookingAPI = {
   // Get cancellation preview
   getCancellationPreview: async (id: string) => {
     return fetchWithAuth(`/api/bookings/${id}/cancellation-preview`);
-  },
-
-  // Check cancellation eligibility
-  checkCancellationEligibility: async (id: string) => {
-    return fetchWithAuth(`/api/bookings/${id}/cancellation-eligibility`);
   },
 
   // Request to reschedule booking
@@ -432,30 +436,6 @@ export const eventsAPI = {
   },
 };
 
-// ============= USER APIs =============
-
-export const userAPI = {
-  // Update user profile
-  updateProfile: async (data: {
-    name?: string;
-    phone?: string;
-    address?: string;
-    city?: string;
-    country?: string;
-    bio?: string;
-  }) => {
-    return fetchWithAuth('/api/user/profile', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  // Get user profile
-  getProfile: async () => {
-    return fetchWithAuth('/api/user/profile');
-  },
-};
-
 export default {
   service: serviceAPI,
   booking: bookingAPI,
@@ -464,5 +444,4 @@ export default {
   favorite: favoriteAPI,
   payment: paymentAPI,
   events: eventsAPI,
-  user: userAPI,
 };
