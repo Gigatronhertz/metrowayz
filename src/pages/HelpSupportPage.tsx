@@ -4,6 +4,8 @@ import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import { contactAPI } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 interface FAQItem {
   id: string
@@ -12,11 +14,14 @@ interface FAQItem {
 }
 
 const HelpSupportPage: React.FC = () => {
+  const { user } = useAuth()
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
   const [contactForm, setContactForm] = useState({
     subject: '',
     message: '',
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
 
   const faqs: FAQItem[] = [
     {
@@ -63,10 +68,37 @@ const HelpSupportPage: React.FC = () => {
     }))
   }
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Thank you for your message! Our support team will get back to you soon.')
-    setContactForm({ subject: '', message: '' })
+
+    if (!user) {
+      alert('Please log in to send a message.')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await contactAPI.sendSupportMessage({
+        subject: contactForm.subject,
+        message: contactForm.message,
+        userEmail: user.email,
+        userName: user.name
+      })
+
+      setSubmitSuccess(true)
+      setContactForm({ subject: '', message: '' })
+
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false)
+      }, 5000)
+    } catch (error) {
+      console.error('Error sending support message:', error)
+      alert('Failed to send message. Please try again later.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -111,7 +143,15 @@ const HelpSupportPage: React.FC = () => {
         {/* Contact Form */}
         <Card className="p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Send us a Message</h2>
-          
+
+          {submitSuccess && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-800 font-medium">
+                ✓ Thank you for your message! Our support team will get back to you soon.
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleContactSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -143,8 +183,8 @@ const HelpSupportPage: React.FC = () => {
               />
             </div>
 
-            <Button type="submit" className="w-full">
-              Send Message
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Sending...' : 'Send Message'}
             </Button>
           </form>
         </Card>

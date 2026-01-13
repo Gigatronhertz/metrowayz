@@ -547,8 +547,130 @@ const sendBookingNotificationToVendor = async (vendorEmail, bookingDetails) => {
   }
 };
 
+// Send Support/Contact Message Email
+const sendSupportMessage = async (messageDetails) => {
+  try {
+    const {
+      userEmail,
+      userName,
+      subject,
+      message
+    } = messageDetails;
+
+    const msg = {
+      to: 'richmond@metrowayz.com', // Support team email
+      from: {
+        email: FROM_EMAIL,
+        name: FROM_NAME
+      },
+      replyTo: userEmail, // Allow replying directly to user
+      subject: `Support Request: ${subject}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body {
+              font-family: 'Arial', sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(135deg, #ff6b3d 0%, #8b6dff 100%);
+              padding: 30px;
+              text-align: center;
+              border-radius: 10px 10px 0 0;
+            }
+            .header h1 {
+              color: white;
+              margin: 0;
+              font-size: 28px;
+            }
+            .content {
+              background: #ffffff;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .user-info {
+              background: #fff4e6;
+              padding: 15px;
+              border-radius: 8px;
+              border-left: 4px solid #ff6b3d;
+              margin: 20px 0;
+            }
+            .message-box {
+              background: #f9f9f9;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+              border: 1px solid #e0e0e0;
+            }
+            .footer {
+              background: #f9f9f9;
+              padding: 20px;
+              text-align: center;
+              border-radius: 0 0 10px 10px;
+              border: 1px solid #e0e0e0;
+              border-top: none;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>💬 New Support Request</h1>
+          </div>
+          <div class="content">
+            <h2>Support Request from Customer</h2>
+
+            <div class="user-info">
+              <h3 style="margin-top: 0;">Customer Information</h3>
+              <p><strong>Name:</strong> ${userName || 'Not provided'}</p>
+              <p><strong>Email:</strong> ${userEmail}</p>
+            </div>
+
+            <div class="message-box">
+              <h3 style="margin-top: 0;">Subject</h3>
+              <p><strong>${subject}</strong></p>
+
+              <h3>Message</h3>
+              <p style="white-space: pre-wrap;">${message}</p>
+            </div>
+
+            <p><strong>How to respond:</strong></p>
+            <p>Simply reply to this email to respond directly to ${userEmail}.</p>
+
+            <p>Best regards,<br>
+            <strong>MetroWayz Support System</strong></p>
+          </div>
+          <div class="footer">
+            <p style="margin: 0; color: #666; font-size: 12px;">
+              © 2024 MetroWayz. All rights reserved.<br>
+              Premium Lifestyle Services
+            </p>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    const response = await sgMail.send(msg);
+    console.log('Support message sent to richmond@metrowayz.com via SendGrid');
+    return { success: true, messageId: response[0].headers['x-message-id'] };
+  } catch (error) {
+    console.error('Error sending support message:', error);
+    if (error.response) {
+      console.error('SendGrid error details:', error.response.body);
+    }
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendBookingConfirmationToUser,
-  sendBookingNotificationToVendor
+  sendBookingNotificationToVendor,
+  sendSupportMessage
 };

@@ -461,6 +461,23 @@ export const userAPI = {
   },
 };
 
+// ============= CONTACT/SUPPORT APIs =============
+
+export const contactAPI = {
+  // Send support message
+  sendSupportMessage: async (data: {
+    subject: string;
+    message: string;
+    userEmail: string;
+    userName?: string;
+  }) => {
+    return fetchWithAuth('/api/contact/support', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export default {
   service: serviceAPI,
   booking: bookingAPI,
@@ -470,4 +487,5 @@ export default {
   payment: paymentAPI,
   events: eventsAPI,
   user: userAPI,
+  contact: contactAPI,
 };

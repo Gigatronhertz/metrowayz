@@ -18,7 +18,7 @@ const Review = require('./model/Review');
 const Notification = require('./model/Notification');
 const Favorite = require('./model/Favorite');
 const Event = require('./model/Event');
-const { sendWelcomeEmail, sendBookingConfirmationToUser, sendBookingNotificationToVendor } = require('./model/emailService');
+const { sendWelcomeEmail, sendBookingConfirmationToUser, sendBookingNotificationToVendor, sendSupportMessage } = require('./model/emailService');
 
 dotenv.config();
 const mongo_uri = process.env.MONGO_URI;
@@ -4560,6 +4560,50 @@ app.delete("/api/notifications/:id", authenticateJWT, async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error deleting notification",
+            error: error.message
+        });
+    }
+});
+
+// ============= CONTACT/SUPPORT ROUTES =============
+
+// Send support/contact message
+app.post("/api/contact/support", async (req, res) => {
+    try {
+        const { subject, message, userEmail, userName } = req.body;
+
+        // Validate required fields
+        if (!subject || !message || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Subject, message, and email are required"
+            });
+        }
+
+        // Send support email to richmond@metrowayz.com
+        const result = await sendSupportMessage({
+            userEmail,
+            userName,
+            subject,
+            message
+        });
+
+        if (result.success) {
+            res.status(200).json({
+                success: true,
+                message: "Your message has been sent successfully. We'll get back to you soon!"
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: "Failed to send message. Please try again later."
+            });
+        }
+    } catch (error) {
+        console.error("Error sending support message:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error sending support message",
             error: error.message
         });
     }
