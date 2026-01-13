@@ -325,3 +325,135 @@
 .calendar-summary {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* Time Slot Styles for Chef Mode */
+.time-slot-panel {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.time-slot-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 16px 0;
+  text-align: center;
+}
+
+.time-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.time-slot-button {
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+}
+
+.time-slot-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.time-slot-time {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.time-slot-status {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.time-slot-available {
+  background: #d1fae5;
+  border-color: #10b981;
+  color: #065f46;
+}
+
+.time-slot-available:hover {
+  background: #a7f3d0;
+  border-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.time-slot-available .time-slot-status {
+  color: #065f46;
+}
+
+.time-slot-booked {
+  background: #fecaca;
+  border-color: #ef4444;
+  color: #991b1b;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.time-slot-booked .time-slot-time {
+  text-decoration: line-through;
+}
+
+.time-slot-booked .time-slot-status {
+  color: #991b1b;
+}
+
+.time-slot-selected {
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1e40af;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+}
+
+.time-slot-selected .time-slot-time {
+  color: #1e40af;
+}
+
+.time-slot-selected .time-slot-status {
+  color: #1e40af;
+}
+
+.time-slot-loading {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  padding: 20px;
+  margin: 0;
+}
+
+/* Responsive - Time Slots */
+@media (max-width: 640px) {
+  .time-slot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .time-slot-title {
+    font-size: 14px;
+  }
+
+  .time-slot-button {
+    padding: 10px;
+  }
+
+  .time-slot-time {
+    font-size: 13px;
+  }
+
+  .time-slot-status {
+    font-size: 11px;
+  }
+}

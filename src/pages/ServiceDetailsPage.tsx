@@ -13,6 +13,7 @@ import Rating from '../components/ui/Rating'
 import Map from '../components/common/Map'
 import ImageGallery from '../components/common/ImageGallery'
 import Card from '../components/ui/Card'
+import BookingCalendar from '../components/Calendar/BookingCalendar'
 
 interface Service {
   _id: string
@@ -72,6 +73,10 @@ const ServiceDetailsPage: React.FC = () => {
   const [selectedServiceType, setSelectedServiceType] = useState<string>('')
   const [selectedMealPackage, setSelectedMealPackage] = useState<{ label: string; price: number } | null>(null)
   const [selectedAdditionalNotes, setSelectedAdditionalNotes] = useState<string>('')
+  // Calendar state for chef mode
+  const [showCalendar, setShowCalendar] = useState(false)
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<Array<{ start: string; end: string; available: boolean }>>([])
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: string; end: string } | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,6 +113,23 @@ const ServiceDetailsPage: React.FC = () => {
 
     fetchData()
   }, [id])
+
+  // Fetch available time slots when date changes (for chef services)
+  useEffect(() => {
+    const fetchTimeSlots = async () => {
+      if (!serviceDate || !service?.isChefService || !service?._id) return
+
+      try {
+        const data = await bookingAPI.getChefAvailability(service._id, serviceDate)
+        setAvailableTimeSlots(data.slots || [])
+      } catch (error) {
+        console.error('Failed to fetch time slots:', error)
+        setAvailableTimeSlots([])
+      }
+    }
+
+    fetchTimeSlots()
+  }, [serviceDate, service])
 
   const handleToggleFavorite = async () => {
     if (!id) return
@@ -219,8 +241,8 @@ const ServiceDetailsPage: React.FC = () => {
   const createChefBooking = async (reference: string) => {
     if (!service) return
 
-    if (!serviceDate || !serviceTime) {
-      alert('Please select both date and time for the service')
+    if (!serviceDate || !serviceTime || !selectedTimeSlot) {
+      alert('Please select both date and time slot for the service')
       return
     }
 
@@ -310,8 +332,8 @@ const ServiceDetailsPage: React.FC = () => {
       return
     }
 
-    if (!serviceTime) {
-      alert('Please select a service time before proceeding with payment.')
+    if (!serviceTime || !selectedTimeSlot) {
+      alert('Please select a time slot before proceeding with payment.')
       return
     }
 
@@ -575,56 +597,70 @@ const ServiceDetailsPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Date & Time */}
+                {/* Date & Time Selection with Calendar */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     <div className="flex items-center gap-2">
                       <Calendar size={16} />
-                      Service Date *
+                      Select Date & Time *
                     </div>
                   </label>
-                  <input
-                    type="date"
-                    value={serviceDate}
-                    onChange={(e) => setServiceDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  />
-                </div>
 
-                {serviceDate && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Service Time *
-                    </label>
-                    {service.availability?.timeSlots && service.availability.timeSlots.length > 0 ? (
-                      <div className="space-y-2">
-                        {service.availability.timeSlots.map((slot, idx) => (
-                          <label key={idx} className="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                            <input
-                              type="radio"
-                              name="timeSlot"
-                              value={slot.start}
-                              checked={serviceTime === slot.start}
-                              onChange={(e) => setServiceTime(e.target.value)}
-                              className="text-primary-600"
-                            />
-                            <span className="text-sm font-medium text-gray-700">
-                              {slot.start} - {slot.end}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
-                      <input
-                        type="time"
-                        value={serviceTime}
-                        onChange={(e) => setServiceTime(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  <button
+                    type="button"
+                    onClick={() => setShowCalendar(!showCalendar)}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition font-medium"
+                  >
+                    {serviceDate && selectedTimeSlot
+                      ? `${new Date(serviceDate).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric'
+                        })} at ${selectedTimeSlot.start} - ${selectedTimeSlot.end}`
+                      : 'Select Date & Time'}
+                  </button>
+
+                  {/* Display selected date/time confirmation */}
+                  {serviceDate && selectedTimeSlot && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-800 font-medium">
+                        ✓ Selected: {new Date(serviceDate).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                        <br />
+                        Time: {selectedTimeSlot.start} - {selectedTimeSlot.end}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Calendar Component */}
+                  {showCalendar && (
+                    <div className="mt-4">
+                      <BookingCalendar
+                        serviceId={service._id}
+                        isChefMode={true}
+                        bookedDates={[]}
+                        selectedDate={serviceDate}
+                        onSingleDateSelect={(date) => {
+                          setServiceDate(date)
+                          setSelectedTimeSlot(null) // Reset time slot when date changes
+                          setServiceTime('') // Clear service time
+                        }}
+                        timeSlots={availableTimeSlots}
+                        selectedTimeSlot={selectedTimeSlot}
+                        onTimeSlotSelect={(slot) => {
+                          setSelectedTimeSlot(slot)
+                          setServiceTime(slot.start)
+                          setShowCalendar(false) // Close calendar after selection
+                        }}
+                        onDateSelect={() => {}} // Not used in chef mode
                       />
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </>

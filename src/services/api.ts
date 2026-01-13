@@ -104,6 +104,11 @@ export const bookingAPI = {
     return fetchWithAuth(`/api/services/${serviceId}/calendar/${year}/${month}`);
   },
 
+  // Get available time slots for chef services on a specific date
+  getChefAvailability: async (serviceId: string, date: string) => {
+    return fetchWithAuth(`/api/services/${serviceId}/availability/chef?date=${date}`);
+  },
+
   // Create a new booking
   createBooking: async (data: {
     serviceId: string;

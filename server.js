@@ -2181,6 +2181,112 @@ app.get("/api/services/:serviceId/calendar/:year/:month", async (req, res) => {
     }
 });
 
+// GET /api/services/:serviceId/availability/chef
+// Returns available and booked time slots for private chef services on a specific date
+app.get('/api/services/:serviceId/availability/chef', async (req, res) => {
+    try {
+        const { serviceId } = req.params;
+        const { date } = req.query; // Format: YYYY-MM-DD
+
+        if (!date) {
+            return res.status(400).json({
+                success: false,
+                error: 'Date parameter is required'
+            });
+        }
+
+        // Verify service exists and is a chef service
+        const service = await Service.findById(serviceId);
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                error: 'Service not found'
+            });
+        }
+
+        if (!service.isChefService) {
+            return res.status(400).json({
+                success: false,
+                error: 'This endpoint is only for chef services'
+            });
+        }
+
+        const queryDate = new Date(date);
+
+        // Get all bookings for this service on this date
+        const bookings = await Booking.find({
+            serviceId: serviceId,
+            serviceDate: {
+                $gte: new Date(queryDate.setHours(0, 0, 0, 0)),
+                $lt: new Date(queryDate.setHours(23, 59, 59, 999))
+            },
+            status: { $in: ['pending', 'confirmed'] }
+        }).select('serviceTime timeSlot');
+
+        // Get configured time slots from service
+        const configuredSlots = service.availability?.timeSlots || [];
+
+        // Generate available time slots
+        const availableSlots = [];
+        const bookedSlots = bookings.map(b => ({
+            time: b.serviceTime,
+            start: b.timeSlot?.startTime,
+            end: b.timeSlot?.endTime
+        }));
+
+        // If vendor configured time slots, use those
+        if (configuredSlots.length > 0) {
+            configuredSlots.forEach(slot => {
+                const isBooked = bookedSlots.some(
+                    booked => booked.start === slot.start && booked.end === slot.end
+                );
+
+                availableSlots.push({
+                    start: slot.start,
+                    end: slot.end,
+                    available: !isBooked
+                });
+            });
+        } else {
+            // Generate default time slots (every 2 hours from 8am to 8pm)
+            const defaultSlots = [
+                { start: '08:00', end: '10:00' },
+                { start: '10:00', end: '12:00' },
+                { start: '12:00', end: '14:00' },
+                { start: '14:00', end: '16:00' },
+                { start: '16:00', end: '18:00' },
+                { start: '18:00', end: '20:00' }
+            ];
+
+            defaultSlots.forEach(slot => {
+                const isBooked = bookedSlots.some(booked => booked.time === slot.start);
+
+                availableSlots.push({
+                    start: slot.start,
+                    end: slot.end,
+                    available: !isBooked
+                });
+            });
+        }
+
+        res.json({
+            success: true,
+            date: date,
+            slots: availableSlots,
+            totalSlots: availableSlots.length,
+            availableSlots: availableSlots.filter(s => s.available).length,
+            bookedSlots: availableSlots.filter(s => !s.available).length
+        });
+
+    } catch (error) {
+        console.error('Error fetching chef availability:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch availability'
+        });
+    }
+});
+
 // TEMPORARY: Delete all bookings for a service (for testing/development)
 // Remove this endpoint in production!
 app.delete("/api/services/:serviceId/clear-bookings", async (req, res) => {
@@ -2332,6 +2438,34 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
                 success: false,
                 message: "Service not found"
             });
+        }
+
+        // For Chef Services - Check time slot availability to prevent double bookings
+        if (isChefService && serviceDate && serviceTime) {
+            // Helper function to calculate end time (assume 2-hour service duration)
+            const calculateEndTime = (startTime, durationHours) => {
+                const [hours, minutes] = startTime.split(':').map(Number);
+                const endHours = (hours + durationHours) % 24;
+                return `${String(endHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            };
+
+            const endTime = calculateEndTime(serviceTime, 2);
+
+            const availabilityCheck = await Booking.checkTimeSlotAvailability(
+                serviceId,
+                new Date(serviceDate),
+                serviceTime,
+                endTime
+            );
+
+            if (!availabilityCheck.available) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Time slot not available',
+                    message: `This time slot is already booked. ${availabilityCheck.conflictingBookings} booking(s) exist for this time.`,
+                    conflictingBookings: availabilityCheck.conflictingBookings
+                });
+            }
         }
 
         // Calculate total amount based on service type

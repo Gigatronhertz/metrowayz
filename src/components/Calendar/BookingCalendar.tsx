@@ -12,6 +12,13 @@ interface BookingCalendarProps {
   minNights?: number
   price?: number
   category?: string
+  // NEW PROPS for chef mode
+  isChefMode?: boolean
+  selectedDate?: string | null
+  onSingleDateSelect?: (date: string) => void
+  timeSlots?: Array<{ start: string; end: string; available: boolean }>
+  onTimeSlotSelect?: (slot: { start: string; end: string }) => void
+  selectedTimeSlot?: { start: string; end: string } | null
 }
 
 const BookingCalendar: React.FC<BookingCalendarProps> = ({
@@ -21,7 +28,13 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
   selectedCheckIn,
   selectedCheckOut,
   price,
-  category
+  category,
+  isChefMode = false,
+  selectedDate,
+  onSingleDateSelect,
+  timeSlots,
+  onTimeSlotSelect,
+  selectedTimeSlot
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectingCheckIn, setSelectingCheckIn] = useState(true)
@@ -162,28 +175,34 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
       return
     }
 
-    if (selectingCheckIn || !tempCheckIn) {
-      // Selecting check-in date
-      setTempCheckIn(dateStr)
-      setTempCheckOut(null)
-      setSelectingCheckIn(false)
+    if (isChefMode) {
+      // Chef mode: single date selection, show time slots
+      onSingleDateSelect?.(dateStr)
     } else {
-      // Selecting check-out date
-      const checkInDate = new Date(tempCheckIn)
-      const checkOutDate = new Date(dateStr)
-
-      // Ensure check-out is after check-in
-      if (checkOutDate <= checkInDate) {
-        // Reset and start over
+      // Accommodation mode: date range selection (existing logic)
+      if (selectingCheckIn || !tempCheckIn) {
+        // Selecting check-in date
         setTempCheckIn(dateStr)
         setTempCheckOut(null)
-        return
-      }
+        setSelectingCheckIn(false)
+      } else {
+        // Selecting check-out date
+        const checkInDate = new Date(tempCheckIn)
+        const checkOutDate = new Date(dateStr)
 
-      // Set check-out date and notify parent component
-      setTempCheckOut(dateStr)
-      onDateSelect(tempCheckIn, dateStr)
-      setSelectingCheckIn(true)
+        // Ensure check-out is after check-in
+        if (checkOutDate <= checkInDate) {
+          // Reset and start over
+          setTempCheckIn(dateStr)
+          setTempCheckOut(null)
+          return
+        }
+
+        // Set check-out date and notify parent component
+        setTempCheckOut(dateStr)
+        onDateSelect(tempCheckIn, dateStr)
+        setSelectingCheckIn(true)
+      }
     }
   }
 
@@ -238,7 +257,9 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
       {/* Instructions */}
       <div className="calendar-instructions">
-        {selectingCheckIn || !tempCheckIn
+        {isChefMode
+          ? 'Select a date to see available time slots'
+          : selectingCheckIn || !tempCheckIn
           ? `Select your ${isPrivateChef ? 'start' : 'check-in'} date`
           : `Now select your ${isPrivateChef ? 'end' : 'check-out'} date`}
       </div>
@@ -263,7 +284,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
           const isBooked = isDateBooked(dateStr)
           const isAvailable = isDateAvailable(dateStr)
           const isPast = isDatePast(year, month, day)
-          const isSelected = isDateSelected(dateStr)
+          const isSelected = isChefMode ? selectedDate === dateStr : isDateSelected(dateStr)
           const isCheckIn = tempCheckIn === dateStr
           const isCheckOut = tempCheckOut === dateStr
           const isDisabled = isPast || isBooked // Disable past dates and booked dates
@@ -290,8 +311,51 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
         })}
       </div>
 
-      {/* Selected Dates Summary */}
-      {tempCheckIn && tempCheckOut && (
+      {/* Time Slot Selection Panel - Show when in chef mode and date is selected */}
+      {isChefMode && selectedDate && timeSlots && (
+        <div className="time-slot-panel">
+          <h3 className="time-slot-title">
+            Available Time Slots for {new Date(selectedDate).toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </h3>
+
+          {timeSlots.length > 0 ? (
+            <div className="time-slot-grid">
+              {timeSlots.map((slot, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => slot.available && onTimeSlotSelect?.(slot)}
+                  disabled={!slot.available}
+                  className={`
+                    time-slot-button
+                    ${slot.available ? 'time-slot-available' : 'time-slot-booked'}
+                    ${selectedTimeSlot?.start === slot.start && selectedTimeSlot?.end === slot.end
+                      ? 'time-slot-selected'
+                      : ''
+                    }
+                  `}
+                >
+                  <div className="time-slot-time">
+                    {slot.start} - {slot.end}
+                  </div>
+                  <div className="time-slot-status">
+                    {slot.available ? '✓ Available' : '✗ Booked'}
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="time-slot-loading">Loading time slots...</p>
+          )}
+        </div>
+      )}
+
+      {/* Selected Dates Summary - Only show in accommodation mode */}
+      {!isChefMode && tempCheckIn && tempCheckOut && (
         <div className="calendar-summary">
           <div className="summary-dates">
             <div className="summary-item">
