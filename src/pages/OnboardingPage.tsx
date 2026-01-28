@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, Phone, Smartphone } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { useAuth } from '../context/AuthContext'
+import { authService } from '../services/authService'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import GoogleSignInButton from '../components/auth/GoogleSignInButton'
@@ -16,6 +17,8 @@ interface LoginForm {
 interface SignUpForm extends LoginForm {
   name: string
   confirmPassword: string
+  phoneNumber: string
+  otp?: string
 }
 
 const OnboardingPage: React.FC = () => {
@@ -26,6 +29,8 @@ const OnboardingPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isOtpStep, setIsOtpStep] = useState(false)
+  const [verifiedPhone, setVerifiedPhone] = useState('')
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm<SignUpForm>()
 
@@ -52,8 +57,48 @@ const OnboardingPage: React.FC = () => {
     setIsLoading(true)
     setError(null)
     try {
-      await loginWithEmail(data.email, data.password, data.name, !isLogin)
-      
+      if (!isLogin) {
+        // Signup Flow
+        if (!isOtpStep) {
+          // Step 1: Send OTP
+          const phone = data.phoneNumber.startsWith('+') ? data.phoneNumber : `+${data.phoneNumber.replace(/^0+/, '234').replace(/\D/g, '')}`
+
+          // Simple validation for demo
+          if (phone.length < 10) throw new Error('Invalid phone number')
+
+          try {
+            const res = await authService.sendOTP(phone)
+            if (res.success) {
+              setVerifiedPhone(phone)
+              setIsOtpStep(true)
+              toast.success('OTP sent to your phone')
+              setIsLoading(false)
+              return
+            } else {
+              throw new Error(res.message || 'Failed to send OTP')
+            }
+          } catch (otpError: any) {
+            throw new Error(otpError.message || 'Failed to send OTP')
+          }
+        } else {
+          // Step 2: Verify OTP
+          if (!data.otp) throw new Error('Please enter OTP')
+
+          try {
+            const res = await authService.verifyOTP(verifiedPhone, data.otp)
+            if (!res.success) throw new Error('Invalid OTP')
+          } catch (otpError: any) {
+            throw new Error(otpError.message || 'Invalid OTP')
+          }
+
+          // Step 3: Create Account
+          await loginWithEmail(data.email, data.password, data.name, !isLogin, verifiedPhone)
+        }
+      } else {
+        // Login Flow
+        await loginWithEmail(data.email, data.password, data.name, !isLogin)
+      }
+
       if (isVendorMode) {
         navigate('/vendor/dashboard')
       } else {
@@ -110,14 +155,12 @@ const OnboardingPage: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsVendorMode(!isVendorMode)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                  isVendorMode ? 'bg-purple-600' : 'bg-gray-300'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isVendorMode ? 'bg-purple-600' : 'bg-gray-300'
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                    isVendorMode ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isVendorMode ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
             </div>
@@ -126,21 +169,19 @@ const OnboardingPage: React.FC = () => {
           <div className="flex mb-6">
             <button
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 text-center font-semibold rounded-xl transition-colors ${
-                isLogin
+              className={`flex-1 py-2 text-center font-semibold rounded-xl transition-colors ${isLogin
                   ? 'bg-primary-500 text-white'
                   : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               Sign In
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 text-center font-semibold rounded-xl transition-colors ${
-                !isLogin
+              className={`flex-1 py-2 text-center font-semibold rounded-xl transition-colors ${!isLogin
                   ? 'bg-primary-500 text-white'
                   : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               Sign Up
             </button>
@@ -167,7 +208,7 @@ const OnboardingPage: React.FC = () => {
               label="Email"
               type="email"
               icon={<Mail className="w-5 h-5" />}
-              {...register('email', { 
+              {...register('email', {
                 required: 'Email is required',
                 pattern: {
                   value: /^\S+@\S+$/i,
@@ -182,7 +223,7 @@ const OnboardingPage: React.FC = () => {
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
                 icon={<Lock className="w-5 h-5" />}
-                {...register('password', { 
+                {...register('password', {
                   required: 'Password is required',
                   minLength: {
                     value: 6,
@@ -200,7 +241,7 @@ const OnboardingPage: React.FC = () => {
               </button>
             </div>
 
-            {!isLogin && (
+            {!isLogin && !isOtpStep && (
               <Input
                 label="Confirm Password"
                 type={showPassword ? 'text' : 'password'}
@@ -213,12 +254,50 @@ const OnboardingPage: React.FC = () => {
               />
             )}
 
+            {!isLogin && !isOtpStep && (
+              <Input
+                label="Phone Number"
+                type="tel"
+                placeholder="+234..."
+                icon={<Phone className="w-5 h-5" />}
+                {...register('phoneNumber', {
+                  required: 'Phone number is required'
+                })}
+                error={errors.phoneNumber?.message}
+              />
+            )}
+
+            {!isLogin && isOtpStep && (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-700">
+                  We sent a code to <strong>{verifiedPhone}</strong>
+                </div>
+                <Input
+                  label="Enter OTP Code"
+                  type="text"
+                  placeholder="123456"
+                  icon={<Smartphone className="w-5 h-5" />}
+                  {...register('otp', {
+                    required: 'OTP is required'
+                  })}
+                  error={errors.otp?.message}
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsOtpStep(false)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Change Phone Number
+                </button>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full"
               isLoading={isLoading}
             >
-              {isLogin ? 'Sign In' : 'Create Account'}
+              {isLogin ? 'Sign In' : isOtpStep ? 'Verify & Create Account' : 'Get OTP Code'}
             </Button>
           </form>
 

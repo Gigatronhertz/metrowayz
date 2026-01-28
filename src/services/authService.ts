@@ -218,7 +218,7 @@ export const authService = {
     }
 
     const data = await response.json()
-    
+
     if (data.token) {
       tokenManager.setToken(data.token)
     }
@@ -231,14 +231,14 @@ export const authService = {
     }
   },
 
-  signupWithEmail: async (email: string, password: string, name: string): Promise<AuthResponse> => {
+  signupWithEmail: async (email: string, password: string, name: string, phoneNumber?: string): Promise<AuthResponse> => {
     const url = `${API_BASE_URL}/auth/signup`
     const requestOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ email, password, name })
+      body: JSON.stringify({ email, password, name, phoneNumber })
     }
 
     const response = await fetch(url, requestOptions)
@@ -249,7 +249,7 @@ export const authService = {
     }
 
     const data = await response.json()
-    
+
     if (data.token) {
       tokenManager.setToken(data.token)
     }
@@ -260,5 +260,25 @@ export const authService = {
       token: data.token,
       message: 'Signup successful'
     }
+  },
+
+  sendOTP: async (phoneNumber: string): Promise<{ success: boolean; status: string }> => {
+    const url = `${API_BASE_URL}/auth/send-otp`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber })
+    })
+    return response.json()
+  },
+
+  verifyOTP: async (phoneNumber: string, code: string): Promise<{ success: boolean; status: string }> => {
+    const url = `${API_BASE_URL}/auth/verify-otp`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber, code })
+    })
+    return response.json()
   }
 }

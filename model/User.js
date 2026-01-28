@@ -85,6 +85,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    accountNumber: {
+        type: String,
+        default: ''
+    },
+    bankName: {
+        type: String,
+        default: ''
+    },
     website: {
         type: String,
         default: ''

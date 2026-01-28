@@ -19,6 +19,7 @@ const Notification = require('./model/Notification');
 const Favorite = require('./model/Favorite');
 const Event = require('./model/Event');
 const { sendWelcomeEmail, sendBookingConfirmationToUser, sendBookingNotificationToVendor, sendSupportMessage } = require('./model/emailService');
+const twilio = require('twilio');
 
 dotenv.config();
 const mongo_uri = process.env.MONGO_URI;
@@ -34,7 +35,7 @@ db.on('error', (err) => {
 
 db.once('open', async () => {
     console.log("Database Connection Established Successfully");
-    
+
     try {
         const indexExists = await User.collection.getIndexes();
         if (indexExists['googleId_1']) {
@@ -149,6 +150,12 @@ const transporter = nodemailer.createTransport({
         pass: process.env.MAIL_PASS
     }
 });
+
+// Initialize Twilio
+const accountSid = 'ACe7f49d9c00fe2a7a275688a883d95c6e';
+const authToken = '49dcc2ccfc7afb2f05f994e9aa7fa994';
+const verifyServiceSid = 'VA040e52415e53ff7a159aa6e8bceea9c3';
+const twilioClient = twilio(accountSid, authToken);
 
 app.set('trust proxy', 1);
 
@@ -454,6 +461,53 @@ app.post('/auth/login', async (req, res) => {
             success: false,
             message: 'Login failed',
             error: error.message
+        });
+    }
+});
+
+// Twilio OTP Routes
+app.post('/auth/send-otp', async (req, res) => {
+    try {
+        const { phoneNumber } = req.body;
+        if (!phoneNumber) {
+            return res.status(400).json({ success: false, message: 'Phone number is required' });
+        }
+
+        const verification = await twilioClient.verify.v2.services(verifyServiceSid)
+            .verifications
+            .create({ to: phoneNumber, channel: 'sms' });
+
+        res.json({ success: true, status: verification.status });
+    } catch (error) {
+        console.error('Twilio Send OTP Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to send OTP', error: error.message });
+    }
+});
+
+app.post('/auth/verify-otp', async (req, res) => {
+    try {
+        const { phoneNumber, code } = req.body;
+
+        if (!phoneNumber || !code) {
+            throw new Error('Missing parameter.');
+        }
+
+        const check = await twilioClient.verify.v2.services(verifyServiceSid)
+            .verificationChecks.create({ to: phoneNumber, code: code });
+
+        if (check.status === 'approved') {
+            return res.status(200).json({
+                success: true,
+                message: 'Verification success.',
+            });
+        }
+
+        throw new Error('Incorrect token.');
+    } catch (error) {
+        console.error(error.message);
+        res.status(400).json({
+            success: false,
+            message: error.message,
         });
     }
 });
@@ -882,7 +936,9 @@ app.post('/update-profile', authenticateJWT, async (req, res) => {
             businessHours,
             categories,
             zipCode,
-            socialLinks
+            socialLinks,
+            accountNumber,
+            bankName
         } = req.body;
 
         console.log('Update profile request body:', JSON.stringify(req.body, null, 2));
@@ -903,6 +959,8 @@ app.post('/update-profile', authenticateJWT, async (req, res) => {
         if (businessHours !== undefined) updateFields.businessHours = businessHours;
         if (locations !== undefined) updateFields.locations = locations;
         if (socialLinks !== undefined) updateFields.socialLinks = socialLinks;
+        if (accountNumber !== undefined) updateFields.accountNumber = accountNumber;
+        if (bankName !== undefined) updateFields.bankName = bankName;
 
         // If business information is being set, mark user as vendor
         if (businessName || businessType || businessDescription) {
@@ -1512,7 +1570,7 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
         // Validation for chef services
         if (req.body.isChefService) {
             console.log('🆕 CREATE SERVICE - Validating chef service fields...');
-            
+
             if (!req.body.pricing || !req.body.pricing.model) {
                 return res.status(400).json({
                     success: false,
@@ -1580,9 +1638,9 @@ app.post("/create-service", authenticateJWT, async (req, res) => {
     }
 });
 
- app.get("/services", authenticateJWT, async (req, res) => {
+app.get("/services", authenticateJWT, async (req, res) => {
     try {
-        const { page = 1, limit = 10, search, status,category } = req.query;
+        const { page = 1, limit = 10, search, status, category } = req.query;
 
         // Safely handle user lookup
         let user = null;
@@ -1804,7 +1862,7 @@ app.put("/services/:id", authenticateJWT, async (req, res) => {
         // Validation for chef services
         if (req.body.isChefService) {
             console.log('🔄 UPDATE SERVICE - Validating chef service fields...');
-            
+
             if (!req.body.pricing || !req.body.pricing.model) {
                 return res.status(400).json({
                     success: false,
@@ -1961,7 +2019,7 @@ const createBookingNotification = async (userId, type, title, message, bookingId
 const sendBookingPendingEmail = async (vendorEmail, vendorName, bookingData) => {
     try {
         const { serviceName, checkInDate, checkOutDate, guestName, bookingId } = bookingData;
-        
+
         const mailOptions = {
             from: process.env.MAIL_USER,
             to: vendorEmail,
@@ -1989,7 +2047,7 @@ const sendBookingPendingEmail = async (vendorEmail, vendorName, bookingData) => 
                 </div>
             `
         };
-        
+
         await transporter.sendMail(mailOptions);
         console.log(`Booking notification email sent to ${vendorEmail}`);
     } catch (error) {
@@ -2001,7 +2059,7 @@ const sendBookingPendingEmail = async (vendorEmail, vendorName, bookingData) => 
 const sendBookingApprovedEmail = async (customerEmail, customerName, bookingData) => {
     try {
         const { serviceName, checkInDate, checkOutDate } = bookingData;
-        
+
         const mailOptions = {
             from: process.env.MAIL_USER,
             to: customerEmail,
@@ -2028,7 +2086,7 @@ const sendBookingApprovedEmail = async (customerEmail, customerName, bookingData
                 </div>
             `
         };
-        
+
         await transporter.sendMail(mailOptions);
         console.log(`Booking approval email sent to ${customerEmail}`);
     } catch (error) {
@@ -2040,7 +2098,7 @@ const sendBookingApprovedEmail = async (customerEmail, customerName, bookingData
 const sendBookingRejectedEmail = async (customerEmail, customerName, bookingData) => {
     try {
         const { serviceName, checkInDate, checkOutDate, reason } = bookingData;
-        
+
         const mailOptions = {
             from: process.env.MAIL_USER,
             to: customerEmail,
@@ -2068,7 +2126,7 @@ const sendBookingRejectedEmail = async (customerEmail, customerName, bookingData
                 </div>
             `
         };
-        
+
         await transporter.sendMail(mailOptions);
         console.log(`Booking rejection email sent to ${customerEmail}`);
     } catch (error) {
@@ -2347,10 +2405,10 @@ app.get("/api/provider/calendar", authenticateJWT, async (req, res) => {
                 }
             ]
         })
-        .populate('userId', 'name email phoneNumber')
-        .populate('serviceId', 'title category')
-        .sort({ checkInDate: 1 })
-        .lean();
+            .populate('userId', 'name email phoneNumber')
+            .populate('serviceId', 'title category')
+            .sort({ checkInDate: 1 })
+            .lean();
 
         res.status(200).json({
             success: true,
@@ -2470,11 +2528,11 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
 
         // Calculate total amount based on service type
         let totalAmount, checkIn, checkOut;
-        
+
         if (isChefService) {
             // For chef services, calculate total with menu options and add-ons
             let basePrice = 0;
-            
+
             if (service.pricing.model === 'fixed') {
                 basePrice = service.pricing.fixed?.basePrice || 0;
                 if (service.pricing.fixed?.pricePerPerson) {
@@ -2483,7 +2541,7 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
             } else {
                 basePrice = service.pricing.range?.minPrice || 0;
             }
-            
+
             let menuPrice = 0;
             if (service.menuParameters && selectedMenuOptions) {
                 service.menuParameters.forEach((param) => {
@@ -2496,7 +2554,7 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
                     }
                 });
             }
-            
+
             let addonPrice = 0;
             if (service.addons && selectedAddons && Array.isArray(selectedAddons)) {
                 selectedAddons.forEach((addonLabel) => {
@@ -2506,7 +2564,7 @@ app.post("/api/bookings", authenticateJWT, async (req, res) => {
                     }
                 });
             }
-            
+
             let guestFee = 0;
             if (service.guestRules && guestCount > service.guestRules.baseGuestLimit) {
                 const extraGuests = guestCount - service.guestRules.baseGuestLimit;
@@ -2936,10 +2994,17 @@ app.put("/api/provider/bookings/:id/approve", authenticateJWT, async (req, res) 
         );
 
         // Send approval email to customer
-         sendBookingApprovedEmail(booking.userId.email, booking.userId.name, {
+        // Send approval email to customer
+        sendBookingConfirmationToUser(booking.userId.email, {
+            userName: booking.userId.name,
             serviceName: booking.serviceName,
+            serviceCategory: booking.serviceId.category,
+            serviceLocation: booking.serviceLocation || 'Online',
             checkInDate: booking.checkInDate,
-            checkOutDate: booking.checkOutDate
+            checkOutDate: booking.checkOutDate,
+            guests: booking.guests || 1,
+            totalAmount: booking.totalAmount || 0,
+            bookingId: booking._id
         });
 
         res.status(200).json({
@@ -3011,7 +3076,7 @@ app.put("/api/provider/bookings/:id/reject", authenticateJWT, async (req, res) =
         );
 
         // Send rejection email to customer
-         sendBookingRejectedEmail(booking.userId.email, booking.userId.name, {
+        sendBookingRejectedEmail(booking.userId.email, booking.userId.name, {
             serviceName: booking.serviceName,
             checkInDate: booking.checkInDate,
             checkOutDate: booking.checkOutDate,
@@ -3811,8 +3876,8 @@ app.get("/api/bookings/:id/reschedule-quote", authenticateJWT, async (req, res) 
                 message: priceDifference > 0
                     ? `You will need to pay an additional $${priceDifference.toFixed(2)}`
                     : priceDifference < 0
-                    ? `You will receive a refund of $${Math.abs(priceDifference).toFixed(2)}`
-                    : 'No price change'
+                        ? `You will receive a refund of $${Math.abs(priceDifference).toFixed(2)}`
+                        : 'No price change'
             }
         });
     } catch (error) {
@@ -5309,16 +5374,20 @@ app.post("/api/super-admin/fix-vendor-roles", authenticateJWT, requireSuperAdmin
         // Find all users who have business information but no vendor role
         const usersWithBusiness = await User.find({
             $and: [
-                { $or: [
-                    { businessName: { $exists: true, $ne: '' } },
-                    { businessType: { $exists: true, $ne: '' } },
-                    { businessDescription: { $exists: true, $ne: '' } }
-                ]},
-                { $or: [
-                    { role: { $exists: false } },
-                    { role: { $ne: 'vendor' } },
-                    { role: null }
-                ]}
+                {
+                    $or: [
+                        { businessName: { $exists: true, $ne: '' } },
+                        { businessType: { $exists: true, $ne: '' } },
+                        { businessDescription: { $exists: true, $ne: '' } }
+                    ]
+                },
+                {
+                    $or: [
+                        { role: { $exists: false } },
+                        { role: { $ne: 'vendor' } },
+                        { role: null }
+                    ]
+                }
             ]
         });
 

@@ -164,11 +164,10 @@ const VendorBookings = () => {
               <button
                 key={filter}
                 onClick={() => setStatusFilter(filter)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  statusFilter === filter
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${statusFilter === filter
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
               </button>
@@ -275,8 +274,9 @@ const VendorBookings = () => {
                             Approve
                           </button>
                           <button
-                            onClick={() => handleReject(booking._id)}
-                            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                            disabled
+                            title="Rejecting bookings is currently disabled"
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed opacity-50"
                           >
                             <X size={16} />
                             Reject

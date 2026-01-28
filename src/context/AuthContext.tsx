@@ -9,7 +9,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   loginWithGoogle: () => Promise<void>
-  loginWithEmail: (email: string, password: string, name?: string, isSignUp?: boolean) => Promise<void>
+  loginWithEmail: (email: string, password: string, name?: string, isSignUp?: boolean, phoneNumber?: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -97,10 +97,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       // Initiate Google OAuth flow
       const token = await authService.initiateGoogleAuth()
-      
+
       // Store token and fetch user data
       tokenManager.setToken(token)
-      
+
       // Fetch user data from dashboard endpoint
       const response = await authService.getProfile()
       if (response.success && response.user) {
@@ -117,13 +117,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }
 
-  const loginWithEmail = async (email: string, password: string, name?: string, isSignUp?: boolean) => {
+  const loginWithEmail = async (email: string, password: string, name?: string, isSignUp?: boolean, phoneNumber?: string) => {
     setIsLoading(true)
     try {
       let response
-      
+
       if (isSignUp && name) {
-        response = await authService.signupWithEmail(email, password, name)
+        response = await authService.signupWithEmail(email, password, name, phoneNumber)
       } else {
         response = await authService.loginWithEmail(email, password)
       }
