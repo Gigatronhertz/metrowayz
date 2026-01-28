@@ -262,7 +262,7 @@ export const authService = {
     }
   },
 
-  sendOTP: async (phoneNumber: string): Promise<{ success: boolean; status: string }> => {
+  sendOTP: async (phoneNumber: string): Promise<{ success: boolean; status: string; message?: string }> => {
     const url = `${API_BASE_URL}/auth/send-otp`
     const response = await fetch(url, {
       method: 'POST',
@@ -272,7 +272,7 @@ export const authService = {
     return response.json()
   },
 
-  verifyOTP: async (phoneNumber: string, code: string): Promise<{ success: boolean; status: string }> => {
+  verifyOTP: async (phoneNumber: string, code: string): Promise<{ success: boolean; status: string; message?: string }> => {
     const url = `${API_BASE_URL}/auth/verify-otp`
     const response = await fetch(url, {
       method: 'POST',
