@@ -90,21 +90,8 @@ const HelpSupportPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Contact Form */}
-        {/* Live Chat Prompt */}
-        <Card className="p-6 text-center">
-          <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <MessageSquare className="w-8 h-8 text-blue-600" />
-          </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Need Immediate Help?</h2>
-          <p className="text-gray-600 mb-6">
-            Our support team is available to assist you instantly. Click the chat icon at the bottom right of your screen to start a conversation.
-          </p>
-          <div className="inline-flex items-center gap-2 text-blue-600 font-medium bg-blue-50 px-4 py-2 rounded-lg">
-            <MessageSquare className="w-5 h-5" />
-            <span>Look for the chat widget ↘️</span>
-          </div>
-        </Card>
+        {/* Embedded Tawk.to Chat Widget */}
+        <div id='tawk_69798810324aa2197d408eeb'></div>
 
         {/* FAQ Section */}
         <div>
