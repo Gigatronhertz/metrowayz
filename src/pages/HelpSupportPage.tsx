@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { HelpCircle, MessageSquare, Mail, Phone, ChevronDown, ChevronUp } from 'lucide-react'
 import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
@@ -13,37 +13,6 @@ interface FAQItem {
 
 const HelpSupportPage: React.FC = () => {
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
-
-  useEffect(() => {
-    // Tawk.to Script Injection
-    const s1 = document.createElement("script")
-    const s0 = document.getElementsByTagName("script")[0]
-
-    // Set Tawk.to API variables on window
-    const windowAny = window as any
-    windowAny.Tawk_API = windowAny.Tawk_API || {}
-    windowAny.Tawk_API.embedded = 'tawk_69798810324aa2197d408eeb'
-    windowAny.Tawk_LoadStart = new Date()
-
-    s1.async = true
-    s1.src = 'https://embed.tawk.to/69798810324aa2197d408eeb/1jg1e88eo'
-    s1.charset = 'UTF-8'
-    s1.setAttribute('crossorigin', '*')
-
-    if (s0 && s0.parentNode) {
-      s0.parentNode.insertBefore(s1, s0)
-    }
-
-    return () => {
-      // Cleanup? Usually chat widgets are persistent or hard to cleanup.
-      // We might want to just hide it or leave it as is, but since it's embedded in a specific div, 
-      // ensuring the div exists before script runs is key. 
-      // Since useEffect runs *after* render, the div: 
-      // <div id='tawk_69798810324aa2197d408eeb'></div>
-      // will be present.
-    }
-  }, [])
-
 
   const faqs: FAQItem[] = [
     {
