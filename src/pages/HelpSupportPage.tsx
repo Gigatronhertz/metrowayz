@@ -3,8 +3,6 @@ import { HelpCircle, MessageSquare, Mail, Phone, ChevronDown, ChevronUp } from '
 import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
-import Button from '../components/ui/Button'
-import { contactAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 
 interface FAQItem {
@@ -14,8 +12,6 @@ interface FAQItem {
 }
 
 const HelpSupportPage: React.FC = () => {
-  const { user } = useAuth()
-  const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
   const { user } = useAuth()
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
 
@@ -51,10 +47,6 @@ const HelpSupportPage: React.FC = () => {
       answer: 'After your service is completed, you\'ll have the option to leave a review and rating. This helps other users find great services.'
     },
   ]
-
-  const toggleFAQ = (id: string) => {
-    setExpandedFAQ(expandedFAQ === id ? null : id)
-  }
 
   const toggleFAQ = (id: string) => {
     setExpandedFAQ(expandedFAQ === id ? null : id)
