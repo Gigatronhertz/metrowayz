@@ -16,12 +16,8 @@ interface FAQItem {
 const HelpSupportPage: React.FC = () => {
   const { user } = useAuth()
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
-  const [contactForm, setContactForm] = useState({
-    subject: '',
-    message: '',
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const { user } = useAuth()
+  const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
 
   const faqs: FAQItem[] = [
     {
@@ -60,45 +56,8 @@ const HelpSupportPage: React.FC = () => {
     setExpandedFAQ(expandedFAQ === id ? null : id)
   }
 
-  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setContactForm(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
-
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!user) {
-      alert('Please log in to send a message.')
-      return
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      await contactAPI.sendSupportMessage({
-        subject: contactForm.subject,
-        message: contactForm.message,
-        userEmail: user.email,
-        userName: user.name
-      })
-
-      setSubmitSuccess(true)
-      setContactForm({ subject: '', message: '' })
-
-      // Hide success message after 5 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false)
-      }, 5000)
-    } catch (error) {
-      console.error('Error sending support message:', error)
-      alert('Failed to send message. Please try again later.')
-    } finally {
-      setIsSubmitting(false)
-    }
+  const toggleFAQ = (id: string) => {
+    setExpandedFAQ(expandedFAQ === id ? null : id)
   }
 
   return (
@@ -112,7 +71,7 @@ const HelpSupportPage: React.FC = () => {
             <HelpCircle className="w-6 h-6 text-primary-500" />
             <h2 className="text-lg font-semibold text-gray-900">Contact Support</h2>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <Mail className="w-5 h-5 text-gray-600" />
@@ -121,7 +80,7 @@ const HelpSupportPage: React.FC = () => {
                 <p className="font-medium text-gray-900">support@metrowayz.com</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <Phone className="w-5 h-5 text-gray-600" />
               <div>
@@ -129,7 +88,7 @@ const HelpSupportPage: React.FC = () => {
                 <p className="font-medium text-gray-900">+234 (0) 123 456 7890</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <MessageSquare className="w-5 h-5 text-gray-600" />
               <div>
@@ -141,58 +100,25 @@ const HelpSupportPage: React.FC = () => {
         </Card>
 
         {/* Contact Form */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Send us a Message</h2>
-
-          {submitSuccess && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-800 font-medium">
-                ✓ Thank you for your message! Our support team will get back to you soon.
-              </p>
-            </div>
-          )}
-
-          <form onSubmit={handleContactSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subject
-              </label>
-              <input
-                type="text"
-                name="subject"
-                value={contactForm.subject}
-                onChange={handleContactChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="What is your concern about?"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Message
-              </label>
-              <textarea
-                name="message"
-                value={contactForm.message}
-                onChange={handleContactChange}
-                required
-                rows={5}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-                placeholder="Describe your issue or question..."
-              />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Sending...' : 'Send Message'}
-            </Button>
-          </form>
+        {/* Live Chat Prompt */}
+        <Card className="p-6 text-center">
+          <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+            <MessageSquare className="w-8 h-8 text-blue-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Need Immediate Help?</h2>
+          <p className="text-gray-600 mb-6">
+            Our support team is available to assist you instantly. Click the chat icon at the bottom right of your screen to start a conversation.
+          </p>
+          <div className="inline-flex items-center gap-2 text-blue-600 font-medium bg-blue-50 px-4 py-2 rounded-lg">
+            <MessageSquare className="w-5 h-5" />
+            <span>Look for the chat widget ↘️</span>
+          </div>
         </Card>
 
         {/* FAQ Section */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Frequently Asked Questions</h2>
-          
+
           <div className="space-y-3">
             {faqs.map((faq) => (
               <Card key={faq.id} className="overflow-hidden">
@@ -207,7 +133,7 @@ const HelpSupportPage: React.FC = () => {
                     <ChevronDown className="w-5 h-5 text-gray-600 flex-shrink-0" />
                   )}
                 </button>
-                
+
                 {expandedFAQ === faq.id && (
                   <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
                     <p className="text-gray-600">{faq.answer}</p>
