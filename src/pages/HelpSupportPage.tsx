@@ -92,8 +92,8 @@ const HelpSupportPage: React.FC = () => {
 
         {/* Live Chat Card */}
         <Card className="p-6 text-center">
-          <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <MessageSquare className="w-8 h-8 text-blue-600" />
+          <div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+            <MessageSquare className="w-8 h-8 text-orange-600" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Need Immediate Help?</h2>
           <p className="text-gray-600 mb-6">
@@ -107,7 +107,7 @@ const HelpSupportPage: React.FC = () => {
                 'width=400,height=600,scrollbars=yes,resizable=yes'
               );
             }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-colors"
           >
             <MessageSquare className="w-5 h-5" />
             <span>Open Live Chat</span>
