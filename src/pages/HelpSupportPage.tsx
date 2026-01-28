@@ -3,7 +3,7 @@ import { HelpCircle, MessageSquare, Mail, Phone, ChevronDown, ChevronUp } from '
 import MainHeader from '../components/layout/MainHeader'
 import BottomNavigation from '../components/layout/BottomNavigation'
 import Card from '../components/ui/Card'
-import { useAuth } from '../context/AuthContext'
+
 
 interface FAQItem {
   id: string
@@ -12,7 +12,6 @@ interface FAQItem {
 }
 
 const HelpSupportPage: React.FC = () => {
-  const { user } = useAuth()
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
 
   const faqs: FAQItem[] = [
