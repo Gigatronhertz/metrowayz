@@ -5862,30 +5862,7 @@ app.get("/api/events", async (req, res) => {
     }
 });
 
-app.post('/send-mail', async (req, res) => {
-  try {
 
-    await transporter.sendMail({
-      from: `"Metrowayz" <${process.env.MAIL_USER}>`,
-      to: "alghazalishuaib@gmail.com, richmondchidubem135@gmail.com, adetunji.adeshina@gmail.com",
-      subject: "Booking Reminder",
-      html: `
-        <p>Hi User X,</p>
-        <p>
-          This is a reminder that is happening on at<br/><br/>
-          🔹 Topic:<br/><br/>
-         Hello From Metrowayz thank you for booking with us!
-        </p>
-      `
-    });
-
-    res.status(200).json({ message: "Mail successfully sent" });
-
-  } catch (err) {
-    console.error("Mail error:", err);
-    res.status(500).json({ message: "Failed to send mail", error: err.message });
-  }
-});
 
 // Get single event by ID (public - no auth required)
 app.get("/api/events/:id", async (req, res) => {
