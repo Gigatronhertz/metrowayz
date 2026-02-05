@@ -1,26 +1,26 @@
-const sgMail = require('@sendgrid/mail');
+const nodemailer = require('nodemailer');
 
-// REPLACE THIS WITH YOUR SENDGRID API KEY
-const SENDGRID_API_KEY = 'YOUR_SENDGRID_API_KEY_HERE';
+// Configure transporter (use environment variables for security)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
+    }
+});
 
-// Email sender (must be verified in SendGrid)
-const FROM_EMAIL = 'richmondchidubem135@gmail.com';
+// Email sender info
+const FROM_EMAIL = process.env.MAIL_USER;
 const FROM_NAME = 'MetroWayz';
 
-// Set SendGrid API Key
-sgMail.setApiKey(SENDGRID_API_KEY);
-
-console.log('✅ SendGrid email service initialized');
+console.log('✅ Nodemailer email service initialized');
 
 // Send Welcome Email
 const sendWelcomeEmail = async (userEmail, userName) => {
   try {
-    const msg = {
+    const mailOptions = {
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
       to: userEmail,
-      from: {
-        email: FROM_EMAIL,
-        name: FROM_NAME
-      },
       subject: 'Welcome to MetroWayz - Premium Lifestyle Services',
       html: `
         <!DOCTYPE html>
@@ -127,14 +127,11 @@ const sendWelcomeEmail = async (userEmail, userName) => {
       `
     };
 
-    const response = await sgMail.send(msg);
-    console.log('Welcome email sent successfully via SendGrid');
-    return { success: true, messageId: response[0].headers['x-message-id'] };
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Welcome email sent successfully via Nodemailer');
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending welcome email:', error);
-    if (error.response) {
-      console.error('SendGrid error details:', error.response.body);
-    }
     return { success: false, error: error.message };
   }
 };
@@ -154,12 +151,9 @@ const sendBookingConfirmationToUser = async (userEmail, bookingDetails) => {
       bookingId
     } = bookingDetails;
 
-    const msg = {
+    const mailOptions = {
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
       to: userEmail,
-      from: {
-        email: FROM_EMAIL,
-        name: FROM_NAME
-      },
       subject: `Booking Confirmed - ${serviceName}`,
       html: `
         <!DOCTYPE html>
@@ -322,14 +316,11 @@ const sendBookingConfirmationToUser = async (userEmail, bookingDetails) => {
       `
     };
 
-    const response = await sgMail.send(msg);
-    console.log('Booking confirmation email sent to user via SendGrid');
-    return { success: true, messageId: response[0].headers['x-message-id'] };
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Booking confirmation email sent to user via Nodemailer');
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending booking confirmation to user:', error);
-    if (error.response) {
-      console.error('SendGrid error details:', error.response.body);
-    }
     return { success: false, error: error.message };
   }
 };
@@ -352,12 +343,9 @@ const sendBookingNotificationToVendor = async (vendorEmail, bookingDetails) => {
       bookingId
     } = bookingDetails;
 
-    const msg = {
+    const mailOptions = {
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
       to: vendorEmail,
-      from: {
-        email: FROM_EMAIL,
-        name: FROM_NAME
-      },
       subject: `New Booking - ${serviceName}`,
       html: `
         <!DOCTYPE html>
@@ -535,14 +523,11 @@ const sendBookingNotificationToVendor = async (vendorEmail, bookingDetails) => {
       `
     };
 
-    const response = await sgMail.send(msg);
-    console.log('Booking notification email sent to vendor via SendGrid');
-    return { success: true, messageId: response[0].headers['x-message-id'] };
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Booking notification email sent to vendor via Nodemailer');
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending booking notification to vendor:', error);
-    if (error.response) {
-      console.error('SendGrid error details:', error.response.body);
-    }
     return { success: false, error: error.message };
   }
 };
@@ -557,12 +542,9 @@ const sendSupportMessage = async (messageDetails) => {
       message
     } = messageDetails;
 
-    const msg = {
+    const mailOptions = {
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
       to: 'richmond@metrowayz.com', // Support team email
-      from: {
-        email: FROM_EMAIL,
-        name: FROM_NAME
-      },
       replyTo: userEmail, // Allow replying directly to user
       subject: `Support Request: ${subject}`,
       html: `
@@ -656,14 +638,11 @@ const sendSupportMessage = async (messageDetails) => {
       `
     };
 
-    const response = await sgMail.send(msg);
-    console.log('Support message sent to richmond@metrowayz.com via SendGrid');
-    return { success: true, messageId: response[0].headers['x-message-id'] };
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Support message sent to richmond@metrowayz.com via Nodemailer');
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending support message:', error);
-    if (error.response) {
-      console.error('SendGrid error details:', error.response.body);
-    }
     return { success: false, error: error.message };
   }
 };
